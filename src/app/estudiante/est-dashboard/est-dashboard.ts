@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { NavbarComponent } from '../../Herramientas/navbar/navbar';
 
 // Definimos una interfaz para tipar nuestros documentos
 export interface Documento {
@@ -16,7 +17,7 @@ export interface Documento {
 @Component({
   selector: 'app-dashboard',
   standalone: true, 
-  imports: [CommonModule],
+  imports: [CommonModule, NavbarComponent] ,
   templateUrl: './est-dashboard.html',
   styleUrls: ['./est-dashboard.css']
 })

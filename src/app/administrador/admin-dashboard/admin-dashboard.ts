@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
-import { CommonModule, TitleCasePipe } from '@angular/common'; // Importa CommonModule y TitleCasePipe
-
+import { CommonModule, TitleCasePipe } from '@angular/common'; 
+import { NavbarComponent } from '../../Herramientas/navbar/navbar';
+ 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, TitleCasePipe], // Añade los módulos aquí
+  imports: [CommonModule, TitleCasePipe, NavbarComponent], 
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.css']
 })

@@ -1,0 +1,97 @@
+<div class="docs-container">
+  <header class="docs-header">
+    <div class="user-info">
+      <div class="user-avatar">MG</div>
+      <div class="user-details">
+        <span>Estudiante • 2024001234</span>
+        <span>Ingeniería de Sistemas • 7°A</span>
+      </div>
+    </div>
+    <div class="header-actions">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+    </div>
+  </header>
+
+  <main class="docs-content">
+    <h1>Mis Documentos</h1>
+
+    <div class="alerts-section">
+      <div *ngFor="let alert of alerts" class="alert" [ngClass]="'alert-' + alert.type">
+        <i class="icon" [ngClass]="alert.icon"></i>
+        <div class="alert-content">
+          <strong>{{ alert.title }}</strong>
+          <span>{{ alert.message }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-card progress-card">
+      <div class="progress-info">
+        <div class="progress-text">
+          <span>Tipo de Estudiante</span>
+          <p>3 de 6 documentos aprobados (50%)</p>
+        </div>
+        <span class="tag tag-reingreso">Reingreso</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress" style="width: 50%;"></div>
+      </div>
+    </div>
+
+    <div class="tabs-container">
+      <button class="tab active">Todos (3/6)</button>
+      <button class="tab">Fijos (3/4)</button>
+      <button class="tab">Periódicos (0/2)</button>
+    </div>
+
+    <div class="document-list">
+      <div *ngFor="let doc of documents" class="content-card document-card">
+        <div class="document-header">
+          <div class="document-title">
+            <i class="icon" [ngClass]="[doc.icon, getStatusClass(doc.status)]"></i>
+            <h3>{{ doc.title }}</h3>
+            <span *ngIf="doc.required" class="tag tag-required">Requerido</span>
+          </div>
+          <span class="tag" [ngClass]="'tag-' + doc.status.toLowerCase()">{{ doc.status }}</span>
+        </div>
+        <div class="document-body">
+          <p class="description">{{ doc.description }}</p>
+          <p *ngIf="doc.uploadDate" class="upload-date">Subido: {{ doc.uploadDate }}</p>
+          <p class="status-message" [ngClass]="getStatusClass(doc.status)">{{ doc.statusMessage }}</p>
+        </div>
+        <div class="document-actions">
+          <button class="btn btn-secondary">
+            <i class="fa-regular fa-eye"></i> Ver Documento
+          </button>
+          <button class="btn btn-tertiary">
+            <i class="fa-regular fa-trash-can"></i> Eliminar y Volver a Subir
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="#" class="nav-item">
+      <i class="fa-solid fa-house"></i>
+      <span>Inicio</span>
+    </a>
+    <a href="#" class="nav-item active">
+      <i class="fa-regular fa-folder-open"></i>
+      <span>Documentos</span>
+    </a>
+    <a href="#" class="nav-item">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <span>Buscar</span>
+    </a>
+    <a href="#" class="nav-item">
+      <i class="fa-solid fa-chalkboard-user"></i>
+      <span>Maestros</span>
+    </a>
+    <a href="#" class="nav-item">
+      <i class="fa-regular fa-user-circle"></i>
+      <span>Perfil</span>
+    </a>
+  </nav>
+</div>

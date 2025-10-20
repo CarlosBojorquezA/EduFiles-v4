@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NavbarComponent } from '../../Herramientas/navbar/navbar';
 
 @Component({
   selector: 'app-profesor-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NavbarComponent],
   templateUrl: './prof-dashboard.html',
   styleUrls: ['./prof-dashboard.css']
 })
