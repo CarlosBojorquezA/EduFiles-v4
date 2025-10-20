@@ -1,0 +1,41 @@
+<div class="login-container">
+  <div class="login-card">
+
+    <div class="logo-wrapper">
+      <i class="fa-regular fa-file-lines"></i>
+    </div>
+    <h2>Sistema de Documentos</h2>
+    <p class="subtitle">Ingresa a tu cuenta</p>
+
+    <div class="tabs">
+      <a href="#" class="active">Iniciar Sesión</a>
+      <a href="#">¿Olvidaste tu contraseña?</a>
+    </div>
+
+    <form class="login-form">
+      <div class="form-group">
+        <label for="email">Email / Número de Cuenta</label>
+        <input type="text" id="email" placeholder="tu@gmail.com o 2024001234">
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" placeholder="•••••••••">
+      </div>
+
+      <!-- El botón principal sigue llamando a onLogin (estudiante por defecto) -->
+      <button type="button" (click)="onLogin()" class="btn btn-primary">
+        <i class="fa-solid fa-key"></i>
+        Iniciar Sesión
+      </button>
+    </form>
+
+    <div class="quick-access">
+      <p>Acceso rápido:</p>
+      <button class="btn btn-secondary" (click)="loginAsRole('estudiante')">Estudiante</button>
+      <button class="btn btn-secondary" (click)="loginAsRole('administrador')">Administrador</button>
+      <button class="btn btn-secondary" (click)="loginAsRole('profesor')">Profesor</button>
+    </div>
+
+  </div>
+</div>

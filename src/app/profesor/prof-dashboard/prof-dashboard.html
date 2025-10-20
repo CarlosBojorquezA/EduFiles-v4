@@ -1,0 +1,79 @@
+<div class="profesor-container">
+  <header class="profesor-header">
+    <div class="user-info">
+      <div class="user-avatar">AL</div>
+      <div class="user-details">
+        <span class="user-name">Ana López</span>
+        <span class="user-role">Profesor</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-button">
+        <i class="fa-regular fa-bell"></i>
+        <span class="notification-badge">4</span>
+      </button>
+      <button class="icon-button">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="profesor-content">
+    <h1>Dashboard Profesor</h1>
+
+    <div class="stats-grid">
+      <div *ngFor="let stat of stats" class="stat-card">
+        <div class="stat-icon" [ngClass]="stat.colorClass">
+          <i [ngClass]="stat.icon"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stat.value }}</span>
+          <span class="stat-label">{{ stat.label }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-card">
+      <h2 class="card-title">Acciones Rápidas</h2>
+      <button class="btn-chat">
+        <i class="fa-brands fa-rocketchat"></i>
+        Abrir Chat con Estudiantes
+        <span class="chat-badge">4</span>
+      </button>
+      <ul class="actions-list">
+        <li *ngFor="let action of quickActions">{{ action }}</li>
+      </ul>
+    </div>
+
+    <div class="content-card">
+      <h2 class="card-title">Actividad Reciente</h2>
+      <ul class="activity-list">
+        <li *ngFor="let item of recentActivity" class="activity-item">
+          <span>{{ item.label }}</span>
+          <span class="activity-value">{{ item.value }}</span>
+        </li>
+      </ul>
+    </div>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="#" class="nav-item active">
+      <i class="fa-solid fa-house"></i>
+      <span>Inicio</span>
+    </a>
+    <a href="#" class="nav-item">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <span>Buscar</span>
+    </a>
+    <a href="#" class="nav-item">
+      <i class="fa-regular fa-user-circle"></i>
+      <span>Perfil</span>
+    </a>
+    <a href="#" class="nav-item">
+      <i class="fa-solid fa-gear"></i>
+      <span>Config</span>
+    </a>
+  </nav>
+
+</div>

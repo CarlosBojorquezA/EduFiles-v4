@@ -1,0 +1,148 @@
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f7f7f7;
+  font-family: 'Inter', sans-serif;
+}
+
+.login-card {
+  background-color: #ffffff;
+  padding: 40px 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.logo-wrapper {
+  background-color: #111827;
+  color: #ffffff;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 15px;
+  font-size: 24px;
+}
+
+h2 {
+  margin: 0 0 5px 0;
+  font-size: 24px;
+  color: #111827;
+  font-weight: 600;
+}
+
+.subtitle {
+  margin: 0 0 25px 0;
+  color: #6b7280;
+}
+
+.tabs {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 25px;
+}
+
+.tabs a {
+  text-decoration: none;
+  color: #6b7280;
+  padding: 10px 15px;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.tabs a.active {
+  color: #111827;
+  border-bottom-color: #111827;
+}
+
+.login-form {
+  width: 100%;
+  text-align: left;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+.form-group input::placeholder {
+  color: #9ca3af;
+}
+
+.btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #111827;
+  color: #ffffff;
+  margin-top: 10px;
+}
+
+.btn-primary:hover {
+  background-color: #374151;
+}
+
+.btn-primary i {
+  margin-right: 8px;
+}
+
+.quick-access {
+  width: 100%;
+  margin-top: 30px;
+}
+
+.quick-access p {
+  color: #6b7280;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  margin-bottom: 10px;
+}
+
+.btn-secondary:hover {
+  background-color: #f9fafb;
+}
+
+.btn-secondary:last-child {
+  margin-bottom: 0;
+}

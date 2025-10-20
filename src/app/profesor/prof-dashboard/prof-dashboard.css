@@ -1,0 +1,154 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:host {
+  font-family: 'Inter', sans-serif;
+  background-color: #f8f9fa;
+}
+
+.profesor-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Header */
+.profesor-header {
+  background-color: #111827;
+  color: #ffffff;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-info { display: flex; align-items: center; }
+.user-avatar { width: 40px; height: 40px; border-radius: 50%; background-color: #4b5563; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; }
+.user-details { display: flex; flex-direction: column; }
+.user-name { font-weight: 600; font-size: 1rem; }
+.user-role { font-size: 0.8rem; color: #d1d5db; }
+.header-actions { display: flex; align-items: center; }
+.icon-button { background: none; border: none; color: #ffffff; font-size: 1.25rem; margin-left: 1rem; cursor: pointer; position: relative; }
+.notification-badge { position: absolute; top: -5px; right: -5px; background-color: #ef4444; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+/* Main Content */
+.profesor-content {
+  padding: 1.5rem;
+  flex-grow: 1;
+}
+
+h1 { font-size: 1.5rem; font-weight: 700; color: #111827; margin-bottom: 1.5rem; }
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background-color: #ffffff;
+  padding: 1.25rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+}
+
+.stat-icon {
+  font-size: 1.25rem;
+  margin-right: 1rem;
+}
+.stat-icon.purple { color: #8b5cf6; }
+.stat-icon.green { color: #22c55e; }
+.stat-icon.blue { color: #3b82f6; }
+.stat-icon.orange { color: #f97316; }
+
+.stat-info { display: flex; flex-direction: column; }
+.stat-value { font-size: 1.75rem; font-weight: 700; color: #111827; }
+.stat-label { font-size: 0.8rem; color: #6b7280; }
+
+/* Content Cards (Actions, Activity) */
+.content-card {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+}
+.card-title { font-size: 1rem; font-weight: 600; color: #374151; margin: 0 0 1rem 0; }
+
+/* Quick Actions */
+.btn-chat {
+  background-color: #111827;
+  color: #ffffff;
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+.btn-chat i { margin-right: 8px; }
+.chat-badge {
+  background-color: #ffffff;
+  color: #111827;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-left: 10px;
+}
+.actions-list {
+  list-style: none;
+  padding-left: 1.25rem;
+  margin: 0;
+  color: #4b5563;
+  font-size: 0.9rem;
+}
+.actions-list li {
+  margin-bottom: 0.5rem;
+  position: relative;
+}
+.actions-list li::before {
+  content: '•';
+  position: absolute;
+  left: -1.25rem;
+  color: #9ca3af;
+}
+
+/* Activity List */
+.activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.activity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #374151;
+  font-size: 0.9rem;
+}
+.activity-value {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Bottom Navigation */
+.bottom-nav { display: flex; justify-content: space-around; background-color: #ffffff; border-top: 1px solid #e5e7eb; padding: 0.5rem 0; position: sticky; bottom: 0; width: 100%; }
+.nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #6b7280; font-size: 0.75rem; width: 100%; padding: 0.25rem 0;}
+.nav-item i { font-size: 1.5rem; margin-bottom: 4px; }
+.nav-item.active { background-color: #f3f4f6; color: #111827; }

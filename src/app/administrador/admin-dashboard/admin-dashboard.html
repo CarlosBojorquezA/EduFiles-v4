@@ -1,0 +1,86 @@
+<div class="admin-container">
+  <header class="admin-header">
+    <div class="user-info">
+      <div class="user-avatar">CR</div>
+      <div class="user-details">
+        <span class="user-name">Carlos Rodríguez</span>
+        <span class="user-role">Administrador</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-button">
+        <i class="fa-regular fa-bell"></i>
+        <span class="notification-badge">2</span>
+      </button>
+      <button class="icon-button">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="admin-content">
+    <h1>Panel de Control</h1>
+
+    <div class="stats-grid">
+      <div *ngFor="let stat of stats" class="stat-card">
+        <div class="stat-icon" [ngClass]="stat.colorClass">
+          <i [ngClass]="stat.icon"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stat.value }}</span>
+          <span class="stat-label">{{ stat.label }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-card">
+      <h2 class="card-title">Alertas</h2>
+      <div class="alert-list">
+        <div *ngFor="let alert of alerts" class="alert-item" [ngClass]="'alert-' + alert.level">
+          <span>{{ alert.message }}</span>
+          <span class="tag" [ngClass]="'tag-' + alert.level">{{ alert.level | titlecase }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-card">
+      <h2 class="card-title">Actividad Reciente</h2>
+      <ul class="activity-list">
+        <li *ngFor="let item of activity" class="activity-item">
+          <div class="activity-icon" [ngClass]="getActivityClass(item.type)">
+            <i [ngClass]="getActivityIcon(item.type)"></i>
+          </div>
+          <div class="activity-details">
+            <span class="activity-text">{{ item.text }}</span>
+            <span class="activity-time">{{ item.time }}</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="#" class="nav-item active">
+      <i class="fa-solid fa-house"></i>
+      <span>Inicio</span>
+    </a>
+    <a href="#" class="nav-item">
+      <i class="fa-regular fa-clock"></i>
+      <span>Pendientes</span>
+    </a>
+    <a href="#" class="nav-item">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <span>Buscar</span>
+    </a>
+    <a href="#" class="nav-item">
+      <i class="fa-solid fa-folder-gear"></i>
+      <span>Gestión</span>
+    </a>
+    <a href="#" class="nav-item">
+      <i class="fa-regular fa-user-circle"></i>
+      <span>Perfil</span>
+    </a>
+  </nav>
+
+</div>
