@@ -1,0 +1,194 @@
+<div class="pendientes-container">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="user-info">
+        <div class="avatar">
+          <span>{{ userName.charAt(0) }}</span>
+        </div>
+        <div class="user-details">
+          <h3>{{ userName }}</h3>
+          <p>{{ userRole === 'administrador' ? 'Administrador' : userRole === 'estudiante' ? 'Estudiante' : 'Profesor' }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="notification-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span class="badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
+      </button>
+      <button class="logout-btn" (click)="logout()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <h1 class="page-title">Documentos Pendientes</h1>
+
+    <!-- Info Card -->
+    <div class="info-card">
+      <h2>Documentos Pendientes de Revisión</h2>
+      <p>{{ pendingDocuments.length }} documentos esperando tu revisión</p>
+    </div>
+
+    <!-- Documents List -->
+    <div class="documents-list">
+      <div class="document-card" *ngFor="let document of pendingDocuments">
+        <div class="document-header">
+          <div class="student-info">
+            <div class="student-avatar">
+              <span>{{ document.studentInitials }}</span>
+            </div>
+            <div class="student-details">
+              <h3>{{ document.studentName }}</h3>
+              <p class="student-email">{{ document.studentEmail }}</p>
+              <div class="document-meta">
+                <span class="meta-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                  </svg>
+                  {{ document.documentType }}
+                </span>
+                <span class="meta-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  Subido: {{ document.uploadDate }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <span class="status-badge" [class.expired]="document.status === 'expired'">
+            {{ document.status === 'expired' ? 'Vencido' : 'Pendiente' }}
+          </span>
+        </div>
+
+        <p class="document-description">{{ document.description }}</p>
+
+        <div class="document-actions">
+          <button class="btn-view" (click)="onViewDocument(document)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            Ver
+          </button>
+          <button class="btn-approve" (click)="openApproveModal(document)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            Aprobar
+          </button>
+          <button class="btn-reject" (click)="openRejectModal(document)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            Rechazar
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Approve Modal -->
+  <div class="modal-overlay" *ngIf="showApproveModal" (click)="closeApproveModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Aprobar Documento</h2>
+        <button class="close-btn" (click)="closeApproveModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-subtitle">Confirma la aprobación del documento</p>
+        <div class="modal-info">
+          <p><strong>Estudiante:</strong> {{ selectedDocument?.studentName }}</p>
+          <p><strong>Documento:</strong> {{ selectedDocument?.documentType }}</p>
+        </div>
+        <div class="form-group">
+          <label for="approvalComment">Comentario (Opcional)</label>
+          <textarea 
+            id="approvalComment" 
+            [(ngModel)]="approvalComment"
+            placeholder="Comentario adicional..."
+            rows="4"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-approve" (click)="confirmApproval()">Aprobar</button>
+        <button class="btn-modal-cancel" (click)="closeApproveModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reject Modal -->
+  <div class="modal-overlay" *ngIf="showRejectModal" (click)="closeRejectModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Rechazar Documento</h2>
+        <button class="close-btn" (click)="closeRejectModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-subtitle">Indica el motivo del rechazo</p>
+        <div class="modal-info">
+          <p><strong>Estudiante:</strong> {{ selectedDocument?.studentName }}</p>
+          <p><strong>Documento:</strong> {{ selectedDocument?.documentType }}</p>
+        </div>
+        <div class="form-group">
+          <label for="rejectionReason">Motivo del Rechazo *</label>
+          <textarea 
+            id="rejectionReason" 
+            [(ngModel)]="rejectionReason"
+            placeholder="Describe el motivo del rechazo..."
+            rows="4"
+            required></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-reject" (click)="confirmRejection()" [disabled]="!rejectionReason.trim()">Rechazar</button>
+        <button class="btn-modal-cancel" (click)="closeRejectModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button 
+      *ngFor="let item of navigationItems" 
+      class="nav-item"
+      [class.active]="item.route === currentRoute"
+      (click)="navigateTo(item.route)">
+      <div class="nav-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path [attr.d]="getIcon(item.icon)"></path>
+        </svg>
+        <span class="nav-badge" *ngIf="item.badge && item.badge > 0">{{ item.badge }}</span>
+      </div>
+      <span class="nav-label">{{ item.label }}</span>
+    </button>
+  </nav>
+</div>

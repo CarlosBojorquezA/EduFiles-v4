@@ -3,6 +3,7 @@
   background-color: #ffffff;
   color: rgb(255, 255, 255);
   padding-bottom: 80px;
+  font-family: Vegur, 'PT Sans', Verdana, sans-serif;
 }
 
 /* Header */
@@ -264,8 +265,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: #050505;
-  border-top: 1px solid #334155;
+  background-color: #ffffff;
   display: flex;
   justify-content: space-around;
   padding: 8px 8px 12px 8px;
@@ -289,7 +289,7 @@
 }
 
 .nav-item:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(124, 104, 104, 0.05);
 }
 
 .nav-item.active {

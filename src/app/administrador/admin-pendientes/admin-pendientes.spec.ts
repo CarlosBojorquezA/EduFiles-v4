@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { NavbarComponent } from './navbar';
+import { AdminPendientes } from './admin-pendientes';
 
-describe('Navbar', () => {
-  let component: NavbarComponent;
-  let fixture: ComponentFixture<NavbarComponent>;
+describe('AdminPendientes', () => {
+  let component: AdminPendientes;
+  let fixture: ComponentFixture<AdminPendientes>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NavbarComponent]
+      imports: [AdminPendientes]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(NavbarComponent);
+    fixture = TestBed.createComponent(AdminPendientes);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
