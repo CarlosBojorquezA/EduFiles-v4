@@ -1,53 +1,125 @@
-import { Component } from '@angular/core';
-import { CommonModule, TitleCasePipe } from '@angular/common'; 
-import { NavbarComponent } from '../../Herramientas/navbar/navbar';
- 
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
+
+interface StatCard {
+  icon: string;
+  value: number;
+  label: string;
+  color: string;
+}
+
+interface Alert {
+  message: string;
+  severity: 'urgent' | 'critical';
+  bgColor: string;
+}
+
+interface Activity {
+  icon: string;
+  message: string;
+  time: string;
+  iconColor: string;
+}
+
+interface NavItem {
+  icon: string;
+  label: string;
+  route: string;
+  badge?: number;
+}
+
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, TitleCasePipe, NavbarComponent], 
+  imports: [CommonModule, RouterModule],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.css']
 })
-export class AdminDashboardComponent {
+export class AdminDashboardComponent implements OnInit {
+  userRole: 'administrador' | 'estudiante' | 'profesor' = 'administrador';
+  userName: string = 'Carlos Rodríguez';
+  notificationCount: number = 3;
 
-  // Datos para las tarjetas de estadísticas
-  stats = [
-    { value: 156, label: 'Estudiantes', icon: 'fa-solid fa-users', colorClass: 'blue' },
-    { value: 23, label: 'Pendientes', icon: 'fa-regular fa-clock', colorClass: 'yellow' },
-    { value: 12, label: 'Aprobados hoy', icon: 'fa-regular fa-circle-check', colorClass: 'green' },
-    { value: 3, label: 'Rechazados hoy', icon: 'fa-regular fa-circle-xmark', colorClass: 'red' }
+  stats: StatCard[] = [
+    { icon: 'users', value: 156, label: 'Estudiantes', color: '#3b82f6' },
+    { icon: 'clock', value: 23, label: 'Pendientes', color: '#f59e0b' },
+    { icon: 'check', value: 12, label: 'Aprobados hoy', color: '#10b981' },
+    { icon: 'x-circle', value: 3, label: 'Rechazados hoy', color: '#ef4444' }
   ];
 
-  // Datos para las alertas
-  alerts = [
-    { message: '5 documentos vencen en 24 horas', level: 'urgente' },
-    { message: '2 estudiantes sin documentos requeridos', level: 'critico' }
+  alerts: Alert[] = [
+    { message: '5 documentos vencen en 24 horas', severity: 'urgent', bgColor: '#fef3c7' },
+    { message: '2 estudiantes sin documentos requeridos', severity: 'critical', bgColor: '#fee2e2' }
   ];
 
-  // Datos para la actividad reciente
-  activity = [
-    { type: 'upload', text: 'María García subió Certificado de Nacimiento', time: 'hace 2 min' },
-    { type: 'approved', text: 'Aprobaste Constancia de Estudios de Juan Pérez', time: 'hace 15 min' },
-    { type: 'rejected', text: 'Rechazaste Comprobante de Domicilio de Ana López', time: 'hace 1 hora' },
-    { type: 'system', text: 'Carlos Mendoza se registró en el sistema', time: 'hace 3 horas' }
+  recentActivities: Activity[] = [
+    { icon: 'file-text', message: 'María García subió Certificado de Nacimiento', time: 'hace 2 min', iconColor: '#3b82f6' },
+    { icon: 'check-circle', message: 'Aprobaste Constancia de Estudios de Juan Pérez', time: 'hace 15 min', iconColor: '#10b981' },
+    { icon: 'x-circle', message: 'Rechazaste Comprobante de Domicilio de Ana López', time: 'hace 1 hora', iconColor: '#ef4444' },
+    { icon: 'user-plus', message: 'Carlos Mendoza se registró en el sistema', time: 'hace 2 horas', iconColor: '#8b5cf6' }
   ];
 
-  constructor() { }
+  // Navegación dinámica según el rol
+  navigationItems: NavItem[] = [];
 
-  // Funciones para obtener clases de CSS dinámicamente
-  getActivityClass(type: string): string {
-    return `activity-icon ${type}`;
+  constructor(private router: Router) {}
+
+  ngOnInit(): void {
+    this.loadNavigationByRole();
   }
 
-  getActivityIcon(type: string): string {
-    switch (type) {
-      case 'upload': return 'fa-solid fa-arrow-up-from-bracket';
-      case 'approved': return 'fa-solid fa-check';
-      case 'rejected': return 'fa-solid fa-xmark';
-      case 'system': return 'fa-solid fa-user-plus';
-      default: return '';
-    }
+  loadNavigationByRole(): void {
+    const navigationConfig = {
+      administrador: [
+        { icon: 'home', label: 'Inicio', route: '/dashboard', badge: 0 },
+        { icon: 'clock', label: 'Pendientes', route: '/pendientes', badge: 23 },
+        { icon: 'search', label: 'Buscar', route: '/buscar', badge: 0 },
+        { icon: 'folder', label: 'Gestión', route: '/gestion', badge: 0 },
+        { icon: 'user', label: 'Perfil', route: '/perfil', badge: 0 }
+      ],
+      estudiante: [
+        { icon: 'home', label: 'Inicio', route: '/dashboard', badge: 0 },
+        { icon: 'upload', label: 'Mis Documentos', route: '/mis-documentos', badge: 0 },
+        { icon: 'clock', label: 'Pendientes', route: '/pendientes', badge: 5 },
+        { icon: 'user', label: 'Perfil', route: '/perfil', badge: 0 }
+      ],
+      profesor: [
+        { icon: 'home', label: 'Inicio', route: '/dashboard', badge: 0 },
+        { icon: 'users', label: 'Estudiantes', route: '/estudiantes', badge: 0 },
+        { icon: 'clock', label: 'Pendientes', route: '/pendientes', badge: 12 },
+        { icon: 'file-text', label: 'Documentos', route: '/documentos', badge: 0 },
+        { icon: 'user', label: 'Perfil', route: '/perfil', badge: 0 }
+      ]
+    };
+
+    this.navigationItems = navigationConfig[this.userRole];
   }
 
+  navigateTo(route: string): void {
+    this.router.navigate([route]);
+  }
+
+  getIcon(iconName: string): string {
+    const icons: { [key: string]: string } = {
+      'users': 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+      'clock': 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 6v6l4 2',
+      'check': 'M20 6L9 17l-5-5',
+      'x-circle': 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM15 9l-6 6M9 9l6 6',
+      'file-text': 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8',
+      'check-circle': 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM9 12l2 2 4-4',
+      'user-plus': 'M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M12.5 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM20 8v6M23 11h-6',
+      'home': 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
+      'search': 'M11 2a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM21 21l-4.35-4.35',
+      'folder': 'M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z',
+      'user': 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+      'upload': 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12'
+    };
+    return icons[iconName] || icons['file-text'];
+  }
+
+  logout(): void {
+    console.log('Cerrando sesión...');
+    this.router.navigate(['/login']);
+  }
 }

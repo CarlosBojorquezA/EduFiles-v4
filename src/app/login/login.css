@@ -1,148 +1,266 @@
-:host {
+.login-container {
+  min-height: 100vh;
   display: flex;
-  justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: #f7f7f7;
-  font-family: 'Inter', sans-serif;
+  justify-content: center;
+  background-color: #f5f5f5;
+  padding: 20px;
+  font-family: Vegur, 'PT Sans', Verdana, sans-serif;
 }
 
 .login-card {
-  background-color: #ffffff;
-  padding: 40px 30px;
+  background: white;
   border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+  padding: 48px 40px;
   width: 100%;
-  max-width: 400px;
-  text-align: center;
-  box-sizing: border-box;
+  max-width: 480px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.logo-wrapper {
-  background-color: #111827;
-  color: #ffffff;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  display: inline-flex;
+/* Logo */
+.logo {
+  display: flex;
   justify-content: center;
-  align-items: center;
-  margin-bottom: 15px;
-  font-size: 24px;
+  margin-bottom: 24px;
 }
 
-h2 {
-  margin: 0 0 5px 0;
-  font-size: 24px;
-  color: #111827;
+.logo-circle {
+  width: 64px;
+  height: 64px;
+  background-color: #1a1a1a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+/* Title */
+.title {
+  font-size: 22px;
   font-weight: 600;
+  text-align: center;
+  margin: 0 0 8px 0;
+  color: #1a1a1a;
 }
 
 .subtitle {
-  margin: 0 0 25px 0;
-  color: #6b7280;
+  font-size: 15px;
+  color: #666;
+  text-align: center;
+  margin: 0 0 32px 0;
 }
 
+/* Tabs */
 .tabs {
-  width: 100%;
   display: flex;
-  justify-content: space-between;
-  border-bottom: 1px solid #e5e7eb;
-  margin-bottom: 25px;
+  gap: 0;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  padding: 4px;
+  margin-bottom: 28px;
 }
 
-.tabs a {
-  text-decoration: none;
-  color: #6b7280;
-  padding: 10px 15px;
+.tab {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 13px;
   font-weight: 500;
-  border-bottom: 2px solid transparent;
-  transition: all 0.3s ease;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
-.tabs a.active {
-  color: #111827;
-  border-bottom-color: #111827;
+.tab:hover {
+  color: #1a1a1a;
 }
 
-.login-form {
-  width: 100%;
-  text-align: left;
+.tab.active {
+  background-color: white;
+  color: #1a1a1a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Tab Content */
+.tab-content {
+  margin-bottom: 24px;
+}
+
+.info-box {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+}
+
+.info-box svg {
+  flex-shrink: 0;
+  color: #666;
+  margin-top: 1px;
+}
+
+.info-box span {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* Forms */
+.login-form,
+.recovery-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .form-group label {
-  display: block;
-  margin-bottom: 8px;
+  font-size: 13px;
   font-weight: 500;
-  color: #374151;
+  color: #1a1a1a;
+}
+
+.form-input {
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
   font-size: 14px;
+  color: #1a1a1a;
+  background-color: #f8f9fa;
+  transition: all 0.2s ease;
 }
 
-.form-group input {
-  width: 100%;
-  padding: 12px 15px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  background-color: #f9fafb;
-  box-sizing: border-box;
-  font-size: 14px;
+.form-input:focus {
+  outline: none;
+  border-color: #1a1a1a;
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.08);
 }
 
-.form-group input::placeholder {
-  color: #9ca3af;
+.form-input::placeholder {
+  color: #999;
 }
 
-.btn {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+.form-hint {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
+  line-height: 1.4;
 }
 
+/* Buttons */
 .btn-primary {
-  background-color: #111827;
-  color: #ffffff;
-  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 13px 24px;
+  background-color: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 4px;
 }
 
 .btn-primary:hover {
-  background-color: #374151;
+  background-color: #000;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.btn-primary i {
-  margin-right: 8px;
-}
-
-.quick-access {
-  width: 100%;
-  margin-top: 30px;
-}
-
-.quick-access p {
-  color: #6b7280;
-  margin-bottom: 15px;
-  font-size: 14px;
+.btn-primary:active {
+  transform: translateY(0);
 }
 
 .btn-secondary {
-  background-color: #ffffff;
-  color: #374151;
-  border: 1px solid #d1d5db;
-  margin-bottom: 10px;
+  width: 100%;
+  padding: 11px 24px;
+  background-color: white;
+  color: #1a1a1a;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .btn-secondary:hover {
-  background-color: #f9fafb;
+  background-color: #f8f9fa;
+  border-color: #d1d5db;
 }
 
-.btn-secondary:last-child {
-  margin-bottom: 0;
+/* Error Box */
+.error-box {
+  display: flex;
+  gap: 12px;
+  padding: 12px 14px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 13px;
+}
+
+.error-box svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Quick Access */
+.quick-access {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quick-access-label {
+  text-align: center;
+  font-size: 13px;
+  color: #666;
+  margin: 0 0 6px 0;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .login-card {
+    padding: 32px 24px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+  }
+
+  .tab {
+    font-size: 12px;
+    padding: 9px 10px;
+  }
+  
+  .form-input {
+    font-size: 16px; 
+  }
 }

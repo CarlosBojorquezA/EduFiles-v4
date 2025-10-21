@@ -1,42 +1,71 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common'; 
 
 @Component({
   selector: 'app-login',
-  standalone: true, 
-  imports: [CommonModule],
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.html',
-  styleUrl: './login.css'
+  styleUrls: ['./login.css']
 })
-export class Login {
 
-  constructor(private router: Router) { }
+export class LoginComponent {
+  activeTab: 'login' | 'forgot' = 'login';
+  
+  // Login form
+  loginEmail: string = '';
+  loginPassword: string = '';
+  
+  // Recovery form
+  recoveryEmail: string = '';
+  showRecoveryError: boolean = false;
 
-  onLogin(): void {
-    console.log('Inicio de sesión desde formulario (Estudiante)...');
-    this.router.navigate(['/est-dashboard']);
+  constructor(private router: Router) {}
+
+  setActiveTab(tab: 'login' | 'forgot'): void {
+    this.activeTab = tab;
+    this.showRecoveryError = false;
   }
 
-  /**
-   Metodo para manejar los inicios de sesión rápidos.
-   @param role El rol con el que se desea iniciar sesión.
-   */
-  loginAsRole(role: 'estudiante' | 'administrador' | 'profesor'): void {
-    console.log(`Iniciando sesión rápida como: ${role}`);
+  onLogin(): void {
+    if (!this.loginEmail || !this.loginPassword) {
+      console.log('Por favor completa todos los campos');
+      return;
+    }
+    console.log('Iniciar sesión:', { email: this.loginEmail, password: this.loginPassword });
+    // Aquí implementarías la lógica de autenticación
+  }
 
+  onRecoverPassword(): void {
+    if (!this.recoveryEmail || !this.isValidEmailOrPhone(this.recoveryEmail)) {
+      this.showRecoveryError = true;
+      return;
+    }
+    this.showRecoveryError = false;
+    console.log('Recuperar contraseña para:', this.recoveryEmail);
+    // Aquí implementarías la lógica para enviar el correo de recuperación
+  }
+
+  onQuickAccess(role: string): void {
+    console.log('Acceso rápido como:', role);
+    
     switch (role) {
-      case 'estudiante':
-        this.router.navigate(['/est-dashboard']);
-        break;
-      case 'administrador':
+      case 'Administrador':
         this.router.navigate(['/admin-dashboard']);
         break;
-      case 'profesor':
-        // Nota: Esta ruta es un ejemplo. Deberás crearla.
-        console.log('Redirigiendo a la ruta de profesor (ejemplo: /prof-dashboard)');
+      case 'Estudiante':
+        this.router.navigate(['/est-dashboard']);
+        break;
+      case 'Profesor':
         this.router.navigate(['/prof-dashboard']);
         break;
     }
+  }
+  private isValidEmailOrPhone(value: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^\d{3,4}-?\d{3,4}-?\d{4}$/;
+    return emailRegex.test(value) || phoneRegex.test(value);
   }
 }
