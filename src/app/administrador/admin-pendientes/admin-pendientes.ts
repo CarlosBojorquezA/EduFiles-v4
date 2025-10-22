@@ -96,24 +96,23 @@ export class AdminPendientesComponent implements OnInit {
   loadNavigationByRole(): void {
     const navigationConfig = {
       administrador: [
-        { icon: 'home', label: 'Inicio', route: '/dashboard', badge: 0 },
-        { icon: 'clock', label: 'Pendientes', route: '/pendientes', badge: 23 },
-        { icon: 'search', label: 'Buscar', route: '/buscar', badge: 0 },
-        { icon: 'folder', label: 'Gestión', route: '/gestion', badge: 0 },
-        { icon: 'user', label: 'Perfil', route: '/perfil', badge: 0 }
+        { icon: 'home', label: 'Inicio', route: '/admin-dashboard', badge: 0 },
+        { icon: 'clock', label: 'Pendientes', route: '/admin-pendientes', badge: 23 },
+        { icon: 'search', label: 'Buscar', route: '/admin-buscar', badge: 0 },
+        { icon: 'folder', label: 'Gestión', route: '/admin-gestion', badge: 0 },
+        { icon: 'user', label: 'Perfil', route: '/admin-perfil', badge: 0 }
       ],
       estudiante: [
-        { icon: 'home', label: 'Inicio', route: '/dashboard', badge: 0 },
-        { icon: 'upload', label: 'Mis Documentos', route: '/mis-documentos', badge: 0 },
-        { icon: 'clock', label: 'Pendientes', route: '/pendientes', badge: 5 },
-        { icon: 'user', label: 'Perfil', route: '/perfil', badge: 0 }
+        { icon: 'home', label: 'Inicio', route: '/est-dashboard', badge: 0 },
+        { icon: 'upload', label: 'Mis Documentos', route: '/est-documentos', badge: 0 },
+        { icon: 'clock', label: 'Pendientes', route: '/est-pendientes', badge: 5 },
+        { icon: 'user', label: 'Perfil', route: '/est-perfil', badge: 0 }
       ],
       profesor: [
-        { icon: 'home', label: 'Inicio', route: '/dashboard', badge: 0 },
-        { icon: 'users', label: 'Estudiantes', route: '/estudiantes', badge: 0 },
-        { icon: 'clock', label: 'Pendientes', route: '/pendientes', badge: 12 },
-        { icon: 'file-text', label: 'Documentos', route: '/documentos', badge: 0 },
-        { icon: 'user', label: 'Perfil', route: '/perfil', badge: 0 }
+        { icon: 'home', label: 'Inicio', route: '/prof-dashboard', badge: 0 },
+        { icon: 'users', label: 'Estudiantes', route: '/prof-MensEstudiantes', badge: 0 },
+        { icon: 'clock', label: 'Pendientes', route: '/prof-MensPendientes', badge: 12 },
+        { icon: 'user', label: 'Perfil', route: '/est-perfil', badge: 0 }
       ]
     };
 
