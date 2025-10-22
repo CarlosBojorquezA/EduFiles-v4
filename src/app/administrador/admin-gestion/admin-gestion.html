@@ -1,0 +1,685 @@
+<div class="gestion-container">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="user-info">
+        <div class="avatar">
+          <span>{{ userName.charAt(0) }}</span>
+        </div>
+        <div class="user-details">
+          <h3>{{ userName }}</h3>
+          <p>{{ userRole === 'administrador' ? 'Administrador' : userRole === 'estudiante' ? 'Estudiante' : 'Profesor' }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="notification-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span class="badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
+      </button>
+      <button class="logout-btn" (click)="logout()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <h1 class="page-title">Centro de Gestión</h1>
+
+    <!-- Main Tabs -->
+    <div class="main-tabs">
+      <button 
+        class="main-tab"
+        [class.active]="activeMainTab === 'resumen'"
+        (click)="setMainTab('resumen')">
+        Resumen
+      </button>
+      <button 
+        class="main-tab"
+        [class.active]="activeMainTab === 'estudiantes'"
+        (click)="setMainTab('estudiantes')">
+        Estudiantes
+      </button>
+      <button 
+        class="main-tab"
+        [class.active]="activeMainTab === 'profesores'"
+        (click)="setMainTab('profesores')">
+        Profesores
+      </button>
+      <button 
+        class="main-tab"
+        [class.active]="activeMainTab === 'registrar'"
+        (click)="setMainTab('registrar')">
+        Registrar
+      </button>
+    </div>
+
+    <!-- RESUMEN TAB -->
+    <div *ngIf="activeMainTab === 'resumen'" class="tab-content">
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <svg class="stat-icon" style="color: #3b82f6;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"></path>
+          </svg>
+          <div class="stat-info">
+            <h2>{{ totalStudents }}</h2>
+            <p>Estudiantes</p>
+            <span class="stat-label">Total registrados</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <svg class="stat-icon" style="color: #10b981;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+          </svg>
+          <div class="stat-info">
+            <h2>{{ totalProfessors }}</h2>
+            <p>Profesores</p>
+            <span class="stat-label">Personal docente</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <svg class="stat-icon" style="color: #f59e0b;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <div class="stat-info">
+            <h2>{{ pendingRegistrations }}</h2>
+            <p>Pendientes</p>
+            <span class="stat-label">Registros pendientes</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <svg class="stat-icon" style="color: #8b5cf6;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          <div class="stat-info">
+            <h2>{{ activeUsers }}</h2>
+            <p>Activos</p>
+            <span class="stat-label">Usuarios activos</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions-section">
+        <h3>Acciones Rápidas</h3>
+        <div class="quick-actions-list">
+          <button class="quick-action-btn" (click)="setMainTab('registrar'); setRegisterTab('estudiante')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="8.5" cy="7" r="4"></circle>
+              <line x1="20" y1="8" x2="20" y2="14"></line>
+              <line x1="23" y1="11" x2="17" y2="11"></line>
+            </svg>
+            <span>Registrar Nuevo Estudiante</span>
+          </button>
+
+          <button class="quick-action-btn" (click)="setMainTab('registrar'); setRegisterTab('profesor')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+            </svg>
+            <span>Registrar Nuevo Profesor</span>
+          </button>
+
+          <button class="quick-action-btn" (click)="setMainTab('estudiantes')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <span>Buscar Estudiantes</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESTUDIANTES TAB -->
+    <div *ngIf="activeMainTab === 'estudiantes'" class="tab-content">
+
+      <!-- Search Input -->
+      <div class="search-input-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery"
+          placeholder="Buscar por nombre, email o número de cuenta..."
+          class="search-input">
+      </div>
+
+      <!-- Filters -->
+      <div class="filters-grid">
+        <div class="filter-group">
+          <label>Grado</label>
+          <select [(ngModel)]="selectedGrade" class="filter-select">
+            <option value="all">Todos los grados</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Grupo</label>
+          <select [(ngModel)]="selectedGroup" class="filter-select">
+            <option value="all">Todos los grupos</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Estado</label>
+          <select [(ngModel)]="selectedStatus" class="filter-select">
+            <option value="all">Todos los estados</option>
+            <option value="active">Activo</option>
+            <option value="inactive">Inactivo</option>
+            <option value="reentry">Reingreso</option>
+            <option value="new">Nuevo Ingreso</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="results-count">Mostrando {{ filteredStudents.length }} de {{ students.length }} estudiantes</p>
+
+      <!-- Students List -->
+      <div class="users-list">
+        <div class="user-card" *ngFor="let student of filteredStudents" (click)="openStudentInfo(student)">
+          <div class="user-header">
+            <div class="user-main-info">
+              <div class="user-avatar">
+                <span>{{ student.initials }}</span>
+              </div>
+              <div class="user-details">
+                <h3>{{ student.name }}</h3>
+                <p class="user-account">{{ student.accountNumber }}</p>
+                <p class="user-career">{{ student.career }} • {{ student.grade }}°{{ student.group }}</p>
+                <span class="user-email">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                    <polyline points="22,6 12,13 2,6"></polyline>
+                  </svg>
+                  {{ student.email }}
+                </span>
+              </div>
+            </div>
+            <span class="status-badge" 
+              [class.active]="student.status === 'active'" 
+              [class.reentry]="student.status === 'reentry'"
+              [class.new]="student.status === 'new'">
+              {{ student.statusLabel }}
+            </span>
+          </div>
+
+          <!-- Documents Progress -->
+          <div class="documents-progress">
+            <div class="progress-header">
+              <span class="progress-label">Documentos:</span>
+              <span class="progress-fraction">{{ student.documentsCompleted }}/{{ student.documentsTotal }}</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="getDocumentProgressPercentage(student)"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFESORES TAB -->
+    <div *ngIf="activeMainTab === 'profesores'" class="tab-content">
+      <h3 class="section-subtitle">Gestión de Profesores</h3>
+      <p class="section-description">Lista completa del personal docente</p>
+
+      <!-- Professors List -->
+      <div class="professors-list">
+        <div class="professor-card" *ngFor="let professor of professors">
+          <div class="professor-header">
+            <div class="professor-info">
+              <h3>{{ professor.name }}</h3>
+              <p class="professor-title">{{ professor.title }}</p>
+              <p class="professor-department">{{ professor.department }}</p>
+            </div>
+            <span class="status-badge active">Activo</span>
+          </div>
+          <div class="professor-details">
+            <p class="professor-subjects">Materias: {{ professor.subjects }}</p>
+            <p class="professor-email">Email: {{ professor.email }}</p>
+            <p class="professor-start">Inicio: {{ professor.startDate }}</p>
+          </div>
+          <div class="professor-actions">
+            <button class="btn-secondary">Ver Detalles</button>
+            <button class="btn-primary">Editar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGISTRAR TAB -->
+    <div *ngIf="activeMainTab === 'registrar'" class="tab-content">
+      <!-- Register Tabs -->
+      <div class="register-tabs">
+        <button 
+          class="register-tab"
+          [class.active]="activeRegisterTab === 'estudiante'"
+          (click)="setRegisterTab('estudiante')">
+          Registrar Estudiante
+        </button>
+        <button 
+          class="register-tab"
+          [class.active]="activeRegisterTab === 'profesor'"
+          (click)="setRegisterTab('profesor')">
+          Registrar Profesor
+        </button>
+      </div>
+
+      <!-- Register Student Form -->
+      <div *ngIf="activeRegisterTab === 'estudiante'" class="register-form">
+        <h3 class="form-section-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="8.5" cy="7" r="4"></circle>
+            <line x1="20" y1="8" x2="20" y2="14"></line>
+            <line x1="23" y1="11" x2="17" y2="11"></line>
+          </svg>
+          Registro de Nuevo Estudiante
+        </h3>
+
+        <!-- Datos Personales -->
+        <div class="form-section">
+          <h4>Datos Personales</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nombre(s) *</label>
+              <input type="text" [(ngModel)]="newStudent.firstName" placeholder="Ej: María Elena" class="form-input">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Apellido Paterno *</label>
+              <input type="text" [(ngModel)]="newStudent.paternalLastName" placeholder="Ej: García" class="form-input">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Apellido Materno *</label>
+              <input type="text" [(ngModel)]="newStudent.maternalLastName" placeholder="Ej: López" class="form-input">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Fecha de Nacimiento *</label>
+              <input type="text" [(ngModel)]="newStudent.birthDate" placeholder="dd/mm/aaaa" class="form-input">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>CURP *</label>
+              <input type="text" [(ngModel)]="newStudent.curp" placeholder="GAML850925HDFRPR01" class="form-input">
+            </div>
+          </div>
+        </div>
+
+        <!-- Datos de Contacto -->
+        <div class="form-section">
+          <h4>Datos de Contacto</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email *</label>
+              <input type="email" [(ngModel)]="newStudent.email" placeholder="estudiante@email.com" class="form-input">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Teléfono *</label>
+              <input type="tel" [(ngModel)]="newStudent.phone" placeholder="+52 555 123 4567" class="form-input">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Dirección *</label>
+              <input type="text" [(ngModel)]="newStudent.address" placeholder="Calle, número, colonia..." class="form-input">
+            </div>
+          </div>
+          <div class="form-row two-cols">
+            <div class="form-group">
+              <label>Ciudad</label>
+              <input type="text" [(ngModel)]="newStudent.city" placeholder="Ej: Ciudad de México" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>Código Postal</label>
+              <input type="text" [(ngModel)]="newStudent.postalCode" placeholder="12345" class="form-input">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Estado</label>
+              <select [(ngModel)]="newStudent.state" class="form-input">
+                <option value="">Selecciona un estado</option>
+                <option value="cdmx">Ciudad de México</option>
+                <option value="jalisco">Jalisco</option>
+                <option value="nuevo-leon">Nuevo León</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Datos Académicos -->
+        <div class="form-section">
+          <h4>Datos Académicos</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tipo de Estudiante *</label>
+              <div class="radio-group">
+                <label class="radio-label">
+                  <input type="radio" [(ngModel)]="newStudent.studentType" value="new" name="studentType">
+                  <span>Nuevo Ingreso</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" [(ngModel)]="newStudent.studentType" value="reentry" name="studentType">
+                  <span>Reingreso</span>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Programa Académico *</label>
+              <select [(ngModel)]="newStudent.program" class="form-input">
+                <option value="">Selecciona un programa</option>
+                <option value="sistemas">Ingeniería de Sistemas</option>
+                <option value="industrial">Ingeniería Industrial</option>
+                <option value="civil">Ingeniería Civil</option>
+                <option value="arquitectura">Arquitectura</option>
+                <option value="administracion">Administración</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row two-cols">
+            <div class="form-group">
+              <label>Grado *</label>
+              <select [(ngModel)]="newStudent.grade" class="form-input">
+                <option value="">Grado</option>
+                <option value="1">1° Grado</option>
+                <option value="2">2° Grado</option>
+                <option value="3">3° Grado</option>
+                <option value="4">4° Grado</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Grupo *</label>
+              <select [(ngModel)]="newStudent.group" class="form-input">
+                <option value="">Grupo</option>
+                <option value="A">Grupo A</option>
+                <option value="B">Grupo B</option>
+                <option value="C">Grupo C</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Datos del Tutor/Responsable -->
+        <div class="form-section">
+          <h4>Datos del Tutor/Responsable</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nombre Completo del Tutor *</label>
+              <input type="text" [(ngModel)]="newStudent.tutorName" placeholder="Nombre completo del responsable" class="form-input">
+            </div>
+          </div>
+          <div class="form-row two-cols">
+            <div class="form-group">
+              <label>Teléfono del Tutor *</label>
+              <input type="tel" [(ngModel)]="newStudent.tutorPhone" placeholder="+52 555 123 4567" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>Parentesco</label>
+              <select [(ngModel)]="newStudent.relationship" class="form-input">
+                <option value="">Selecciona parentesco</option>
+                <option value="padre">Padre</option>
+                <option value="madre">Madre</option>
+                <option value="tutor">Tutor</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email del Tutor</label>
+              <input type="email" [(ngModel)]="newStudent.tutorEmail" placeholder="tutor@email.com" class="form-input">
+            </div>
+          </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="form-section">
+          <h4>Observaciones</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Observaciones Adicionales</label>
+              <textarea [(ngModel)]="newStudent.observations" placeholder="Cualquier información adicional relevante..." rows="4" class="form-input"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button class="btn-primary-large" (click)="registerNewStudent()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            Registrar Estudiante
+          </button>
+          <button class="btn-secondary-large" (click)="clearForm()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10"></polyline>
+              <polyline points="23 20 23 14 17 14"></polyline>
+              <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+            </svg>
+            Limpiar
+          </button>
+        </div>
+      </div>
+
+      <!-- Register Professor Form (Placeholder) -->
+      <div *ngIf="activeRegisterTab === 'profesor'" class="register-form">
+        <h3 class="form-section-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+          </svg>
+          Registro de Nuevo Profesor
+        </h3>
+        <p class="coming-soon">Formulario de registro de profesores próximamente...</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Student Info Modal -->
+  <div class="modal-overlay" *ngIf="showStudentInfoModal" (click)="closeStudentInfo()">
+    <div class="modal modal-large" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Información del Estudiante</h2>
+        <button class="close-btn" (click)="closeStudentInfo()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body" *ngIf="selectedStudent">
+        <p class="modal-subtitle">Detalles completos del estudiante seleccionado</p>
+        
+        <div class="student-modal-header">
+          <div class="student-modal-avatar">
+            <span>{{ selectedStudent.initials }}</span>
+          </div>
+          <div class="student-modal-info">
+            <h3>{{ selectedStudent.name }}</h3>
+            <p>{{ selectedStudent.accountNumber }}</p>
+            <div class="status-badges">
+              <span class="badge-item" [class.reentry]="selectedStudent.status === 'reentry'" [class.new]="selectedStudent.status === 'new'">
+                {{ selectedStudent.statusLabel }}
+              </span>
+              <span class="badge-item active">Activo</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-sections">
+          <div class="info-section">
+            <p><strong>Programa:</strong> {{ selectedStudent.career }}</p>
+            <p><strong>Grado y Grupo:</strong> {{ selectedStudent.grade }}°{{ selectedStudent.group }}</p>
+            <p><strong>Fecha de registro:</strong> {{ selectedStudent.registrationDate }}</p>
+          </div>
+
+          <div class="info-section">
+            <p><strong>Email:</strong> {{ selectedStudent.email }}</p>
+            <p><strong>Teléfono:</strong> {{ selectedStudent.phone }}</p>
+          </div>
+
+          <div class="info-section" *ngIf="selectedStudent.tutorName">
+            <h4>Datos del Tutor</h4>
+            <p><strong>Nombre:</strong> {{ selectedStudent.tutorName }}</p>
+            <p><strong>Teléfono:</strong> {{ selectedStudent.tutorPhone }}</p>
+          </div>
+
+          <div class="info-section">
+            <h4>Documentos</h4>
+            <p><strong>Documentos:</strong> {{ selectedStudent.documentsCompleted }} de {{ selectedStudent.documentsTotal }} aprobados</p>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="getDocumentProgressPercentage(selectedStudent)"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-primary" (click)="openEditStudent(selectedStudent!)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+          Editar
+        </button>
+        <button class="btn-modal-secondary" (click)="viewDocuments(selectedStudent!)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          Documentos
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Student Modal -->
+  <div class="modal-overlay" *ngIf="showEditStudentModal" (click)="closeEditStudent()">
+    <div class="modal modal-large" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Editar Estudiante: {{ selectedStudent?.name }}</h2>
+        <button class="close-btn" (click)="closeEditStudent()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body" *ngIf="selectedStudent">
+        <p class="modal-subtitle">Modifica los datos del estudiante</p>
+        
+        <div class="form-group">
+          <label>Nombre Completo</label>
+          <input type="text" [(ngModel)]="selectedStudent.name" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" [(ngModel)]="selectedStudent.email" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="tel" [(ngModel)]="selectedStudent.phone" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Programa</label>
+          <input type="text" [(ngModel)]="selectedStudent.career" class="form-input">
+        </div>
+
+        <div class="form-row two-cols">
+          <div class="form-group">
+            <label>Grado</label>
+            <select [(ngModel)]="selectedStudent.grade" class="form-input">
+              <option value="1">1° Grado</option>
+              <option value="2">2° Grado</option>
+              <option value="3">3° Grado</option>
+              <option value="4">4° Grado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Grupo</label>
+            <select [(ngModel)]="selectedStudent.group" class="form-input">
+              <option value="A">Grupo A</option>
+              <option value="B">Grupo B</option>
+              <option value="C">Grupo C</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Estado</label>
+          <select [(ngModel)]="selectedStudent.status" class="form-input">
+            <option value="active">Activo</option>
+            <option value="inactive">Inactivo</option>
+            <option value="reentry">Reingreso</option>
+            <option value="new">Nuevo Ingreso</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-primary" (click)="saveStudentChanges()">Guardar Cambios</button>
+        <button class="btn-modal-cancel" (click)="closeEditStudent()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button 
+      *ngFor="let item of navigationItems" 
+      class="nav-item"
+      [class.active]="item.route === currentRoute"
+      (click)="navigateTo(item.route)">
+      <div class="nav-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path [attr.d]="getIcon(item.icon)"></path>
+        </svg>
+        <span class="nav-badge" *ngIf="item.badge && item.badge > 0">{{ item.badge }}</span>
+      </div>
+      <span class="nav-label">{{ item.label }}</span>
+    </button>
+  </nav>
+</div>

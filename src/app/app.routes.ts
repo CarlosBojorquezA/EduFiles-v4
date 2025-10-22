@@ -6,6 +6,7 @@ import { ProfDashboardComponent } from './profesor/prof-dashboard/prof-dashboard
 import { DocumentosComponent } from './estudiante/est-documentos/est-documentos';
 import { AdminPendientesComponent } from './administrador/admin-pendientes/admin-pendientes';
 import { AdminBuscarComponent } from './administrador/admin-buscar/admin-buscar';
+import { AdminGestionComponent } from './administrador/admin-gestion/admin-gestion';
 
 export const routes: Routes = [
     { path: '', component: LoginComponent },
@@ -13,6 +14,7 @@ export const routes: Routes = [
     { path: 'admin-dashboard', component: AdminDashboardComponent },
     { path: 'admin-pendientes', component: AdminPendientesComponent },
     { path: 'admin-buscar', component: AdminBuscarComponent},
+    { path: 'admin-gestion', component: AdminGestionComponent},
     { path: 'prof-dashboard', component: ProfDashboardComponent },
     { path: 'est-documentos', component: DocumentosComponent}
 
