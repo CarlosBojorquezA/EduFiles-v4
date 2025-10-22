@@ -28,7 +28,7 @@ interface NavItem {
   templateUrl: './admin-pendientes.html',
   styleUrls: ['./admin-pendientes.css']
 })
-export class PendientesComponent implements OnInit {
+export class AdminPendientesComponent implements OnInit {
   userRole: 'administrador' | 'estudiante' | 'profesor' = 'administrador';
   userName: string = 'Carlos Rodríguez';
   notificationCount: number = 5;
@@ -198,6 +198,7 @@ export class PendientesComponent implements OnInit {
 
   logout(): void {
     console.log('Cerrando sesión...');
-    this.router.navigate(['/login']);
+    this.router.navigate(['']);
   }
+
 }

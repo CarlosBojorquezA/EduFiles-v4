@@ -4,14 +4,15 @@ import { estDashboardComponent } from './estudiante/est-dashboard/est-dashboard'
 import { AdminDashboardComponent } from './administrador/admin-dashboard/admin-dashboard';
 import { ProfDashboardComponent } from './profesor/prof-dashboard/prof-dashboard';
 import { DocumentosComponent } from './estudiante/est-documentos/est-documentos';
-import { PendientesComponent } from './administrador/admin-pendientes/admin-pendientes';
-
+import { AdminPendientesComponent } from './administrador/admin-pendientes/admin-pendientes';
+import { AdminBuscarComponent } from './administrador/admin-buscar/admin-buscar';
 
 export const routes: Routes = [
     { path: '', component: LoginComponent },
     { path: 'est-dashboard', component: estDashboardComponent },
     { path: 'admin-dashboard', component: AdminDashboardComponent },
-    { path: 'pendientes', component: PendientesComponent },
+    { path: 'admin-pendientes', component: AdminPendientesComponent },
+    { path: 'admin-buscar', component: AdminBuscarComponent},
     { path: 'prof-dashboard', component: ProfDashboardComponent },
     { path: 'est-documentos', component: DocumentosComponent}
 

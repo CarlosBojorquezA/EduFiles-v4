@@ -1,6 +1,6 @@
 .dashboard-container {
   min-height: 100vh;
-  background-color: #ffffff;
+  background-color: #f5f5f5;
   color: rgb(255, 255, 255);
   padding-bottom: 80px;
   font-family: Vegur, 'PT Sans', Verdana, sans-serif;
@@ -102,6 +102,7 @@
   font-size: 24px;
   font-weight: 600;
   margin: 0 0 24px 0;
+  color:#000000
 }
 
 /* Stats Grid */
@@ -265,11 +266,13 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: #ffffff;
+  background-color: white;
+  border-top: 1px solid #e5e7eb;
   display: flex;
   justify-content: space-around;
   padding: 8px 8px 12px 8px;
   z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .nav-item {
@@ -289,11 +292,12 @@
 }
 
 .nav-item:hover {
-  background-color: rgba(124, 104, 104, 0.05);
+  background-color: rgba(0, 0, 0, 0.03);
 }
 
 .nav-item.active {
-  color: #bdbdbd;
+  color: #1a1a1a;
+  background-color: #f0f0f0;
 }
 
 .nav-icon {
