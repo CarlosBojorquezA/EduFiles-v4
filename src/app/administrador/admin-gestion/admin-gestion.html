@@ -6,7 +6,7 @@
         <div class="avatar">
           <span>{{ userName.charAt(0) }}</span>
         </div>
-        <div class="user-details">
+        <div class="user-details" id="user-details">
           <h3>{{ userName }}</h3>
           <p>{{ userRole === 'administrador' ? 'Administrador' : userRole === 'estudiante' ? 'Estudiante' : 'Profesor' }}</p>
         </div>
@@ -512,7 +512,260 @@
           </svg>
           Registro de Nuevo Profesor
         </h3>
-        <p class="coming-soon">Formulario de registro de profesores próximamente...</p>
+
+        <!-- Datos Personales -->
+        <div class="form-section">
+          <h4>Datos Personales</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nombre(s) *</label>
+              <input type="text" [(ngModel)]="newProfessor.firstName" placeholder="Ej: Ana Elena" class="form-input">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Apellido Paterno *</label>
+              <input type="text" [(ngModel)]="newProfessor.paternalLastName" placeholder="Ej: López" class="form-input">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Apellido Materno *</label>
+              <input type="text" [(ngModel)]="newProfessor.maternalLastName" placeholder="Ej: Mendoza" class="form-input">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Fecha de Nacimiento *</label>
+              <input type="text" [(ngModel)]="newProfessor.birthDate" placeholder="dd/mm/aaaa" class="form-input">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>CURP *</label>
+              <input type="text" [(ngModel)]="newProfessor.curp" placeholder="LOAM750925HDFRPR01" class="form-input">
+            </div>
+          </div>
+        </div>
+
+        <!-- Datos de Contacto -->
+        <div class="form-section">
+          <h4>Datos de Contacto</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email Institucional *</label>
+              <input type="email" [(ngModel)]="newProfessor.institutionalEmail" placeholder="profesor@universidad.edu" class="form-input">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email Personal</label>
+              <input type="email" [(ngModel)]="newProfessor.personalEmail" placeholder="personal@email.com" class="form-input">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Teléfono *</label>
+              <input type="tel" [(ngModel)]="newProfessor.phone" placeholder="+52 555 123 4567" class="form-input">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Dirección</label>
+              <input type="text" [(ngModel)]="newProfessor.address" placeholder="Calle, número, colonia..." class="form-input">
+            </div>
+          </div>
+          <div class="form-row two-cols">
+            <div class="form-group">
+              <label>Ciudad</label>
+              <input type="text" [(ngModel)]="newProfessor.city" placeholder="Ej: Ciudad de México" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>Código Postal</label>
+              <input type="text" [(ngModel)]="newProfessor.postalCode" placeholder="12345" class="form-input">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Estado</label>
+              <select [(ngModel)]="newProfessor.state" class="form-input">
+                <option value="">Selecciona un estado</option>
+                <option value="cdmx">Ciudad de México</option>
+                <option value="jalisco">Jalisco</option>
+                <option value="nuevo-leon">Nuevo León</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Datos Profesionales -->
+        <div class="form-section">
+          <h4>Datos Profesionales</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Departamento *</label>
+              <select [(ngModel)]="newProfessor.department" class="form-input">
+                <option value="">Selecciona un departamento</option>
+                <option value="ciencias-exactas">Ciencias Exactas</option>
+                <option value="ingenieria">Ingeniería</option>
+                <option value="humanidades">Humanidades</option>
+                <option value="ciencias-sociales">Ciencias Sociales</option>
+                <option value="artes">Artes</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Puesto *</label>
+              <select [(ngModel)]="newProfessor.position" class="form-input">
+                <option value="">Selecciona un puesto</option>
+                <option value="profesor-titular">Profesor Titular</option>
+                <option value="profesor-asociado">Profesor Asociado</option>
+                <option value="profesor-auxiliar">Profesor Auxiliar</option>
+                <option value="profesor-invitado">Profesor Invitado</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tipo de Contrato *</label>
+              <select [(ngModel)]="newProfessor.contractType" class="form-input">
+                <option value="">Selecciona tipo de contrato</option>
+                <option value="tiempo-completo">Tiempo Completo</option>
+                <option value="medio-tiempo">Medio Tiempo</option>
+                <option value="por-horas">Por Horas</option>
+                <option value="temporal">Temporal</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row two-cols">
+            <div class="form-group">
+              <label>Fecha de Inicio *</label>
+              <input type="text" [(ngModel)]="newProfessor.startDate" placeholder="dd/mm/aaaa" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>Salario Mensual</label>
+              <input type="text" [(ngModel)]="newProfessor.monthlySalary" placeholder="$25,000.00" class="form-input">
+            </div>
+          </div>
+        </div>
+
+        <!-- Datos Académicos -->
+        <div class="form-section">
+          <h4>Datos Académicos</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nivel Educativo *</label>
+              <select [(ngModel)]="newProfessor.educationLevel" class="form-input">
+                <option value="">Selecciona nivel educativo</option>
+                <option value="licenciatura">Licenciatura</option>
+                <option value="maestria">Maestría</option>
+                <option value="doctorado">Doctorado</option>
+                <option value="posdoctorado">Posdoctorado</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Especialización/Área de Estudios</label>
+              <input type="text" [(ngModel)]="newProfessor.specialization" placeholder="Ej: Matemáticas Aplicadas; Literatura Contemporánea..." class="form-input">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Materias que puede impartir *</label>
+              <div class="checkbox-grid">
+                <label class="checkbox-label" *ngFor="let subject of availableSubjects">
+                  <input type="checkbox" 
+                    [checked]="isSubjectSelected(subject)"
+                    (change)="toggleSubject(subject)">
+                  <span>{{ subject }}</span>
+                </label>
+              </div>
+              <p class="selected-count">Materias seleccionadas: {{ newProfessor.subjects.length }}</p>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Años de Experiencia</label>
+              <input type="text" [(ngModel)]="newProfessor.yearsExperience" placeholder="Ej: 5 años" class="form-input">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Certificaciones y Logros</label>
+              <textarea [(ngModel)]="newProfessor.certifications" placeholder="Certificaciones, cursos, publicaciones, reconocimientos..." rows="3" class="form-input"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Horarios y Disponibilidad -->
+        <div class="form-section">
+          <h4>Horarios y Disponibilidad</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Horario Preferido</label>
+              <select [(ngModel)]="newProfessor.preferredSchedule" class="form-input">
+                <option value="">Selecciona horario preferido</option>
+                <option value="matutino">Matutino (7:00 - 13:00)</option>
+                <option value="vespertino">Vespertino (13:00 - 19:00)</option>
+                <option value="nocturno">Nocturno (19:00 - 22:00)</option>
+                <option value="mixto">Mixto</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Días disponibles</label>
+              <div class="checkbox-grid days-grid">
+                <label class="checkbox-label" *ngFor="let day of availableDays">
+                  <input type="checkbox" 
+                    [checked]="isDaySelected(day.value)"
+                    (change)="toggleDay(day.value)">
+                  <span>{{ day.label }}</span>
+                </label>
+              </div>
+              <p class="selected-count">Días seleccionados: {{ newProfessor.availableDays.length }}</p>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Máximo de Horas por Semana</label>
+              <input type="text" [(ngModel)]="newProfessor.maxHoursPerWeek" placeholder="Ej: 40" class="form-input">
+            </div>
+          </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="form-section">
+          <h4>Observaciones</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Observaciones Adicionales</label>
+              <textarea [(ngModel)]="newProfessor.observations" placeholder="Cualquier información adicional relevante..." rows="4" class="form-input"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button class="btn-primary-large" (click)="registerNewProfessor()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            Registrar Profesor
+          </button>
+          <button class="btn-secondary-large" (click)="clearForm()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10"></polyline>
+              <polyline points="23 20 23 14 17 14"></polyline>
+              <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+            </svg>
+            Limpiar
+          </button>
+        </div>
       </div>
     </div>
   </main>

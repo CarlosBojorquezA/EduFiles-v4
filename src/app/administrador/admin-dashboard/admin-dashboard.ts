@@ -76,13 +76,12 @@ export class AdminDashboardComponent implements OnInit {
       administrador: [
         { icon: 'home', label: 'Inicio', route: '/admin-dashboard', badge: 0 },
         { icon: 'clock', label: 'Pendientes', route: '/admin-pendientes', badge: 23 },
-        { icon: 'search', label: 'Buscar', route: '/admin-buscar', badge: 0 },
         { icon: 'folder', label: 'Gestión', route: '/admin-gestion', badge: 0 },
         { icon: 'user', label: 'Perfil', route: '/admin-perfil', badge: 0 }
       ],
       estudiante: [
         { icon: 'home', label: 'Inicio', route: '/est-dashboard', badge: 0 },
-        { icon: 'upload', label: 'Mis Documentos', route: '/est-documentos', badge: 0 },
+        { icon: 'upload', label: 'Documentos', route: '/est-documentos', badge: 0 },
         { icon: 'clock', label: 'Pendientes', route: '/est-pendientes', badge: 5 },
         { icon: 'user', label: 'Perfil', route: '/est-perfil', badge: 0 }
       ],

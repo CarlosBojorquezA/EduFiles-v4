@@ -39,10 +39,11 @@
   font-size: 16px;
 }
 
-.user-details h3 {
+#user-details > h3 {
   margin: 0;
   font-size: 15px;
   font-weight: 600;
+  color: white;
 }
 
 .user-details p {
@@ -102,7 +103,7 @@
   font-size: 24px;
   font-weight: 600;
   margin: 0 0 20px 0;
-  color: #1a1a1a;
+  color: #000000;
 }
 
 /* Section Title */
@@ -124,7 +125,7 @@
 .section-title span {
   font-size: 15px;
   font-weight: 500;
-  color: #1a1a1a;
+  color: #ffffff;
 }
 
 /* Main Tabs */

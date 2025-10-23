@@ -98,6 +98,62 @@ export class AdminGestionComponent implements OnInit {
     observations: ''
   };
 
+  newProfessor = {
+    firstName: '',
+    paternalLastName: '',
+    maternalLastName: '',
+    birthDate: '',
+    curp: '',
+    institutionalEmail: '',
+    personalEmail: '',
+    phone: '',
+    address: '',
+    city: '',
+    postalCode: '',
+    state: '',
+    department: '',
+    position: '',
+    contractType: '',
+    startDate: '',
+    monthlySalary: '',
+    educationLevel: '',
+    specialization: '',
+    subjects: [] as string[],
+    yearsExperience: '',
+    certifications: '',
+    preferredSchedule: '',
+    availableDays: [] as string[],
+    maxHoursPerWeek: '',
+    observations: ''
+  };
+
+  // Available subjects for professors
+  availableSubjects = [
+    'Matemáticas',
+    'Química',
+    'Historia',
+    'Filosofía',
+    'Sociología',
+    'Metodología',
+    'Física',
+    'Biología',
+    'Literatura',
+    'Psicología',
+    'Economía',
+    'Contabilidad'
+  ];
+
+  // Available days
+  availableDays = [
+    { value: 'lunes', label: 'Lunes' },
+    { value: 'martes', label: 'Martes' },
+    { value: 'miercoles', label: 'Miércoles' },
+    { value: 'jueves', label: 'Jueves' },
+    { value: 'viernes', label: 'Viernes' },
+    { value: 'sabado', label: 'Sábado' },
+    { value: 'domingo', label: 'Domingo' }
+  ];
+
   // Mock data
   students: Student[] = [
     {
@@ -223,13 +279,12 @@ export class AdminGestionComponent implements OnInit {
       administrador: [
         { icon: 'home', label: 'Inicio', route: '/admin-dashboard', badge: 0 },
         { icon: 'clock', label: 'Pendientes', route: '/admin-pendientes', badge: 23 },
-        { icon: 'search', label: 'Buscar', route: '/admin-buscar', badge: 0 },
         { icon: 'folder', label: 'Gestión', route: '/admin-gestion', badge: 0 },
         { icon: 'user', label: 'Perfil', route: '/admin-perfil', badge: 0 }
       ],
       estudiante: [
         { icon: 'home', label: 'Inicio', route: '/est-dashboard', badge: 0 },
-        { icon: 'upload', label: 'Mis Documentos', route: '/est-documentos', badge: 0 },
+        { icon: 'upload', label: 'Documentos', route: '/est-documentos', badge: 0 },
         { icon: 'clock', label: 'Pendientes', route: '/est-pendientes', badge: 5 },
         { icon: 'user', label: 'Perfil', route: '/est-perfil', badge: 0 }
       ],
@@ -303,29 +358,91 @@ export class AdminGestionComponent implements OnInit {
     // Implementar lógica de registro
   }
 
+  registerNewProfessor(): void {
+    console.log('Registrar nuevo profesor:', this.newProfessor);
+    // Implementar lógica de registro
+  }
+
   clearForm(): void {
-    this.newStudent = {
-      firstName: '',
-      paternalLastName: '',
-      maternalLastName: '',
-      birthDate: '',
-      curp: '',
-      email: '',
-      phone: '',
-      address: '',
-      city: '',
-      postalCode: '',
-      state: '',
-      studentType: 'new',
-      program: '',
-      grade: '',
-      group: '',
-      tutorName: '',
-      tutorPhone: '',
-      tutorEmail: '',
-      relationship: '',
-      observations: ''
-    };
+    if (this.activeRegisterTab === 'estudiante') {
+      this.newStudent = {
+        firstName: '',
+        paternalLastName: '',
+        maternalLastName: '',
+        birthDate: '',
+        curp: '',
+        email: '',
+        phone: '',
+        address: '',
+        city: '',
+        postalCode: '',
+        state: '',
+        studentType: 'new',
+        program: '',
+        grade: '',
+        group: '',
+        tutorName: '',
+        tutorPhone: '',
+        tutorEmail: '',
+        relationship: '',
+        observations: ''
+      };
+    } else {
+      this.newProfessor = {
+        firstName: '',
+        paternalLastName: '',
+        maternalLastName: '',
+        birthDate: '',
+        curp: '',
+        institutionalEmail: '',
+        personalEmail: '',
+        phone: '',
+        address: '',
+        city: '',
+        postalCode: '',
+        state: '',
+        department: '',
+        position: '',
+        contractType: '',
+        startDate: '',
+        monthlySalary: '',
+        educationLevel: '',
+        specialization: '',
+        subjects: [],
+        yearsExperience: '',
+        certifications: '',
+        preferredSchedule: '',
+        availableDays: [],
+        maxHoursPerWeek: '',
+        observations: ''
+      };
+    }
+  }
+
+  toggleSubject(subject: string): void {
+    const index = this.newProfessor.subjects.indexOf(subject);
+    if (index > -1) {
+      this.newProfessor.subjects.splice(index, 1);
+    } else {
+      this.newProfessor.subjects.push(subject);
+    }
+  }
+
+  isSubjectSelected(subject: string): boolean {
+    return this.newProfessor.subjects.includes(subject);
+  }
+
+  toggleDay(day: string): void {
+    const index = this.newProfessor.availableDays.indexOf(day);
+    if (index > -1) {
+      this.newProfessor.availableDays.splice(index, 1);
+    } else {
+      this.newProfessor.availableDays.push(day);
+    }
+  }
+
+  isDaySelected(day: string): boolean {
+    return this.newProfessor.availableDays.includes(day);
   }
 
   getDocumentProgressPercentage(student: Student): number {
@@ -355,3 +472,4 @@ export class AdminGestionComponent implements OnInit {
     this.router.navigate(['']);
   }
 }
+
