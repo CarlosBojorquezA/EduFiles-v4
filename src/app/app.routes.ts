@@ -7,15 +7,17 @@ import { AdminGestionComponent } from './administrador/admin-gestion/admin-gesti
 import { AdminPerfilComponent } from './administrador/admin-perfil/admin-perfil';
 import { ProfDashboardComponent } from './profesor/prof-dashboard/prof-dashboard';
 import { EstDocumentosComponent } from './estudiante/est-documentos/est-documentos';
+import { EstProfesoresComponent } from './estudiante/est-profesores/est-profesores';
 
 export const routes: Routes = [
     { path: '', component: LoginComponent },
     { path: 'est-dashboard', component: EstDashboardComponent },
+    { path: 'est-documentos', component: EstDocumentosComponent},
+    { path: 'est-profesores', component: EstProfesoresComponent},
     { path: 'admin-dashboard', component: AdminDashboardComponent },
     { path: 'admin-pendientes', component: AdminPendientesComponent },
-    { path: 'admin-gestion', component: AdminGestionComponent},
-    { path: 'admin-perfil', component: AdminPerfilComponent},
-    { path: 'prof-dashboard', component: ProfDashboardComponent },
-    { path: 'est-documentos', component: EstDocumentosComponent}
-
+    { path: 'admin-gestion', component: AdminGestionComponent },
+    { path: 'admin-perfil', component: AdminPerfilComponent },
+    { path: 'prof-dashboard', component: ProfDashboardComponent }
+    
 ];

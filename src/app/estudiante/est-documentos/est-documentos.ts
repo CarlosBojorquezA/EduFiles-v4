@@ -173,7 +173,7 @@ export class EstDocumentosComponent implements OnInit {
     this.navigationItems = [
       { icon: 'home', label: 'Inicio', route: '/est-dashboard', badge: 0 },
       { icon: 'file-text', label: 'Documentos', route: '/est-documentos', badge: 0 },
-      { icon: 'users', label: 'Maestros', route: '/est-maestros', badge: 0 },
+      { icon: 'users', label: 'Profesores', route: '/est-profesores', badge: 0 },
       { icon: 'user', label: 'Perfil', route: '/est-perfil', badge: 0 }
     ];
   }
