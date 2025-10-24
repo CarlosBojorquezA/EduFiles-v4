@@ -89,11 +89,11 @@ export class AdminPendientesComponent implements OnInit {
   constructor(private router: Router) {}
 
   ngOnInit(): void {
-    this.loadNavigationByRole();
+    this.loadNavigation();
     this.currentRoute = this.router.url;
   }
 
-  loadNavigationByRole(): void {
+  loadNavigation(): void {
     const navigationConfig = {
       administrador: [
         { icon: 'home', label: 'Inicio', route: '/admin-dashboard', badge: 0 },
