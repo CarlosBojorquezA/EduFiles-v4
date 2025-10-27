@@ -19,7 +19,7 @@ interface Message {
   id: string;
   sender: 'student' | 'professor';
   text: string;
-  time: string;
+  timestamp: string;
 }
 
 interface NavItem {
@@ -30,7 +30,7 @@ interface NavItem {
 }
 
 @Component({
-  selector: 'app-est-profesores',
+  selector: 'app-est-maestros',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './est-profesores.html',
@@ -43,11 +43,13 @@ export class EstProfesoresComponent implements OnInit {
   userCareer: string = 'Ingeniería de Sistemas';
   userGradeGroup: string = '2°A';
   notificationCount: number = 3;
-  currentRoute: string = '/est-profesores';
+  currentRoute: string = '/est-maestros';
+
+  // Views
+  currentView: 'list' | 'chat' | 'profile' = 'list';
+  selectedProfessor: Professor | null = null;
 
   // Chat
-  showChatModal: boolean = false;
-  selectedProfessor: Professor | null = null;
   newMessage: string = '';
   messages: Message[] = [];
 
@@ -106,92 +108,11 @@ export class EstProfesoresComponent implements OnInit {
     ];
   }
 
-  openProfessorProfile(professor: Professor, event: Event): void {
-    // Verificar que no se hizo clic en el botón de chat
-    const target = event.target as HTMLElement;
-    if (target.closest('.btn-chat')) {
-      return;
-    }
-    
-    console.log('Abrir perfil del profesor:', professor);
-    // Aquí navegarías a la vista de perfil del profesor
-    // this.router.navigate(['/est-profesor-perfil', professor.id]);
-  }
-
-  openChat(professor: Professor, event: Event): void {
-    event.stopPropagation();
-    this.selectedProfessor = professor;
-    this.loadMessages(professor.id);
-    this.showChatModal = true;
-    
-    // Marcar mensajes como leídos
-    professor.unreadMessages = 0;
-  }
-
-  closeChat(): void {
-    this.showChatModal = false;
+  backToList(): void {
+    this.currentView = 'list';
     this.selectedProfessor = null;
     this.messages = [];
     this.newMessage = '';
-  }
-
-  loadMessages(professorId: string): void {
-    // Mensajes de ejemplo según el profesor
-    if (professorId === '1') {
-      this.messages = [
-        {
-          id: '1',
-          sender: 'student',
-          text: 'Profesor, tengo una duda sobre el documento de CURP que subí',
-          time: '03:30'
-        },
-        {
-          id: '2',
-          sender: 'professor',
-          text: 'Hola Juan, ¿cuál es tu duda específica sobre el CURP?',
-          time: '03:35'
-        },
-        {
-          id: '3',
-          sender: 'student',
-          text: 'El archivo se ve un poco borroso, ¿debería subirlo de nuevo?',
-          time: '03:40'
-        }
-      ];
-    } else {
-      this.messages = [];
-    }
-  }
-
-  sendMessage(): void {
-    if (!this.newMessage.trim() || !this.selectedProfessor) {
-      return;
-    }
-
-    const currentTime = new Date();
-    const hours = currentTime.getHours().toString().padStart(2, '0');
-    const minutes = currentTime.getMinutes().toString().padStart(2, '0');
-
-    const message: Message = {
-      id: Date.now().toString(),
-      sender: 'student',
-      text: this.newMessage,
-      time: `${hours}:${minutes}`
-    };
-
-    this.messages.push(message);
-    this.newMessage = '';
-
-    // Simular respuesta del profesor después de 2 segundos
-    setTimeout(() => {
-      const responseMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        sender: 'professor',
-        text: 'Gracias por tu mensaje, te responderé pronto.',
-        time: `${hours}:${parseInt(minutes) + 1}`
-      };
-      this.messages.push(responseMessage);
-    }, 2000);
   }
 
   navigateTo(route: string): void {
@@ -203,11 +124,10 @@ export class EstProfesoresComponent implements OnInit {
     const icons: { [key: string]: string } = {
       'home': 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
       'file-text': 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8',
-      'search': 'M11 2a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM21 21l-4.35-4.35',
       'users': 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
       'user': 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'
     };
-    return icons[iconName] || icons['file-text'];
+    return icons[iconName] || icons['users'];
   }
 
   logout(): void {
