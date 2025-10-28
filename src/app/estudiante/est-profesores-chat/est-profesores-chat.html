@@ -1,1 +1,120 @@
-<p>est-profesores-chat works!</p>
+<div class="chat-container">
+  <!-- Header -->
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <button class="back-btn" *ngIf="currentView !== 'list'" (click)="backToList()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </button>
+      <div class="user-info" *ngIf="currentView === 'list'">
+        <div class="avatar">
+          <span>{{ userName.substring(0, 2).toUpperCase() }}</span>
+        </div>
+        <div class="user-details">
+          <h3>{{ userName }}</h3>
+          <p class="user-role">{{ userRole === 'estudiante' ? 'Estudiante' : 'Usuario' }} • {{ userAccountNumber }}</p>
+          <p class="user-career">{{ userCareer }} • {{ userGradeGroup }}</p>
+        </div>
+      </div>
+      <div class="professor-info" *ngIf="currentView !== 'list' && selectedProfessor">
+        <div class="professor-avatar">
+          <span>{{ selectedProfessor.initials }}</span>
+        </div>
+        <div class="professor-details">
+          <h3>{{ selectedProfessor.name }}</h3>
+          <p class="professor-subject">
+            {{ selectedProfessor.subject }}
+            <span class="status-dot" *ngIf="currentView === 'chat'" [class.online]="selectedProfessor.status === 'online'"></span>
+            <span class="status-text" *ngIf="currentView === 'chat'">{{ selectedProfessor.status === 'online' ? 'En línea' : '' }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="notification-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span class="badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
+      </button>
+      <button class="logout-btn" (click)="logout()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Page indicator -->
+  <div class="page-indicator">
+    {{ currentPage }}/{{ totalPages }}
+  </div>
+
+  <!-- Messages Container -->
+  <div class="messages-container" #messagesContainer>
+    <div class="messages-wrapper">
+      <div 
+        *ngFor="let message of messages" 
+        class="message-group"
+        [class.sent]="message.sender === 'student'"
+        [class.received]="message.sender === 'teacher'">
+        
+        <div class="message-bubble">
+          <div class="message-header" *ngIf="message.sender === 'teacher'">
+            {{ teacher.name.split(' ')[1] || teacher.name }}
+          </div>
+          <p class="message-content">{{ message.content }}</p>
+          <span class="message-time">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+            {{ formatTime(message.timestamp) }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message Input -->
+  <div class="message-input-container">
+    <input 
+      type="text" 
+      class="message-input"
+      placeholder="Escribe un mensaje..."
+      [(ngModel)]="newMessage"
+      (keyup.enter)="sendMessage()"
+    />
+    <button 
+      class="send-button" 
+      (click)="sendMessage()"
+      [disabled]="!newMessage.trim()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button 
+      *ngFor="let item of navigationItems" 
+      class="nav-item"
+      [class.active]="item.route === currentRoute"
+      (click)="navigateTo(item.route)">
+      <div class="nav-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path [attr.d]="getIcon(item.icon)"></path>
+        </svg>
+        <span class="nav-badge" *ngIf="item.badge && item.badge > 0">{{ item.badge }}</span>
+      </div>
+      <span class="nav-label">{{ item.label }}</span>
+    </button>
+  </nav>
+</div>

@@ -94,6 +94,10 @@ export class EstProfesoresComponent implements OnInit {
 
   constructor(private router: Router) {}
 
+  irAlChat(): void {
+    this.router.navigate(['/est-profesores-chat']);
+  }
+
   ngOnInit(): void {
     this.loadNavigation();
     this.currentRoute = this.router.url;
