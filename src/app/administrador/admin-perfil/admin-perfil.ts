@@ -215,7 +215,6 @@ export class AdminPerfilComponent implements OnInit {
   }
 
   logout(): void {
-    console.log('Cerrando sesión...');
     this.router.navigate(['']);
   }
 }

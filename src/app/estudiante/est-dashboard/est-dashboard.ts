@@ -171,7 +171,6 @@ export class EstDashboardComponent implements OnInit {
   }
 
   logout(): void {
-    console.log('Cerrando sesión...');
     this.router.navigate(['']);
   }
 }

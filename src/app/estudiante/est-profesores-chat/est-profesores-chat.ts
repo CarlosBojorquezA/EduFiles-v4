@@ -123,10 +123,6 @@ export class ChatProfesorComponent implements OnInit, AfterViewChecked {
     }
   }
 
-  goBack(): void {
-    this.router.navigate(['/estudiante/maestros']);
-  }
-
   sendMessage(): void {
     if (this.newMessage.trim()) {
       const message: Message = {
@@ -141,7 +137,6 @@ export class ChatProfesorComponent implements OnInit, AfterViewChecked {
       this.newMessage = '';
       this.shouldScrollToBottom = true;
 
-      // Aquí enviarías el mensaje al backend
       // this.chatService.sendMessage(this.teacher.id, message).subscribe();
     }
   }
@@ -183,7 +178,6 @@ export class ChatProfesorComponent implements OnInit, AfterViewChecked {
   }
 
   logout(): void {
-    console.log('Cerrando sesión...');
     this.router.navigate(['']);
   }
 

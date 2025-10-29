@@ -9,6 +9,7 @@ import { ProfDashboardComponent } from './profesor/prof-dashboard/prof-dashboard
 import { EstDocumentosComponent } from './estudiante/est-documentos/est-documentos';
 import { EstProfesoresComponent } from './estudiante/est-profesores/est-profesores';
 import { ChatProfesorComponent } from './estudiante/est-profesores-chat/est-profesores-chat';
+import { EstPerfilComponent } from './estudiante/est-perfil/est-perfil';
 
 export const routes: Routes = [
     { path: '', component: LoginComponent },
@@ -16,6 +17,7 @@ export const routes: Routes = [
     { path: 'est-documentos', component: EstDocumentosComponent},
     { path: 'est-profesores', component: EstProfesoresComponent},
     { path: 'est-profesores-chat', component: ChatProfesorComponent},
+    { path: 'est-perfil', component: EstPerfilComponent},
     { path: 'admin-dashboard', component: AdminDashboardComponent },
     { path: 'admin-pendientes', component: AdminPendientesComponent },
     { path: 'admin-gestion', component: AdminGestionComponent },

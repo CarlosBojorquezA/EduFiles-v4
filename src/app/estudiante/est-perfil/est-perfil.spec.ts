@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EstPerfil } from './est-perfil';
+import { EstPerfilComponent } from './est-perfil';
 
 describe('EstPerfil', () => {
-  let component: EstPerfil;
-  let fixture: ComponentFixture<EstPerfil>;
+  let component: EstPerfilComponent;
+  let fixture: ComponentFixture<EstPerfilComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EstPerfil]
+      imports: [EstPerfilComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(EstPerfil);
+    fixture = TestBed.createComponent(EstPerfilComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
