@@ -282,8 +282,6 @@ export class EstDocumentosComponent implements OnInit {
       form: this.uploadForm
     });
 
-    // Aquí implementarías la lógica para subir el archivo al backend
-
     alert('Documento subido exitosamente');
     this.closeUploadModal();
   }

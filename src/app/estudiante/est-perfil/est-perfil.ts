@@ -36,19 +36,18 @@ export class EstPerfilComponent implements OnInit {
     position: 'Coordinador de Documentos'
   };
 
-  // Tabs
+  // apartados
   activeTab: 'contacto' | 'seguridad' = 'contacto';  
 
-  // Edit mode
   isEditingContact: boolean = false;
   originalProfile: any = null;
 
-  // Security data
+  // apartado de seguridad
   lastPasswordUpdate: string = 'hace 30 días';
   twoFactorEnabled: boolean = false;
   activeSessions: number = 1;
 
-  // Change password modal
+  // modal de cambio de contraseña
   showChangePasswordModal: boolean = false;
   showVerificationModal: boolean = false;
   passwordForm = {
@@ -57,7 +56,7 @@ export class EstPerfilComponent implements OnInit {
     confirmPassword: ''
   };
   verificationCode: string = '';
-  generatedCode: string = ''; // En producción vendría del backend
+  generatedCode: string = '';
 
   navigationItems: NavItem[] = [];
 
@@ -100,7 +99,6 @@ export class EstPerfilComponent implements OnInit {
 
   saveContactChanges(): void {
     console.log('Guardar cambios de contacto:', this.userProfile);
-    // Aquí implementarías la lógica para guardar en el backend
     this.isEditingContact = false;
     this.originalProfile = null;
   }
@@ -162,12 +160,11 @@ export class EstPerfilComponent implements OnInit {
       return;
     }
 
-    // Verificar código (en producción se verificaría con el backend)
+    // Verificar código (al menos eso haria el backend)
     if (this.verificationCode === this.generatedCode) {
       console.log('Código verificado correctamente');
       console.log('Cambiando contraseña...');
       
-      // Aquí implementarías la lógica real para cambiar la contraseña
       alert('¡Contraseña cambiada exitosamente!');
       
       this.closeVerificationModal();
@@ -179,12 +176,10 @@ export class EstPerfilComponent implements OnInit {
 
   configureTwoFactor(): void {
     console.log('Configurar autenticación de dos factores');
-    // Aquí implementarías la lógica para configurar 2FA
   }
 
   viewActiveSessions(): void {
     console.log('Ver detalles de sesiones activas');
-    // Aquí implementarías la lógica para mostrar sesiones activas
   }
 
   navigateTo(route: string): void {

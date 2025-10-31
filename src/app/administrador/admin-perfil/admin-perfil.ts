@@ -54,7 +54,7 @@ export class AdminPerfilComponent implements OnInit {
     confirmPassword: ''
   };
   verificationCode: string = '';
-  generatedCode: string = ''; // En producción vendría del backend
+  generatedCode: string = ''; // vendría del backend
 
   navigationItems: NavItem[] = [];
 
@@ -69,7 +69,7 @@ export class AdminPerfilComponent implements OnInit {
     const navigationConfig = {
       administrador: [
         { icon: 'home', label: 'Inicio', route: '/admin-dashboard', badge: 0 },
-        { icon: 'clock', label: 'Pendientes', route: '/admin-pendientes', badge: 23 },
+        { icon: 'file-text', label: 'Documentos', route: '/admin-documentos', badge: 23 },
         { icon: 'folder', label: 'Gestión', route: '/admin-gestion', badge: 0 },
         { icon: 'user', label: 'Perfil', route: '/admin-perfil', badge: 0 }
       ],
@@ -109,7 +109,6 @@ export class AdminPerfilComponent implements OnInit {
 
   saveContactChanges(): void {
     console.log('Guardar cambios de contacto:', this.userProfile);
-    // Aquí implementarías la lógica para guardar en el backend
     this.isEditingContact = false;
     this.originalProfile = null;
   }
@@ -171,12 +170,10 @@ export class AdminPerfilComponent implements OnInit {
       return;
     }
 
-    // Verificar código (en producción se verificaría con el backend)
     if (this.verificationCode === this.generatedCode) {
       console.log('Código verificado correctamente');
       console.log('Cambiando contraseña...');
       
-      // Aquí implementarías la lógica real para cambiar la contraseña
       alert('¡Contraseña cambiada exitosamente!');
       
       this.closeVerificationModal();
@@ -188,12 +185,10 @@ export class AdminPerfilComponent implements OnInit {
 
   configureTwoFactor(): void {
     console.log('Configurar autenticación de dos factores');
-    // Aquí implementarías la lógica para configurar 2FA
   }
 
   viewActiveSessions(): void {
     console.log('Ver detalles de sesiones activas');
-    // Aquí implementarías la lógica para mostrar sesiones activas
   }
 
   navigateTo(route: string): void {

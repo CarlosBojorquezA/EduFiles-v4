@@ -278,7 +278,7 @@ export class AdminGestionComponent implements OnInit {
     const navigationConfig = {
       administrador: [
         { icon: 'home', label: 'Inicio', route: '/admin-dashboard', badge: 0 },
-        { icon: 'clock', label: 'Pendientes', route: '/admin-pendientes', badge: 23 },
+        { icon: 'file-text', label: 'Documentos', route: '/admin-documentos', badge: 23 },
         { icon: 'folder', label: 'Gestión', route: '/admin-gestion', badge: 0 },
         { icon: 'user', label: 'Perfil', route: '/admin-perfil', badge: 0 }
       ],

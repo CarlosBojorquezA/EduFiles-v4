@@ -40,7 +40,7 @@ export class AdminDashboardComponent implements OnInit {
   userRole: 'administrador' | 'estudiante' | 'profesor' = 'administrador';
   userName: string = 'Carlos Rodríguez';
   notificationCount: number = 3;
-   currentRoute: string = '/dashboard';
+  currentRoute: string = '/dashboard';
 
   stats: StatCard[] = [
     { icon: 'users', value: 156, label: 'Estudiantes', color: '#3b82f6' },
@@ -75,7 +75,7 @@ export class AdminDashboardComponent implements OnInit {
     const navigationConfig = {
       administrador: [
         { icon: 'home', label: 'Inicio', route: '/admin-dashboard', badge: 0 },
-        { icon: 'clock', label: 'Pendientes', route: '/admin-pendientes', badge: 23 },
+        { icon: 'file-text', label: 'Documentos', route: '/admin-documentos', badge: 23 },
         { icon: 'folder', label: 'Gestión', route: '/admin-gestion', badge: 0 },
         { icon: 'user', label: 'Perfil', route: '/admin-perfil', badge: 0 }
       ],

@@ -35,7 +35,6 @@ export class LoginComponent {
       return;
     }
     console.log('Iniciar sesión:', { email: this.loginEmail, password: this.loginPassword });
-    // Aquí implementarías la lógica de autenticación
   }
 
   onRecoverPassword(): void {
@@ -45,7 +44,6 @@ export class LoginComponent {
     }
     this.showRecoveryError = false;
     console.log('Recuperar contraseña para:', this.recoveryEmail);
-    // Aquí implementarías la lógica para enviar el correo de recuperación
   }
 
   onQuickAccess(role: string): void {
