@@ -32,7 +32,7 @@
   </header>
 
   <main class="profesor-content">
-    <h1>Dashboard Profesor</h1>
+    <h1>Inicio</h1>
 
     <div class="stats-grid">
       <div *ngFor="let stat of stats" class="stat-card">
@@ -48,7 +48,7 @@
 
     <div class="content-card">
       <h2 class="card-title">Acciones Rápidas</h2>
-      <button class="btn-chat">
+      <button class="btn-chat" (click)="irAlChat()">
         <i class="fa-brands fa-rocketchat"></i>
         Abrir Chat con Estudiantes
         <span class="chat-badge">4</span>

@@ -189,6 +189,35 @@
   transform: translateY(0);
 }
 
+.btn-google{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 13px 24px;
+  background-color: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 4px;
+
+}
+
+.btn-google {
+  background-color: #000;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-google {
+  transform: translateY(0);
+}
+
 .btn-secondary {
   width: 100%;
   padding: 11px 24px;

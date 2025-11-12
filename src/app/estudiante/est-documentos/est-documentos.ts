@@ -173,6 +173,7 @@ export class EstDocumentosComponent implements OnInit {
     this.navigationItems = [
       { icon: 'home', label: 'Inicio', route: '/est-dashboard', badge: 0 },
       { icon: 'file-text', label: 'Documentos', route: '/est-documentos', badge: 0 },
+      { icon: 'material', label: 'Materiales', route: '/est-materiales', badge: 0 },
       { icon: 'users', label: 'Profesores', route: '/est-profesores', badge: 0 },
       { icon: 'user', label: 'Perfil', route: '/est-perfil', badge: 0 }
     ];
@@ -302,6 +303,7 @@ export class EstDocumentosComponent implements OnInit {
     const icons: { [key: string]: string } = {
       'home': 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
       'file-text': 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8',
+      'material': 'M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25',
       'users': 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
       'user': 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'
     };

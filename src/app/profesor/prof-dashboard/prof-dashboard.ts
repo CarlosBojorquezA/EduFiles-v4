@@ -44,14 +44,17 @@ export class ProfDashboardComponent {
     { label: 'Mensajes respondidos hoy', value: '8' },
     { label: 'Estudiantes activos', value: '23' },
     { label: 'Consultas sobre documentos', value: '15' },
-    { label: 'Tiempo promedio de respuesta', value: '2.5 hrs' }
   ];
 
   navigationItems: NavItem[] = [];
 
   constructor(private router: Router) { }
 
-ngOnInit(): void {
+  irAlChat(): void {
+    this.router.navigate(['/prof-chat-estudiantes']);
+  }
+
+  ngOnInit(): void {
     this.loadNavigation();
     this.currentRoute = this.router.url;
   }
@@ -59,7 +62,8 @@ ngOnInit(): void {
   loadNavigation(): void {
     this.navigationItems = [
       { icon: 'home', label: 'Inicio', route: '/prof-dashboard', badge: 0 },
-      { icon: 'file-text', label: 'Buscar', route: '/prof-documentos', badge: 0 },
+      { icon: 'material', label: 'Materiales', route: '/prof-materiales', badge: 0 },
+      { icon: 'file-text', label: 'Chat-Estudiantes', route: '/prof-estudiantes', badge: 0 },
       { icon: 'user', label: 'Perfil', route: '/prof-perfil', badge: 0 }
     ];
   }
@@ -72,6 +76,7 @@ ngOnInit(): void {
   getIcon(iconName: string): string {
     const icons: { [key: string]: string } = {
       'home': 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
+      'material': 'M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25',
       'file-text': 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8',
       'users': 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
       'user': 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',

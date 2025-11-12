@@ -2,16 +2,16 @@ import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessC
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { initializeApp } from 'firebase/app';
-//import { AngularFireModule} from '@angular/fire/compat';
-//import { AngularFirestoreModule} from '@angular/fire/compat/firestore';
+import { AngularFireModule} from '@angular/fire/compat';
+import { AngularFirestoreModule} from '@angular/fire/compat/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDIjO8LB-EXmB11K4LYydDBDFFplHUbFHI",
-  authDomain: "paqueteria-autentificacion.firebaseapp.com",
-  projectId: "paqueteria-autentificacion",
-  storageBucket: "paqueteria-autentificacion.firebasestorage.app",
-  messagingSenderId: "269192440178",
-  appId: "1:269192440178:web:c0d0e2a8d60e23336095eb"
+  apiKey: "AIzaSyDkGxOnEE6z9xdegyZxfVzmpZ9BM7NsHIA",
+  authDomain: "edufiles-autentificacion.firebaseapp.com",
+  projectId: "edufiles-autentificacion",
+  storageBucket: "edufiles-autentificacion.firebasestorage.app",
+  messagingSenderId: "847578842387",
+  appId: "1:847578842387:web:f83293a157f807fcb186e6"
 };
 
 initializeApp(firebaseConfig);
@@ -21,8 +21,8 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     provideRouter(routes),
-    //importProvidersFrom(
-      //AngularFireModule.initializeApp(firebaseConfig),
-      //AngularFirestoreModule)
+    importProvidersFrom(
+      AngularFireModule.initializeApp(firebaseConfig),
+      AngularFirestoreModule)
   ]
 };

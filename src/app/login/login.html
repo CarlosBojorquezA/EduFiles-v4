@@ -67,9 +67,11 @@
           Iniciar Sesión
         </button>
       </form>
+          <button type="submit" class="btn-google" (click)="login_google()"><span>Iniciar sesion con Google</span>
+    </button>
     </div>
 
-    <!-- Forgot Password Tab Content -->
+    <!-- Forgot Password Tab Content --> 
     <div *ngIf="activeTab === 'forgot'" class="tab-content">
       <div class="info-box">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
