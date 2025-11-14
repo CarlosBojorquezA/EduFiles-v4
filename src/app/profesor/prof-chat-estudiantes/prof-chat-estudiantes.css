@@ -305,32 +305,16 @@
 }
 
 /* Responsive */
-@media (min-width: 768px) {
-  .stats-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  .main-content {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-}
-
 @media (max-width: 640px) {
-  .stat-card {
-    padding: 16px;
+  .tabs {
+    grid-template-columns: 1fr;
   }
 
-  .stat-icon {
-    width: 40px;
-    height: 40px;
+  .scanner-buttons {
+    grid-template-columns: 1fr;
   }
 
-  .stat-info h2 {
-    font-size: 24px;
-  }
-
-  .nav-label {
-    font-size: 10px;
+  .modal-actions {
+    flex-direction: column-reverse;
   }
 }

@@ -5,26 +5,22 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 interface Message {
   id: string;
-  sender: 'student' | 'teacher';
+  sender: 'estudiante' | 'profesor';
   content: string;
   timestamp: Date;
   read: boolean;
 }
 
-interface Profesor {
-  userRole: 'Profesor';
-  userName: string;
-  userAccountNumber: string;
-  userMateria: string;
-  Department: string; 
-  notificationCount: number;
-  officeHours: string;
-  avatar: string;
-  notifications: number;
+interface Estudiante {
+  id: string;
+  name: string;
+  initials: string;
+  clase: string;
+  group: string;
   email: string;
-  alternativeEmail?: string;
-  phone?: string
+  phone: string;
   status: 'online' | 'offline';
+  unreadMessages: number;
 }
 
 interface NavItem {
@@ -35,52 +31,57 @@ interface NavItem {
 }
 
 @Component({
-  selector: 'app-prof-chat-estudiante',
+  selector: 'app-prof-chat-estudiantes',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './prof-chat-estudiantes.html',
   styleUrls: ['./prof-chat-estudiantes.css']
 })
 export class ProfChatEstudiantesComponent implements OnInit, AfterViewChecked {
-  @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
+  userRole: 'Profesor' = 'Profesor';
+  userName: string = 'Jose Orozco';
+  userAccountNumber: string = '2024001234';
+  userCarrera: string = 'Ingeniería de Sistemas';
+  userMateria: string = 'Angular';
+  notificationCount: number = 3;
 
+  // Views
+  currentView: 'list' | 'chat' | 'profile' = 'list';
+  selectedProfessor: Estudiante | null = null;
+  @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
   currentRoute: string = '/prof-chat-estudiantes';
 
-  Profesor: Profesor = {
-  userRole: 'Profesor',
-    userName: 'Jose Orozco',
-    userAccountNumber: '2024001234',
-    userMateria: 'Angular',
-    Department: 'Ingeniería de Sistemas', 
-    notificationCount: 3,
-    officeHours: 'Lunes a Viernes, 10:00 AM - 2:00 PM',
-    avatar: 'AL',
-    notifications: 4,
-    email: 'jose.orozco@ejemplo.com',
-    alternativeEmail: '',
-    phone: '66 1234 5678',
-    status: 'online'
-  }
+  Estudiante: Estudiante = {
+    id: '1',
+      name: 'Maria Garcia',
+      initials: 'MG',
+      clase: 'Matemáticas',
+      group: '2°',
+      email: 'ana.lopez@universidad.edu',
+      phone: '+52 555 1234',
+      status: 'online',
+      unreadMessages: 1
+  };
 
   messages: Message[] = [
     {
       id: '1',
-      sender: 'teacher',
-      content: 'Hola Juan, ¿cuál es tu duda específica sobre el CURP?',
+      sender: 'profesor',
+      content: 'Holanda, que me cuentas¿',
       timestamp: new Date(Date.now() - 3600000),
       read: true
     },
     {
       id: '2',
-      sender: 'student',
-      content: 'Profesor, tengo una duda sobre el documento de CURP que subí',
+      sender: 'estudiante',
+      content: 'tinguililingui',
       timestamp: new Date(Date.now() - 1800000),
       read: true
     },
     {
       id: '3',
-      sender: 'student',
-      content: 'El archivo se ve un poco borroso, ¿debería subirlo de nuevo?',
+      sender: 'estudiante',
+      content: 'hola papu',
       timestamp: new Date(Date.now() - 1740000),
       read: true
     }
@@ -96,12 +97,23 @@ export class ProfChatEstudiantesComponent implements OnInit, AfterViewChecked {
     private router: Router
   ) {}
 
+  navigationItems: NavItem[] = [];
+
+  backToList(): void {
+    this.currentView = 'list';
+    this.selectedProfessor = null;
+    this.messages = [];
+    this.newMessage = '';
+  }
+
   ngOnInit(): void {
-    // Aquí podrías cargar los mensajes del profesor desde un servicio
-    const teacherId = this.route.snapshot.paramMap.get('id');
-    if (teacherId) {
-      // Cargar datos del profesor y mensajes
-    }
+    this.loadNavigation();
+    this.currentRoute = this.router.url;
+  }
+
+  navigateTo(route: string): void {
+    this.currentRoute = route;
+    this.router.navigate([route]);
   }
 
   ngAfterViewChecked(): void {
@@ -115,7 +127,7 @@ export class ProfChatEstudiantesComponent implements OnInit, AfterViewChecked {
     if (this.newMessage.trim()) {
       const message: Message = {
         id: Date.now().toString(),
-        sender: 'student',
+        sender: 'profesor',
         content: this.newMessage.trim(),
         timestamp: new Date(),
         read: false
@@ -125,7 +137,7 @@ export class ProfChatEstudiantesComponent implements OnInit, AfterViewChecked {
       this.newMessage = '';
       this.shouldScrollToBottom = true;
 
-      // Aquí enviarías el mensaje al backend
+      // this.chatService.sendMessage(this.teacher.id, message).subscribe();
     }
   }
 
@@ -146,9 +158,6 @@ export class ProfChatEstudiantesComponent implements OnInit, AfterViewChecked {
     }
   }
 
-  // Navegación 
-  navigationItems: NavItem[] = [];
-
   loadNavigation(): void {
     this.navigationItems = [
       { icon: 'home', label: 'Inicio', route: '/prof-dashboard', badge: 0 },
@@ -156,11 +165,6 @@ export class ProfChatEstudiantesComponent implements OnInit, AfterViewChecked {
       { icon: 'file-text', label: 'Chat-Estudiantes', route: '/prof-estudiantes', badge: 0 },
       { icon: 'user', label: 'Perfil', route: '/prof-perfil', badge: 0 }
     ];
-  }
-
-  navigateTo(route: string): void {
-    this.currentRoute = route;
-    this.router.navigate([route]);
   }
 
   getIcon(iconName: string): string {
@@ -181,4 +185,5 @@ export class ProfChatEstudiantesComponent implements OnInit, AfterViewChecked {
   logout(): void {
     this.router.navigate(['']);
   }
+
 }

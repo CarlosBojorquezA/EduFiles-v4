@@ -32,5 +32,5 @@ export const routes: Routes = [
     { path: 'prof-materiales', component: ProfMaterialesComponent }, // Ruta de materiales de apoyo que asigna el profesor
     { path: 'prof-estudiantes', component: ProfEstudiantesComponent }, // Ruta para la busqueda de alumnos en el rol de profesor
     { path: 'prof-chat-estudiantes', component: ProfChatEstudiantesComponent }, // Ruta para el chat con alumnos en el rol de profesor
-    { path: 'prof-perfil', component: ProfPerfilComponent } // Ruta del perfil del profesor
+    { path: 'prof-perfil', component: ProfPerfilComponent }, // Ruta del perfil del profesor
 ];
