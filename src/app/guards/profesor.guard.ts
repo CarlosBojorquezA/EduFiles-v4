@@ -7,7 +7,8 @@ export const profesorGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   if (auth.getUserRole() !== 'PROFESOR') {
-    router.navigate(['/unauthorized']);
+    alert('Acceso denegado. Solo profesores pueden acceder a esta página.');
+    router.navigate(['']);
     return false;
   }
 

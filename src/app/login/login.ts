@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 
 interface RegistroForm {
   nombres: string;
@@ -22,7 +22,7 @@ interface RegistroForm {
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, FormsModule], 
   templateUrl: './login.html',
   styleUrls: ['./login.css']
 })
@@ -30,14 +30,11 @@ export class LoginComponent {
   private apiUrl = 'http://localhost:5000/api';
   activeTab: 'login' | 'register' | 'forgot' = 'login';
   
-  // Pasos de recuperación
   recuperarStep: number = 1;
   
-  // Login form
   loginNumUsuario: string = '';
   loginPassword: string = '';
   
-  // Recovery form
   recoveryEmail: string = '';
   recoveryCode: string = '';
   recoveryNumUsuario: string = '';
@@ -46,7 +43,6 @@ export class LoginComponent {
   showRecoveryError: boolean = false;
   recoveryErrorMessage: string = '';
 
-  // Register form
   registroForm: RegistroForm = {
     nombres: '',
     apellidoPaterno: '',
@@ -77,7 +73,9 @@ export class LoginComponent {
   constructor(
     private router: Router,
     private http: HttpClient
-  ) {}
+  ) {
+    console.log('[LOGIN] Componente inicializado');
+  }
 
   setActiveTab(tab: 'login' | 'register' | 'forgot'): void {
     this.activeTab = tab;
@@ -87,7 +85,6 @@ export class LoginComponent {
     this.recuperarStep = 1;
   }
 
-  // ========== LOGIN ==========
   onLogin(): void {
     if (!this.loginNumUsuario || !this.loginPassword) {
       this.showError('Por favor completa todos los campos');
@@ -97,29 +94,27 @@ export class LoginComponent {
     this.isLoading = true;
     this.clearMessages();
 
+    console.log('[LOGIN] Intentando login...');
+
     this.http.post(`${this.apiUrl}/auth/login`, {
       num_usuario: this.loginNumUsuario,
       password: this.loginPassword
     }).subscribe({
       next: (response: any) => {
-        console.log('Login exitoso:', response);
+        console.log('[LOGIN] Login exitoso:', response);
         
-        // IMPORTANTE: Guardar token y usuario
         if (response.token) {
           localStorage.setItem('token', response.token);
-          console.log('Token guardado:', response.token);
-        } else {
-          console.error('No se recibió token en la respuesta');
+          console.log('[LOGIN] Token guardado');
         }
         
         if (response.user) {
           localStorage.setItem('userData', JSON.stringify(response.user));
-          console.log('User data guardado:', response.user);
+          console.log('[LOGIN] User data guardado');
         }
         
         this.showSuccess('¡Inicio de sesión exitoso!');
         
-        // Redirigir según el rol
         setTimeout(() => {
           switch (response.user.rol) {
             case 'ESTUDIANTE':
@@ -132,12 +127,12 @@ export class LoginComponent {
               this.router.navigate(['/admin-dashboard']);
               break;
             default:
-              this.router.navigate(['/dashboard']);
+              this.router.navigate(['/admin-dashboard']);
           }
         }, 1000);
       },
       error: (error) => {
-        console.error('Error en login:', error);
+        console.error('[LOGIN] Error:', error);
         this.showError(error.error?.error || 'Error al iniciar sesión');
         this.isLoading = false;
       },
@@ -147,11 +142,9 @@ export class LoginComponent {
     });
   }
 
-  // ========== REGISTRO ==========
   onRegister(): void {
     this.clearMessages();
 
-    // Validar campos requeridos
     if (!this.registroForm.nombres || !this.registroForm.apellidoPaterno || 
         !this.registroForm.apellidoMaterno || !this.registroForm.curp ||
         !this.registroForm.fecha_nacimiento || !this.registroForm.grado ||
@@ -160,26 +153,22 @@ export class LoginComponent {
       return;
     }
 
-    // Validar CURP (18 caracteres)
     if (this.registroForm.curp.length !== 18) {
       this.showError('El CURP debe tener 18 caracteres');
       return;
     }
 
-    // Validar contraseña
     if (this.registroForm.password.length < 6) {
       this.showError('La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
-    // Validar datos del tutor
     if (!this.registroForm.nombresTutor || !this.registroForm.correoTutor || 
         !this.registroForm.telefonoTutor) {
       this.showError('Por favor completa los datos del tutor');
       return;
     }
 
-    // Validar email del tutor
     if (!this.isValidEmail(this.registroForm.correoTutor)) {
       this.showError('Email del tutor inválido');
       return;
@@ -187,7 +176,6 @@ export class LoginComponent {
 
     this.isLoading = true;
 
-    // Preparar datos para el backend
     const registroData = {
       nombres: this.registroForm.nombres,
       apellido_paterno: this.registroForm.apellidoPaterno,
@@ -203,19 +191,14 @@ export class LoginComponent {
       password: this.registroForm.password
     };
 
-    console.log('Enviando registro:', registroData);
-
     this.http.post(`${this.apiUrl}/auth/registro-estudiante`, registroData).subscribe({
       next: (response: any) => {
-        console.log('Registro exitoso:', response);
+        console.log('[LOGIN] Registro exitoso:', response);
         this.isLoading = false;
         
         this.showSuccess(`¡Registro exitoso! Tu número de usuario es: ${response.num_usuario}`);
-        
-        // Limpiar formulario
         this.resetRegistroForm();
         
-        // Cambiar a login después de 3 segundos
         setTimeout(() => {
           this.loginNumUsuario = response.num_usuario;
           this.setActiveTab('login');
@@ -223,7 +206,7 @@ export class LoginComponent {
       },
       error: (error) => {
         this.isLoading = false;
-        console.error('Error en registro:', error);
+        console.error('[LOGIN] Error en registro:', error);
         this.showError(error.error?.error || 'Error al registrar estudiante');
       }
     });
@@ -246,9 +229,6 @@ export class LoginComponent {
     };
   }
 
-  // ========== RECUPERAR CONTRASEÑA ==========
-  
-  // Paso 1: Solicitar código
   onRecoverPassword(): void {
     this.clearMessages();
 
@@ -264,20 +244,14 @@ export class LoginComponent {
       correo_o_telefono: this.recoveryEmail
     }).subscribe({
       next: (response: any) => {
-        console.log('Código enviado:', response);
         this.isLoading = false;
-        
-        // Guardar número de usuario para los siguientes pasos
         this.recoveryNumUsuario = response.num_usuario;
-        
         this.showSuccess(`Código enviado. Tu número de usuario es: ${response.num_usuario}`);
         
-        // SOLO DESARROLLO: Mostrar código
         if (response.codigo) {
-          this.showSuccess(`Código enviado: ${response.codigo} (Guárdalo)`);
+          this.showSuccess(`Código: ${response.codigo} (Guárdalo)`);
         }
         
-        // Avanzar al paso 2
         setTimeout(() => {
           this.recuperarStep = 2;
           this.clearMessages();
@@ -285,14 +259,12 @@ export class LoginComponent {
       },
       error: (error) => {
         this.isLoading = false;
-        console.error('Error al solicitar código:', error);
         this.showRecoveryError = true;
         this.recoveryErrorMessage = error.error?.error || 'Error al enviar el código';
       }
     });
   }
 
-  // Paso 2: Verificar código
   onVerifyCode(): void {
     this.clearMessages();
 
@@ -309,12 +281,9 @@ export class LoginComponent {
       codigo: this.recoveryCode
     }).subscribe({
       next: (response: any) => {
-        console.log('Código verificado:', response);
         this.isLoading = false;
-        
         this.showSuccess('¡Código verificado correctamente!');
         
-        // Avanzar al paso 3
         setTimeout(() => {
           this.recuperarStep = 3;
           this.clearMessages();
@@ -322,14 +291,12 @@ export class LoginComponent {
       },
       error: (error) => {
         this.isLoading = false;
-        console.error('Error al verificar código:', error);
         this.showRecoveryError = true;
         this.recoveryErrorMessage = error.error?.error || 'Código inválido o expirado';
       }
     });
   }
 
-  // Paso 3: Nueva contraseña
   onResetPassword(): void {
     this.clearMessages();
 
@@ -352,12 +319,9 @@ export class LoginComponent {
       new_password: this.recoveryNewPassword
     }).subscribe({
       next: (response: any) => {
-        console.log('Contraseña restablecida:', response);
         this.isLoading = false;
-        
         this.showSuccess('¡Contraseña actualizada exitosamente!');
         
-        // Limpiar y volver al login
         setTimeout(() => {
           this.recoveryEmail = '';
           this.recoveryCode = '';
@@ -370,18 +334,15 @@ export class LoginComponent {
       },
       error: (error) => {
         this.isLoading = false;
-        console.error('Error al restablecer contraseña:', error);
         this.showRecoveryError = true;
         this.recoveryErrorMessage = error.error?.error || 'Error al actualizar la contraseña';
       }
     });
   }
 
-  // ========== ACCESO RÁPIDO ==========
   onQuickAccess(role: string): void {
     this.clearMessages();
     
-    // Credenciales según tu base de datos
     const credentials: any = {
       'Estudiante': { num_usuario: '00000005', password: 'contra123' },
       'Administrador': { num_usuario: '00000001', password: 'contra123' },
@@ -395,7 +356,6 @@ export class LoginComponent {
     }
   }
 
-  // ========== UTILIDADES ==========
   private isValidEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);

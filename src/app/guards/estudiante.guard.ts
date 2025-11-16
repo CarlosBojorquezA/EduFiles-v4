@@ -7,7 +7,8 @@ export const estudianteGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   if (auth.getUserRole() !== 'ESTUDIANTE') {
-    router.navigate(['/unauthorized']);
+    alert('Acceso denegado. Solo estudiantes pueden acceder a esta página.');
+    router.navigate(['']);
     return false;
   }
 

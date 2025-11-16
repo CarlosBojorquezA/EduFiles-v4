@@ -36,12 +36,29 @@ export class AuthService {
 
   // ========== LOGIN ==========
   login(num_usuario: string, password: string): Observable<any> {
+    console.log('[AUTH SERVICE] Iniciando login...');
     return this.http.post(`${this.apiUrl}/auth/login`, { 
       num_usuario, 
       password 
     }).pipe(
       tap((response: any) => {
-        this.setSession(response);
+        console.log('[AUTH SERVICE] Respuesta del login:', response);
+        
+        // CRÍTICO: Guardar token y usuario
+        if (response.token) {
+          localStorage.setItem('token', response.token);
+          console.log('[AUTH SERVICE] Token guardado:', response.token.substring(0, 20) + '...');
+        } else {
+          console.error('[AUTH SERVICE] No se recibió token en la respuesta');
+        }
+        
+        if (response.user) {
+          localStorage.setItem('userData', JSON.stringify(response.user));
+          this.currentUserSubject.next(response.user);
+          console.log('[AUTH SERVICE] Usuario guardado:', response.user);
+        } else {
+          console.error('[AUTH SERVICE] No se recibió usuario en la respuesta');
+        }
       })
     );
   }
@@ -96,27 +113,28 @@ export class AuthService {
   }
 
   // ========== SESIÓN ==========
-  private setSession(authResult: any): void {
-  if (!authResult || !authResult.token) return;
-
-  localStorage.setItem('token', authResult.token);
-  localStorage.setItem('userData', JSON.stringify(authResult.user));
-
-  this.currentUserSubject.next(authResult.user);
-}
-
   logout(): void {
+    console.log('[AUTH SERVICE] Cerrando sesión...');
     localStorage.removeItem('token');
     localStorage.removeItem('userData');
     this.currentUserSubject.next(null);
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    const hasToken = !!token;
+    console.log('[AUTH SERVICE] isLoggedIn:', hasToken);
+    return hasToken;
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    const token = localStorage.getItem('token');
+    if (token) {
+      console.log('[AUTH SERVICE] Token encontrado:', token.substring(0, 20) + '...');
+    } else {
+      console.log('[AUTH SERVICE] No hay token en localStorage');
+    }
+    return token;
   }
 
   getCurrentUser(): any {

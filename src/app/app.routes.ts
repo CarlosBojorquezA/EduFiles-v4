@@ -16,12 +16,6 @@ import { ProfEstudiantesComponent } from './profesor/prof-estudiantes/prof-estud
 import { ProfChatEstudiantesComponent } from './profesor/prof-chat-estudiantes/prof-chat-estudiantes';
 import { ProfPerfilComponent } from './profesor/prof-perfil/prof-perfil';
 
-import { requireAuthGuard } from './guards/auth.guard';
-import { adminGuard } from './guards/admin.guard';
-import { profesorGuard } from './guards/profesor.guard';
-import { estudianteGuard } from './guards/estudiante.guard';
-
-
 export const routes: Routes = [
     { path: '', component: LoginComponent }, // Ruta predeterminada Login
     { path: 'est-dashboard', component: EstDashboardComponent }, // Ruta de inicio del rol de estudiante
@@ -30,7 +24,7 @@ export const routes: Routes = [
     { path: 'est-profesores', component: EstProfesoresComponent }, // Ruta de los profesores asignados del estudiante 
     { path: 'est-profesores-chat', component: ChatProfesorComponent }, // Ruta del chat de los profesores con el estudiante
     { path: 'est-perfil', component: EstPerfilComponent }, // Ruta del perfil del estudiante
-    { path: 'admin-dashboard', loadComponent: () => import('././administrador/admin-dashboard/admin-dashboard').then(m => m.AdminDashboardComponent), canActivate: [requireAuthGuard, adminGuard]}, // Ruta de inicio del rol de administrador
+    { path: 'admin-dashboard', component: AdminDashboardComponent }, // Ruta de inicio del rol de administrador
     { path: 'admin-documentos', component: AdminDocumentosComponent }, // Ruta para la revision de documentos del administrador
     { path: 'admin-gestion', component: AdminGestionComponent }, // Ruta para la gestion de usuarios 
     { path: 'admin-perfil', component: AdminPerfilComponent }, // Ruta para el perfil del administrador

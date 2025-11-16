@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 
 interface StatCard {
   icon: string;
@@ -33,7 +33,7 @@ interface NavItem {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, HttpClientModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.css']
 })
@@ -63,15 +63,26 @@ export class AdminDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    console.log('[DASHBOARD] Componente inicializado');
     this.loadUserData();
     this.loadNavigation();
+    this.currentRoute = this.router.url;
     
-    // Cargar datos después de un pequeño delay para asegurar que todo esté listo
+    // Verificar token
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('[DASHBOARD] No hay token, redirigiendo a login');
+      alert('Sesión expirada. Por favor inicia sesión nuevamente.');
+      this.router.navigate(['']);
+      return;
+    }
+    
+    console.log('[DASHBOARD] Token verificado, cargando datos...');
+    
+    // Cargar datos después de un pequeño delay
     setTimeout(() => {
       this.loadDashboardData();
     }, 100);
-    
-    this.currentRoute = this.router.url;
   }
 
   loadUserData(): void {
@@ -82,7 +93,7 @@ export class AdminDashboardComponent implements OnInit {
         
         if (user.detalles) {
           if (user.detalles.nombres) {
-            this.userName = `${user.detalles.nombres} ${user.detalles.apellido_paterno || user.detalles.apellido_paterno || ''}`.trim();
+            this.userName = `${user.detalles.nombres} ${user.detalles.apellido_paterno || ''}`.trim();
           }
         }
         
@@ -91,44 +102,34 @@ export class AdminDashboardComponent implements OnInit {
         }
         
         this.userRole = (user.rol || 'ADMINISTRADOR').toLowerCase();
+        console.log('[DASHBOARD] Usuario cargado:', this.userName, 'Rol:', this.userRole);
       } catch (e) {
-        console.error('Error parsing userData:', e);
+        console.error('[DASHBOARD] Error parsing userData:', e);
         this.userName = 'Usuario';
       }
     } else {
-      console.warn('No hay userData en localStorage');
+      console.warn('[DASHBOARD] No hay userData en localStorage');
       this.userName = 'Usuario';
     }
   }
 
   loadDashboardData(): void {
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-      console.error('[DASHBOARD] No hay token en localStorage');
-      alert('Sesión expirada. Por favor inicia sesión nuevamente.');
-      this.router.navigate(['']);
-      return;
-    }
+    console.log('[DASHBOARD] Iniciando carga de datos...');
+    this.isLoading = true;
 
-    console.log('[DASHBOARD] Token encontrado:', token.substring(0, 20) + '...');
-
-    const headers = { 
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    };
-
-    console.log('[DASHBOARD] Cargando estadísticas...');
+    // ✅ Ya NO necesitas crear headers manualmente
+    // El interceptor agrega automáticamente el Authorization header
     
     // Cargar estadísticas
-    this.http.get(`${this.apiUrl}/dashboard/admin/stats`, { headers }).subscribe({
+    console.log('[DASHBOARD] Solicitando estadísticas...');
+    this.http.get(`${this.apiUrl}/dashboard/admin/stats`).subscribe({
       next: (response: any) => {
         console.log('[DASHBOARD] Stats recibidas:', response);
         this.stats[0].value = response.total_estudiantes || 0;
         this.stats[1].value = response.documentos_pendientes || 0;
         this.stats[2].value = response.aprobados_hoy || 0;
         this.stats[3].value = response.rechazados_hoy || 0;
-        console.log('[DASHBOARD] Stats actualizadas:', this.stats);
+        console.log('[DASHBOARD] Stats actualizadas');
       },
       error: (error) => {
         console.error('[DASHBOARD] Error cargando stats:', error);
@@ -138,15 +139,16 @@ export class AdminDashboardComponent implements OnInit {
         if (error.status === 401 || error.status === 422) {
           alert('Token inválido o expirado. Por favor inicia sesión nuevamente.');
           localStorage.clear();
-          this.router.navigate(['/login']);
+          this.router.navigate(['']);
+        } else {
+          alert('Error al cargar estadísticas. Por favor recarga la página.');
         }
       }
     });
 
-    console.log('[DASHBOARD] Cargando alertas...');
-
     // Cargar alertas
-    this.http.get(`${this.apiUrl}/dashboard/admin/alerts`, { headers }).subscribe({
+    console.log('[DASHBOARD] Solicitando alertas...');
+    this.http.get(`${this.apiUrl}/dashboard/admin/alerts`).subscribe({
       next: (response: any) => {
         console.log('[DASHBOARD] Alertas recibidas:', response);
         this.alerts = Array.isArray(response) ? response : [];
@@ -158,25 +160,25 @@ export class AdminDashboardComponent implements OnInit {
       }
     });
 
-    console.log('[DASHBOARD] Cargando actividad reciente...');
-
     // Cargar actividad reciente
-    this.http.get(`${this.apiUrl}/dashboard/admin/recent-activity?limit=10`, { headers }).subscribe({
+    console.log('[DASHBOARD] Solicitando actividad reciente...');
+    this.http.get(`${this.apiUrl}/dashboard/admin/recent-activity?limit=10`).subscribe({
       next: (response: any) => {
         console.log('[DASHBOARD] Actividades recibidas:', response);
         this.recentActivities = Array.isArray(response) ? response : [];
         console.log('[DASHBOARD] Total actividades:', this.recentActivities.length);
+        this.isLoading = false;
       },
       error: (error) => {
         console.error('[DASHBOARD] Error cargando actividad:', error);
         this.recentActivities = [];
+        this.isLoading = false;
       }
     });
 
-    console.log('[DASHBOARD] Cargando notificaciones...');
-
     // Cargar notificaciones no leídas
-    this.http.get(`${this.apiUrl}/notificaciones/no-leidas/count`, { headers }).subscribe({
+    console.log('[DASHBOARD] Solicitando notificaciones...');
+    this.http.get(`${this.apiUrl}/notificaciones/no-leidas/count`).subscribe({
       next: (response: any) => {
         console.log('[DASHBOARD] Notificaciones count:', response);
         this.notificationCount = response.count || 0;
@@ -222,9 +224,9 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   logout(): void {
+    console.log('[DASHBOARD] Cerrando sesión...');
     localStorage.removeItem('token');
     localStorage.removeItem('userData');
-    console.log('Cerrando sesión...');
     this.router.navigate(['']);
   }
 }

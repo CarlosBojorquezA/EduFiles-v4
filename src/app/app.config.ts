@@ -1,9 +1,10 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection, importProvidersFrom } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
-import { initializeApp } from 'firebase/app';
-import { AngularFireModule} from '@angular/fire/compat';
-import { AngularFirestoreModule} from '@angular/fire/compat/firestore';
+import { AngularFireModule } from '@angular/fire/compat';
+import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
+import { authInterceptor } from './interceptors/auth.interceptor';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDkGxOnEE6z9xdegyZxfVzmpZ9BM7NsHIA",
@@ -14,15 +15,13 @@ const firebaseConfig = {
   appId: "1:847578842387:web:f83293a157f807fcb186e6"
 };
 
-initializeApp(firebaseConfig);
-
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideBrowserGlobalErrorListeners(),
-    provideZonelessChangeDetection(),
     provideRouter(routes),
+    provideHttpClient(withInterceptors([authInterceptor])),
     importProvidersFrom(
       AngularFireModule.initializeApp(firebaseConfig),
-      AngularFirestoreModule)
+      AngularFirestoreModule
+    )
   ]
 };

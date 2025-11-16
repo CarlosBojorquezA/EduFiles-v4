@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 
 interface DocumentoRequerido {
   id_plantilla: number;
@@ -29,6 +29,10 @@ interface DocumentoPendiente {
   descripcion: string;
   fecha_subida: string;
   vencido: boolean;
+  correo?: string;
+  nombres?: string;
+  apellido_paterno?: string;
+  apellido_materno?: string;
 }
 
 interface FormData {
@@ -49,7 +53,7 @@ interface NavItem {
 
 @Component({
   selector: 'app-admin-documentos',
-  imports: [CommonModule, RouterModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './admin-documentos.html',
   styleUrls: ['./admin-documentos.css']
 })
@@ -99,7 +103,7 @@ export class AdminDocumentosComponent implements OnInit {
     this.loadNavigation();
     this.currentRoute = this.router.url;
     
-    // Verificar token antes de cargar
+    // Verificar token
     const token = localStorage.getItem('token');
     if (!token) {
       console.error('[ADMIN-DOCS] No hay token, redirigiendo a login');
@@ -108,11 +112,10 @@ export class AdminDocumentosComponent implements OnInit {
       return;
     }
     
-    console.log('[ADMIN-DOCS] Token existe, cargando datos en 200ms...');
+    console.log('[ADMIN-DOCS] Token verificado, cargando documentos...');
     
-    // Cargar documentos después de un delay
+    // Cargar documentos
     setTimeout(() => {
-      console.log('[ADMIN-DOCS] Iniciando carga de documentos...');
       this.loadDocumentos();
     }, 200);
   }
@@ -122,74 +125,70 @@ export class AdminDocumentosComponent implements OnInit {
     if (userData) {
       const user = JSON.parse(userData);
       if (user.detalles && user.detalles.nombres) {
-        this.userName = `${user.detalles.nombres} ${user.detalles.apellido_paterno || user.detalles.apellido_paterno || ''}`.trim();
+        this.userName = `${user.detalles.nombres} ${user.detalles.apellido_paterno || ''}`.trim();
       } else {
-        this.userName = user.correo || user.num_usuario;
+        this.userName = user.correo || user.num_usuario || 'Usuario';
       }
+      console.log('[ADMIN-DOCS] Usuario cargado:', this.userName);
     }
   }
 
   loadDocumentos(): void {
+    console.log('[ADMIN-DOCS] Cargando documentos...');
     this.isLoading = true;
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-      console.error('No hay token');
-      alert('No hay sesión activa. Por favor inicia sesión nuevamente.');
-      this.router.navigate(['']);
-      return;
-    }
 
-    const headers = { 
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    };
-
-    console.log('Cargando plantillas...');
+    // ✅ Ya NO necesitas crear headers manualmente
+    // El interceptor agrega automáticamente el Authorization header
     
     // Cargar plantillas (documentos requeridos)
-    this.http.get(`${this.apiUrl}/documentos/plantillas`, { headers }).subscribe({
+    console.log('[ADMIN-DOCS] Solicitando plantillas...');
+    this.http.get(`${this.apiUrl}/documentos/plantillas`).subscribe({
       next: (response: any) => {
-        console.log('Plantillas recibidas:', response);
+        console.log('[ADMIN-DOCS] Plantillas recibidas:', response);
         this.documentosRequeridos = Array.isArray(response) ? response : [];
-        console.log('Total plantillas:', this.documentosRequeridos.length);
+        console.log('[ADMIN-DOCS] Total plantillas:', this.documentosRequeridos.length);
       },
       error: (error) => {
-        console.error('Error cargando plantillas:', error);
-        alert('Error al cargar documentos requeridos: ' + (error.error?.error || error.message));
+        console.error('[ADMIN-DOCS] Error cargando plantillas:', error);
+        if (error.status === 401 || error.status === 422) {
+          alert('Token inválido o expirado. Por favor inicia sesión nuevamente.');
+          localStorage.clear();
+          this.router.navigate(['']);
+        } else {
+          alert('Error al cargar documentos requeridos: ' + (error.error?.error || error.message));
+        }
         this.documentosRequeridos = [];
       }
     });
 
-    console.log('Cargando pendientes...');
-
     // Cargar documentos pendientes
-    this.http.get(`${this.apiUrl}/documentos/pendientes`, { headers }).subscribe({
+    console.log('[ADMIN-DOCS] Solicitando pendientes...');
+    this.http.get(`${this.apiUrl}/documentos/pendientes`).subscribe({
       next: (response: any) => {
-        console.log('Pendientes recibidos:', response);
+        console.log('[ADMIN-DOCS] Pendientes recibidos:', response);
         this.documentosPendientes = Array.isArray(response) ? response.map((doc: any) => ({
           ...doc,
           estudiante_nombre: `${doc.nombres} ${doc.apellido_paterno} ${doc.apellido_materno}`,
-          estudiante_email: doc.correo,
+          estudiante_email: doc.correo || doc.estudiante_email,
           vencido: doc.fecha_vencimiento && new Date(doc.fecha_vencimiento) < new Date()
         })) : [];
-        console.log('Total pendientes:', this.documentosPendientes.length);
+        console.log('[ADMIN-DOCS] Total pendientes:', this.documentosPendientes.length);
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error cargando pendientes:', error);
+        console.error('[ADMIN-DOCS] Error cargando pendientes:', error);
         this.documentosPendientes = [];
         this.isLoading = false;
       }
     });
 
     // Cargar contador de notificaciones
-    this.http.get(`${this.apiUrl}/notificaciones/no-leidas/count`, { headers }).subscribe({
+    this.http.get(`${this.apiUrl}/notificaciones/no-leidas/count`).subscribe({
       next: (response: any) => {
         this.notificationCount = response.count || 0;
       },
       error: (error) => {
-        console.error('Error cargando notificaciones:', error);
+        console.error('[ADMIN-DOCS] Error cargando notificaciones:', error);
       }
     });
   }
@@ -276,19 +275,6 @@ export class AdminDocumentosComponent implements OnInit {
       return;
     }
 
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-      alert('Sesión expirada. Por favor inicia sesión nuevamente.');
-      this.router.navigate(['']);
-      return;
-    }
-
-    const headers = { 
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    };
-
     const dataToSend = {
       nombre: this.formData.nombre.trim(),
       descripcion: this.formData.descripcion.trim(),
@@ -298,23 +284,22 @@ export class AdminDocumentosComponent implements OnInit {
       dias_vigencia: this.formData.tipo === 'periodico' ? (this.formData.dias_vigencia || 180) : null
     };
 
-    console.log('Guardando documento:', dataToSend);
+    console.log('[ADMIN-DOCS] Guardando documento:', dataToSend);
 
     if (this.isEditMode && this.editingDocumento) {
       // Actualizar
       this.http.put(
         `${this.apiUrl}/documentos/plantillas/${this.editingDocumento.id_plantilla}`, 
-        dataToSend, 
-        { headers }
+        dataToSend
       ).subscribe({
         next: (response) => {
-          console.log('Actualizado:', response);
+          console.log('[ADMIN-DOCS] Actualizado:', response);
           alert('Documento actualizado exitosamente');
           this.closeModal();
           this.loadDocumentos();
         },
         error: (error) => {
-          console.error('Error actualizando:', error);
+          console.error('[ADMIN-DOCS] Error actualizando:', error);
           alert('Error al actualizar: ' + (error.error?.error || error.message));
         }
       });
@@ -322,17 +307,16 @@ export class AdminDocumentosComponent implements OnInit {
       // Crear nuevo
       this.http.post(
         `${this.apiUrl}/documentos/plantillas`, 
-        dataToSend, 
-        { headers }
+        dataToSend
       ).subscribe({
         next: (response) => {
-          console.log('Creado:', response);
+          console.log('[ADMIN-DOCS] Creado:', response);
           alert('Documento creado exitosamente');
           this.closeModal();
           this.loadDocumentos();
         },
         error: (error) => {
-          console.error('Error creando:', error);
+          console.error('[ADMIN-DOCS] Error creando:', error);
           alert('Error al crear: ' + (error.error?.error || error.message));
         }
       });
@@ -344,16 +328,13 @@ export class AdminDocumentosComponent implements OnInit {
       return;
     }
 
-    const token = localStorage.getItem('token');
-    const headers = { 'Authorization': `Bearer ${token}` };
-
-    this.http.delete(`${this.apiUrl}/documentos/plantillas/${documento.id_plantilla}`, { headers }).subscribe({
+    this.http.delete(`${this.apiUrl}/documentos/plantillas/${documento.id_plantilla}`).subscribe({
       next: () => {
         alert('Documento eliminado exitosamente');
         this.loadDocumentos();
       },
       error: (error) => {
-        console.error('Error eliminando:', error);
+        console.error('[ADMIN-DOCS] Error eliminando:', error);
         alert(error.error?.error || 'Error al eliminar documento');
       }
     });
@@ -365,11 +346,7 @@ export class AdminDocumentosComponent implements OnInit {
   }
 
   descargarDocumento(pendiente: DocumentoPendiente): void {
-    const token = localStorage.getItem('token');
-    const headers = { 'Authorization': `Bearer ${token}` };
-
     this.http.get(`${this.apiUrl}/documentos/descargar/${pendiente.id_documento}`, {
-      headers,
       responseType: 'blob'
     }).subscribe({
       next: (blob) => {
@@ -381,7 +358,7 @@ export class AdminDocumentosComponent implements OnInit {
         window.URL.revokeObjectURL(url);
       },
       error: (error) => {
-        console.error('Error descargando:', error);
+        console.error('[ADMIN-DOCS] Error descargando:', error);
         alert('Error al descargar el documento');
       }
     });
@@ -392,19 +369,16 @@ export class AdminDocumentosComponent implements OnInit {
       return;
     }
 
-    const token = localStorage.getItem('token');
-    const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
-
     this.http.put(`${this.apiUrl}/documentos/validar/${pendiente.id_documento}`, {
       estado: 'APROBADO',
       comentario: ''
-    }, { headers }).subscribe({
+    }).subscribe({
       next: () => {
         alert('Documento aprobado exitosamente');
         this.loadDocumentos();
       },
       error: (error) => {
-        console.error('Error aprobando:', error);
+        console.error('[ADMIN-DOCS] Error aprobando:', error);
         alert(error.error?.error || 'Error al aprobar documento');
       }
     });
@@ -421,35 +395,28 @@ export class AdminDocumentosComponent implements OnInit {
       return;
     }
 
-    const token = localStorage.getItem('token');
-    const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
-
     this.http.put(`${this.apiUrl}/documentos/validar/${pendiente.id_documento}`, {
       estado: 'RECHAZADO',
       comentario: motivo
-    }, { headers }).subscribe({
+    }).subscribe({
       next: () => {
         alert('Documento rechazado. El estudiante será notificado.');
         this.loadDocumentos();
       },
       error: (error) => {
-        console.error('Error rechazando:', error);
+        console.error('[ADMIN-DOCS] Error rechazando:', error);
         alert(error.error?.error || 'Error al rechazar documento');
       }
     });
   }
 
   loadNavigation(): void {
-    const navigationConfig: any = {
-      administrador: [
-        { icon: 'home', label: 'Inicio', route: '/admin-dashboard', badge: 0 },
-        { icon: 'file-text', label: 'Documentos', route: '/admin-documentos', badge: 0 },
-        { icon: 'folder', label: 'Gestión', route: '/admin-gestion', badge: 0 },
-        { icon: 'user', label: 'Perfil', route: '/admin-perfil', badge: 0 }
-      ]
-    };
-
-    this.navigationItems = navigationConfig[this.userRole] || navigationConfig['administrador'];
+    this.navigationItems = [
+      { icon: 'home', label: 'Inicio', route: '/admin-dashboard', badge: 0 },
+      { icon: 'file-text', label: 'Documentos', route: '/admin-documentos', badge: 0 },
+      { icon: 'folder', label: 'Gestión', route: '/admin-gestion', badge: 0 },
+      { icon: 'user', label: 'Perfil', route: '/admin-perfil', badge: 0 }
+    ];
   }
 
   navigateTo(route: string): void {
@@ -464,13 +431,13 @@ export class AdminDocumentosComponent implements OnInit {
       'search': 'M11 2a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM21 21l-4.35-4.35',
       'folder': 'M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z',
       'user': 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
-      'users': 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
       'upload': 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12',
     };
     return icons[iconName] || icons['file-text'];
   }
 
   logout(): void {
+    console.log('[ADMIN-DOCS] Cerrando sesión...');
     localStorage.removeItem('token');
     localStorage.removeItem('userData');
     this.router.navigate(['']);
