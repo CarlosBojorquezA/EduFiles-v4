@@ -44,7 +44,7 @@ export class AdminDashboardComponent implements OnInit {
   userName: string = '';
   notificationCount: number = 0;
   currentRoute: string = '/admin-dashboard';
-  isLoading: boolean = true;
+  isLoading: boolean = false;
 
   stats: StatCard[] = [
     { icon: 'users', value: 0, label: 'Estudiantes', color: '#3b82f6' },
@@ -65,119 +65,136 @@ export class AdminDashboardComponent implements OnInit {
   ngOnInit(): void {
     this.loadUserData();
     this.loadNavigation();
-    this.loadDashboardData();
+    
+    // Cargar datos después de un pequeño delay para asegurar que todo esté listo
+    setTimeout(() => {
+      this.loadDashboardData();
+    }, 100);
+    
     this.currentRoute = this.router.url;
   }
 
   loadUserData(): void {
     const userData = localStorage.getItem('userData');
     if (userData) {
-      const user = JSON.parse(userData);
-      
-      // Establecer nombre según el rol
-      if (user.detalles) {
-        if (user.detalles.nombres) {
-          this.userName = `${user.detalles.nombres} ${user.detalles.apellido_paterno || user.detalles.apellio_paterno || ''}`.trim();
+      try {
+        const user = JSON.parse(userData);
+        
+        if (user.detalles) {
+          if (user.detalles.nombres) {
+            this.userName = `${user.detalles.nombres} ${user.detalles.apellido_paterno || user.detalles.apellido_paterno || ''}`.trim();
+          }
         }
+        
+        if (!this.userName) {
+          this.userName = user.correo || user.num_usuario || 'Usuario';
+        }
+        
+        this.userRole = (user.rol || 'ADMINISTRADOR').toLowerCase();
+      } catch (e) {
+        console.error('Error parsing userData:', e);
+        this.userName = 'Usuario';
       }
-      
-      // Si no hay nombre, usar el correo o número de usuario
-      if (!this.userName) {
-        this.userName = user.correo || user.num_usuario;
-      }
-      
-      // Establecer rol
-      this.userRole = user.rol.toLowerCase();
     } else {
-      // No hay usuario logueado, redirigir al login
-      this.router.navigate(['']);
+      console.warn('No hay userData en localStorage');
+      this.userName = 'Usuario';
     }
   }
 
   loadDashboardData(): void {
-    this.isLoading = true;
     const token = localStorage.getItem('token');
-    const headers = { 'Authorization': `Bearer ${token}` };
+    
+    if (!token) {
+      console.error('[DASHBOARD] No hay token en localStorage');
+      alert('Sesión expirada. Por favor inicia sesión nuevamente.');
+      this.router.navigate(['']);
+      return;
+    }
 
+    console.log('[DASHBOARD] Token encontrado:', token.substring(0, 20) + '...');
+
+    const headers = { 
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+
+    console.log('[DASHBOARD] Cargando estadísticas...');
+    
     // Cargar estadísticas
     this.http.get(`${this.apiUrl}/dashboard/admin/stats`, { headers }).subscribe({
       next: (response: any) => {
-        console.log('Stats:', response);
+        console.log('[DASHBOARD] Stats recibidas:', response);
         this.stats[0].value = response.total_estudiantes || 0;
         this.stats[1].value = response.documentos_pendientes || 0;
         this.stats[2].value = response.aprobados_hoy || 0;
         this.stats[3].value = response.rechazados_hoy || 0;
-        
-        // Actualizar badge de documentos pendientes en navegación
-        const docNav = this.navigationItems.find(item => item.route === '/admin-documentos');
-        if (docNav) {
-          docNav.badge = response.documentos_pendientes || 0;
-        }
+        console.log('[DASHBOARD] Stats actualizadas:', this.stats);
       },
       error: (error) => {
-        console.error('Error cargando stats:', error);
+        console.error('[DASHBOARD] Error cargando stats:', error);
+        console.error('[DASHBOARD] Status:', error.status);
+        console.error('[DASHBOARD] Error completo:', error.error);
+        
+        if (error.status === 401 || error.status === 422) {
+          alert('Token inválido o expirado. Por favor inicia sesión nuevamente.');
+          localStorage.clear();
+          this.router.navigate(['/login']);
+        }
       }
     });
+
+    console.log('[DASHBOARD] Cargando alertas...');
 
     // Cargar alertas
     this.http.get(`${this.apiUrl}/dashboard/admin/alerts`, { headers }).subscribe({
       next: (response: any) => {
-        console.log('Alerts:', response);
-        this.alerts = response;
+        console.log('[DASHBOARD] Alertas recibidas:', response);
+        this.alerts = Array.isArray(response) ? response : [];
+        console.log('[DASHBOARD] Total alertas:', this.alerts.length);
       },
       error: (error) => {
-        console.error('Error cargando alerts:', error);
+        console.error('[DASHBOARD] Error cargando alerts:', error);
+        this.alerts = [];
       }
     });
+
+    console.log('[DASHBOARD] Cargando actividad reciente...');
 
     // Cargar actividad reciente
     this.http.get(`${this.apiUrl}/dashboard/admin/recent-activity?limit=10`, { headers }).subscribe({
       next: (response: any) => {
-        console.log('Activities:', response);
-        this.recentActivities = response;
-        this.isLoading = false;
+        console.log('[DASHBOARD] Actividades recibidas:', response);
+        this.recentActivities = Array.isArray(response) ? response : [];
+        console.log('[DASHBOARD] Total actividades:', this.recentActivities.length);
       },
       error: (error) => {
-        console.error('Error cargando actividad:', error);
-        this.isLoading = false;
+        console.error('[DASHBOARD] Error cargando actividad:', error);
+        this.recentActivities = [];
       }
     });
+
+    console.log('[DASHBOARD] Cargando notificaciones...');
 
     // Cargar notificaciones no leídas
     this.http.get(`${this.apiUrl}/notificaciones/no-leidas/count`, { headers }).subscribe({
       next: (response: any) => {
-        console.log('Notifications count:', response);
+        console.log('[DASHBOARD] Notificaciones count:', response);
         this.notificationCount = response.count || 0;
       },
       error: (error) => {
-        console.error('Error cargando notificaciones:', error);
+        console.error('[DASHBOARD] Error cargando notificaciones:', error);
+        this.notificationCount = 0;
       }
     });
   }
 
   loadNavigation(): void {
-    const navigationConfig: any = {
-      administrador: [
-        { icon: 'home', label: 'Inicio', route: '/admin-dashboard', badge: 0 },
-        { icon: 'file-text', label: 'Documentos', route: '/admin-documentos', badge: 0 },
-        { icon: 'folder', label: 'Gestión', route: '/admin-gestion', badge: 0 },
-        { icon: 'user', label: 'Perfil', route: '/admin-perfil', badge: 0 }
-      ],
-      estudiante: [
-        { icon: 'home', label: 'Inicio', route: '/est-dashboard', badge: 0 },
-        { icon: 'file-text', label: 'Documentos', route: '/est-documentos', badge: 0 },
-        { icon: 'upload', label: 'Subir', route: '/est-subir', badge: 0 },
-        { icon: 'user', label: 'Perfil', route: '/est-perfil', badge: 0 }
-      ],
-      profesor: [
-        { icon: 'home', label: 'Inicio', route: '/prof-dashboard', badge: 0 },
-        { icon: 'file-text', label: 'Documentos', route: '/prof-documentos', badge: 0 },
-        { icon: 'users', label: 'Estudiantes', route: '/prof-estudiantes', badge: 0 },
-        { icon: 'user', label: 'Perfil', route: '/prof-perfil', badge: 0 }
-      ]
-    };
-
-    this.navigationItems = navigationConfig[this.userRole] || navigationConfig['administrador'];
+    this.navigationItems = [
+      { icon: 'home', label: 'Inicio', route: '/admin-dashboard', badge: 0 },
+      { icon: 'file-text', label: 'Documentos', route: '/admin-documentos', badge: 0 },
+      { icon: 'folder', label: 'Gestión', route: '/admin-gestion', badge: 0 },
+      { icon: 'user', label: 'Perfil', route: '/admin-perfil', badge: 0 }
+    ];
   }
 
   navigateTo(route: string): void {
@@ -205,16 +222,9 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   logout(): void {
-    // Limpiar localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('userData');
-    
     console.log('Cerrando sesión...');
     this.router.navigate(['']);
-  }
-
-  // Método para ir a notificaciones
-  goToNotifications(): void {
-    this.router.navigate(['/admin-notificaciones']);
   }
 }

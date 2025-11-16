@@ -97,10 +97,13 @@ export class AuthService {
 
   // ========== SESIÓN ==========
   private setSession(authResult: any): void {
-    localStorage.setItem('token', authResult.token);
-    localStorage.setItem('userData', JSON.stringify(authResult.user));
-    this.currentUserSubject.next(authResult.user);
-  }
+  if (!authResult || !authResult.token) return;
+
+  localStorage.setItem('token', authResult.token);
+  localStorage.setItem('userData', JSON.stringify(authResult.user));
+
+  this.currentUserSubject.next(authResult.user);
+}
 
   logout(): void {
     localStorage.removeItem('token');

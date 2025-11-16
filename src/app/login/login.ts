@@ -63,9 +63,9 @@ export class LoginComponent {
   };
 
   grados = [
-    { value: '1', label: '1° semestre' },
-    { value: '2', label: '2° semestre' },
-    { value: '3', label: '3° semestre' }
+    { value: '1', label: '1° Semestre' },
+    { value: '2', label: '2° Semestre' },
+    { value: '3', label: '3° Semestre' }
   ];
 
   showRegistroError: boolean = false;
@@ -104,9 +104,18 @@ export class LoginComponent {
       next: (response: any) => {
         console.log('Login exitoso:', response);
         
-        // Guardar token y usuario
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('userData', JSON.stringify(response.user));
+        // IMPORTANTE: Guardar token y usuario
+        if (response.token) {
+          localStorage.setItem('token', response.token);
+          console.log('Token guardado:', response.token);
+        } else {
+          console.error('No se recibió token en la respuesta');
+        }
+        
+        if (response.user) {
+          localStorage.setItem('userData', JSON.stringify(response.user));
+          console.log('User data guardado:', response.user);
+        }
         
         this.showSuccess('¡Inicio de sesión exitoso!');
         
@@ -123,7 +132,7 @@ export class LoginComponent {
               this.router.navigate(['/admin-dashboard']);
               break;
             default:
-              this.router.navigate(['']);
+              this.router.navigate(['/dashboard']);
           }
         }, 1000);
       },
