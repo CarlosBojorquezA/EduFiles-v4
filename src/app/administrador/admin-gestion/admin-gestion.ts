@@ -75,6 +75,7 @@ export class AdminGestionComponent implements OnInit {
   showStudentInfoModal: boolean = false;
   showEditStudentModal: boolean = false;
   showProfessorInfoModal: boolean = false;
+  showEditProfessorModal: boolean = false;
   showBajaModal: boolean = false;
   selectedStudent: Student | null = null;
   selectedProfessor: Professor | null = null;
@@ -86,7 +87,7 @@ export class AdminGestionComponent implements OnInit {
   selectedStatus: string = 'all';
   searchQueryProf: string = '';
 
-  // Stats (ahora desde BD)
+  // Stats
   totalStudents: number = 0;
   totalProfessors: number = 0;
   pendingRegistrations: number = 0;
@@ -100,6 +101,25 @@ export class AdminGestionComponent implements OnInit {
   // Dar de baja
   bajaNumUsuario: string = '';
   bajaConfirmacion: string = '';
+
+  // Materias disponibles para profesores
+  availableSubjects: string[] = [
+    'Matemáticas', 'Física', 'Química', 'Biología',
+    'Historia', 'Literatura', 'Filosofía', 'Psicología',
+    'Sociología', 'Economía', 'Inglés', 'Educación Física',
+    'Arte', 'Música', 'Computación', 'Geografía'
+  ];
+
+  // Días disponibles
+  availableDays = [
+    { value: 'lunes', label: 'Lunes' },
+    { value: 'martes', label: 'Martes' },
+    { value: 'miercoles', label: 'Miércoles' },
+    { value: 'jueves', label: 'Jueves' },
+    { value: 'viernes', label: 'Viernes' },
+    { value: 'sabado', label: 'Sábado' },
+    { value: 'domingo', label: 'Domingo' }
+  ];
 
   // Form data for new student
   newStudent = {
@@ -118,7 +138,8 @@ export class AdminGestionComponent implements OnInit {
     estado: '',
     municipio: '',
     ciudad: '',
-    codigoPostal: null as number | null
+    codigoPostal: null as number | null,
+    observaciones: ''
   };
 
   newProfessor = {
@@ -134,7 +155,14 @@ export class AdminGestionComponent implements OnInit {
     puesto: '',
     tipoContrato: '',
     fechaInicio: '',
-    salarioMensual: null as number | null
+    salarioMensual: null as number | null,
+    subjects: [] as string[],
+    availableDays: [] as string[],
+    preferredSchedule: '',
+    maxHoursPerWeek: '',
+    yearsExperience: '',
+    certifications: '',
+    observaciones: ''
   };
 
   navigationItems: NavItem[] = [];
@@ -177,7 +205,6 @@ export class AdminGestionComponent implements OnInit {
   loadDashboardData(): void {
     this.isLoading = true;
 
-    // Cargar estadísticas
     this.http.get(`${this.apiUrl}/admin/stats`).subscribe({
       next: (response: any) => {
         this.totalStudents = response.total_estudiantes || 0;
@@ -190,13 +217,9 @@ export class AdminGestionComponent implements OnInit {
       }
     });
 
-    // Cargar estudiantes
     this.loadStudents();
-
-    // Cargar profesores
     this.loadProfessors();
 
-    // Cargar notificaciones
     this.http.get(`${this.apiUrl}/notificaciones/no-leidas/count`).subscribe({
       next: (response: any) => {
         this.notificationCount = response.count || 0;
@@ -248,7 +271,6 @@ export class AdminGestionComponent implements OnInit {
     return this.professors;
   }
 
-  // Aplicar filtros
   applyFilters(): void {
     this.loadStudents();
   }
@@ -272,7 +294,6 @@ export class AdminGestionComponent implements OnInit {
   }
 
   openStudentInfo(student: Student): void {
-    // Cargar detalles completos
     this.http.get(`${this.apiUrl}/admin/estudiantes/${student.id_estudiante}`).subscribe({
       next: (response: any) => {
         this.selectedStudent = response;
@@ -291,7 +312,7 @@ export class AdminGestionComponent implements OnInit {
   }
 
   openEditStudent(student: Student): void {
-    this.selectedStudent = student;
+    this.selectedStudent = { ...student };
     this.showEditStudentModal = true;
     this.closeStudentInfo();
   }
@@ -338,7 +359,36 @@ export class AdminGestionComponent implements OnInit {
     this.selectedProfessor = null;
   }
 
-  // Dar de baja
+  openEditProfessor(professor: Professor): void {
+    this.selectedProfessor = { ...professor };
+    this.showEditProfessorModal = true;
+    this.closeProfessorInfo();
+  }
+
+  closeEditProfessor(): void {
+    this.showEditProfessorModal = false;
+    this.selectedProfessor = null;
+  }
+
+  saveProfessorChanges(): void {
+    if (!this.selectedProfessor) return;
+
+    this.http.put(
+      `${this.apiUrl}/admin/profesores/${this.selectedProfessor.id_profesor}`,
+      this.selectedProfessor
+    ).subscribe({
+      next: () => {
+        alert('Profesor actualizado exitosamente');
+        this.closeEditProfessor();
+        this.loadProfessors();
+      },
+      error: (error) => {
+        console.error('Error actualizando:', error);
+        alert('Error al actualizar profesor');
+      }
+    });
+  }
+
   openBajaModal(): void {
     this.bajaNumUsuario = '';
     this.bajaConfirmacion = '';
@@ -386,7 +436,7 @@ export class AdminGestionComponent implements OnInit {
 
     this.http.post(`${this.apiUrl}/admin/registro-estudiante`, this.newStudent).subscribe({
       next: (response: any) => {
-        alert(`Estudiante registrado exitosamente\nUsuario: ${response.num_usuario}\nContraseña temporal: ${response.password_temporal}`);
+        alert(`Estudiante registrado exitosamente\n\nUsuario: ${response.num_usuario}\nContraseña temporal: ${response.password_temporal}\n\nSe han enviado las credenciales a:\n- ${this.newStudent.correoTutor} (Tutor)\n- Se generará correo institucional para el estudiante`);
         this.clearForm();
         this.loadStudents();
         this.setMainTab('estudiantes');
@@ -407,7 +457,7 @@ export class AdminGestionComponent implements OnInit {
 
     this.http.post(`${this.apiUrl}/admin/registro-profesor`, this.newProfessor).subscribe({
       next: (response: any) => {
-        alert(`Profesor registrado exitosamente\nUsuario: ${response.num_usuario}\nContraseña temporal: ${response.password_temporal}`);
+        alert(`Profesor registrado exitosamente\n\nUsuario: ${response.num_usuario}\nContraseña temporal: ${response.password_temporal}\n\nSe han enviado las credenciales a: ${this.newProfessor.correoInstitucional}`);
         this.clearForm();
         this.loadProfessors();
         this.setMainTab('profesores');
@@ -426,15 +476,47 @@ export class AdminGestionComponent implements OnInit {
         fechaNacimiento: '', curp: '', telefono: '', grado: '',
         grupoId: null, tipoEstudiante: 'NUEVO_INGRESO',
         nombreTutor: '', correoTutor: '', telefonoTutor: '',
-        estado: '', municipio: '', ciudad: '', codigoPostal: null
+        estado: '', municipio: '', ciudad: '', codigoPostal: null,
+        observaciones: ''
       };
     } else {
       this.newProfessor = {
         nombres: '', apellidoPaterno: '', apellidoMaterno: '',
         correoInstitucional: '', correoPersonal: '', telefono: '',
         nivelEducativo: '', especializacion: '', departamento: '',
-        puesto: '', tipoContrato: '', fechaInicio: '', salarioMensual: null
+        puesto: '', tipoContrato: '', fechaInicio: '', salarioMensual: null,
+        subjects: [], availableDays: [], preferredSchedule: '',
+        maxHoursPerWeek: '', yearsExperience: '', certifications: '',
+        observaciones: ''
       };
+    }
+  }
+
+  // Funciones para materias
+  isSubjectSelected(subject: string): boolean {
+    return this.newProfessor.subjects.includes(subject);
+  }
+
+  toggleSubject(subject: string): void {
+    const index = this.newProfessor.subjects.indexOf(subject);
+    if (index > -1) {
+      this.newProfessor.subjects.splice(index, 1);
+    } else {
+      this.newProfessor.subjects.push(subject);
+    }
+  }
+
+  // Funciones para días
+  isDaySelected(day: string): boolean {
+    return this.newProfessor.availableDays.includes(day);
+  }
+
+  toggleDay(day: string): void {
+    const index = this.newProfessor.availableDays.indexOf(day);
+    if (index > -1) {
+      this.newProfessor.availableDays.splice(index, 1);
+    } else {
+      this.newProfessor.availableDays.push(day);
     }
   }
 
