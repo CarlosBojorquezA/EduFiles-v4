@@ -116,9 +116,6 @@ export class AdminDashboardComponent implements OnInit {
   loadDashboardData(): void {
     console.log('[DASHBOARD] Iniciando carga de datos...');
     this.isLoading = true;
-
-    // ✅ Ya NO necesitas crear headers manualmente
-    // El interceptor agrega automáticamente el Authorization header
     
     // Cargar estadísticas
     console.log('[DASHBOARD] Solicitando estadísticas...');
@@ -189,6 +186,20 @@ export class AdminDashboardComponent implements OnInit {
       }
     });
   }
+
+   // Agregar función para navegar al detalle
+  verDetalleEstadistica(tipo: string): void {
+  if (tipo === 'aprobados') {
+    // Ir a una nueva ruta o modal con documentos aprobados
+    this.router.navigate(['/admin-documentos'], { 
+      queryParams: { tab: 'aprobados' } 
+    });
+  } else if (tipo === 'pendientes') {
+    this.router.navigate(['/admin-documentos'], { 
+      queryParams: { tab: 'pendientes' } 
+    });
+  }
+}
 
   loadNavigation(): void {
     this.navigationItems = [

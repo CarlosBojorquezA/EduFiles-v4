@@ -91,6 +91,8 @@ export class LoginComponent {
       return;
     }
 
+    localStorage.clear();
+
     this.isLoading = true;
     this.clearMessages();
 

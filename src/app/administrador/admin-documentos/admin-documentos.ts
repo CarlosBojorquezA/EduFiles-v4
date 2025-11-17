@@ -341,8 +341,27 @@ export class AdminDocumentosComponent implements OnInit {
   }
 
   verDocumento(pendiente: DocumentoPendiente): void {
-    const url = `http://localhost:5000/${pendiente.url_archivo}`;
-    window.open(url, '_blank');
+    console.log('[ADMIN-DOCS] Viendo documento:', pendiente.id_documento);
+    
+    // Usar la misma lógica que descargar pero abrir en nueva pestaña
+    this.http.get(`${this.apiUrl}/documentos/descargar/${pendiente.id_documento}`, {
+      responseType: 'blob'
+    }).subscribe({
+      next: (blob) => {
+        // Crear URL del blob y abrir en nueva pestaña
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        
+        // Limpiar URL después de un tiempo
+        setTimeout(() => {
+          window.URL.revokeObjectURL(url);
+        }, 100);
+      },
+      error: (error) => {
+        console.error('[ADMIN-DOCS] Error viendo documento:', error);
+        alert('Error al ver el documento');
+      }
+    });
   }
 
   descargarDocumento(pendiente: DocumentoPendiente): void {

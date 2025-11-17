@@ -58,7 +58,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-color: #bdbdbd;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -91,7 +91,7 @@
   height: 40px;
   border-radius: 8px;
   border: none;
-  background-color: #1e293b;
+  background-color: #000000;
   color: white;
   cursor: pointer;
   display: flex;
@@ -103,7 +103,7 @@
 
 .notification-btn:hover,
 .logout-btn:hover {
-  background-color: #334155;
+  background-color: #555555;
 }
 
 .notification-btn .badge {
