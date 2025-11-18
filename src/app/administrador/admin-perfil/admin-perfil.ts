@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { NotificationsComponent } from '../../notificaciones/notificaciones';
 
 interface NavItem {
   icon: string;
@@ -13,7 +14,7 @@ interface NavItem {
 @Component({
   selector: 'app-perfil',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, NotificationsComponent],
   templateUrl: './admin-perfil.html',
   styleUrls: ['./admin-perfil.css']
 })

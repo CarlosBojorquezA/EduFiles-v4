@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { NotificationsComponent } from '../../notificaciones/notificaciones';
 
 interface DocumentoRequerido {
   id_plantilla: number;
@@ -53,7 +54,7 @@ interface NavItem {
 
 @Component({
   selector: 'app-admin-documentos',
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, NotificationsComponent],
   templateUrl: './admin-documentos.html',
   styleUrls: ['./admin-documentos.css']
 })

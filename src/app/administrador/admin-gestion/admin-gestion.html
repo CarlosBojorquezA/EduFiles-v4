@@ -13,13 +13,7 @@
       </div>
     </div>
     <div class="header-right">
-      <button class="notification-btn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-        </svg>
-        <span class="badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
-      </button>
+      <app-notifications></app-notifications>
       <button class="logout-btn" (click)="logout()">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -954,302 +948,249 @@
     </div>
   </div>
 
-  <!-- Edit Student Modal -->
-  <div class="modal-overlay" *ngIf="showEditStudentModal" (click)="closeEditStudent()">
-    <div class="modal modal-large" (click)="$event.stopPropagation()" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
-      <div class="modal-header">
-        <h2>Editar Estudiante: {{ selectedStudent?.nombre_completo }}</h2>
-        <button class="close-btn" (click)="closeEditStudent()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
+  <!-- Modal Editar Estudiante -->
+<div class="modal-overlay" *ngIf="showEditStudentModal" (click)="closeEditStudent()">
+  <div class="modal-edit" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-edit-header">
+      <h2>Editar Estudiante: {{ selectedStudent?.nombre_completo }}</h2>
+      <button class="close-btn" (click)="closeEditStudent()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <p class="modal-subtitle">Modifica los datos del estudiante</p>
+
+    <!-- Body con scroll -->
+    <div class="modal-edit-body" *ngIf="selectedStudent">
       
-      <div class="modal-body" *ngIf="selectedStudent">
-        <p class="modal-subtitle">Modifica los datos del estudiante</p>
-        
-        <!-- Datos Personales -->
-        <div class="form-section">
-          <h4>Datos Personales</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Nombre(s) *</label>
-              <input type="text" [(ngModel)]="selectedStudent.nombres" class="form-input">
-            </div>
-          </div>
+      <!-- Nombre Completo -->
+      <div class="form-field">
+        <label>Nombre Completo</label>
+        <input 
+          type="text" 
+          [value]="selectedStudent.nombres + ' ' + selectedStudent.apellido_paterno + ' ' + (selectedStudent.apellido_materno || '')"
+          disabled
+          class="form-control">
+      </div>
 
-          <div class="form-row two-cols">
-            <div class="form-group">
-              <label>Apellido Paterno *</label>
-              <input type="text" [(ngModel)]="selectedStudent.apellido_paterno" class="form-input">
-            </div>
-            <div class="form-group">
-              <label>Apellido Materno</label>
-              <input type="text" [(ngModel)]="selectedStudent.apellido_materno" class="form-input">
-            </div>
-          </div>
+      <!-- Email -->
+      <div class="form-field">
+        <label>Email</label>
+        <input 
+          type="email" 
+          [(ngModel)]="selectedStudent.correo" 
+          class="form-control"
+          placeholder="correo@ejemplo.com">
+      </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>CURP</label>
-              <input type="text" [(ngModel)]="selectedStudent.curp" class="form-input" readonly>
-            </div>
-          </div>
+      <!-- Teléfono -->
+      <div class="form-field">
+        <label>Teléfono</label>
+        <input 
+          type="tel" 
+          [(ngModel)]="selectedStudent.telefono" 
+          class="form-control"
+          placeholder="+52 555 1234">
+      </div>
+
+      <!-- Programa (disabled) -->
+      <div class="form-field">
+        <label>Programa</label>
+        <input 
+          type="text" 
+          [value]="'Grado ' + selectedStudent.grado + '°'"
+          disabled
+          class="form-control">
+      </div>
+
+      <!-- Grado y Grupo en 2 columnas -->
+      <div class="form-row-2">
+        <div class="form-field">
+          <label>Grado</label>
+          <select [(ngModel)]="selectedStudent.grado" class="form-control">
+            <option [ngValue]="1">1° Grado</option>
+            <option [ngValue]="2">2° Grado</option>
+            <option [ngValue]="3">3° Grado</option>
+            <option [ngValue]="4">4° Grado</option>
+            <option [ngValue]="5">5° Grado</option>
+            <option [ngValue]="6">6° Grado</option>
+            <option [ngValue]="7">7° Grado</option>
+            <option [ngValue]="8">8° Grado</option>
+          </select>
         </div>
 
-        <!-- Datos de Contacto -->
-        <div class="form-section">
-          <h4>Datos de Contacto</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Email</label>
-              <input type="email" [(ngModel)]="selectedStudent.correo" class="form-input">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Teléfono</label>
-              <input type="tel" [(ngModel)]="selectedStudent.telefono" class="form-input">
-            </div>
-          </div>
-        </div>
-
-        <!-- Datos Académicos -->
-        <div class="form-section">
-          <h4>Datos Académicos</h4>
-          <div class="form-row two-cols">
-            <div class="form-group">
-              <label>Semestre *</label>
-              <select [(ngModel)]="selectedStudent.grado" class="form-input">
-                <option [ngValue]="1">1° Semestre</option>
-                <option [ngValue]="2">2° Semestre</option>
-                <option [ngValue]="3">3° Semestre</option>
-                <option [ngValue]="4">4° Semestre</option>
-                <option [ngValue]="5">5° Semestre</option>
-                <option [ngValue]="6">6° Semestre</option>
-                <option [ngValue]="7">7° Semestre</option>
-                <option [ngValue]="8">8° Semestre</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Grupo</label>
-              <select [(ngModel)]="selectedStudent.grupo_id" class="form-input">
-                <option [ngValue]="null">Sin Grupo</option>
-                <option [ngValue]="1">Grupo A</option>
-                <option [ngValue]="2">Grupo B</option>
-                <option [ngValue]="3">Grupo C</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Tipo de Estudiante</label>
-              <select [(ngModel)]="selectedStudent.tipo_estudiante" class="form-input">
-                <option value="NUEVO_INGRESO">Nuevo Ingreso</option>
-                <option value="REINGRESO">Reingreso</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Datos del Tutor -->
-        <div class="form-section">
-          <h4>Datos del Tutor</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Nombre del Tutor</label>
-              <input type="text" [(ngModel)]="selectedStudent.nombre_tutor" class="form-input">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Email del Tutor</label>
-              <input type="email" [(ngModel)]="selectedStudent.correo_tutor" class="form-input">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Teléfono del Tutor</label>
-              <input type="tel" [(ngModel)]="selectedStudent.telefono_tutor" class="form-input">
-            </div>
-          </div>
-        </div>
-
-        <!-- Estado de la Cuenta -->
-        <div class="form-section">
-          <h4>Estado de la Cuenta</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Estado</label>
-              <select [(ngModel)]="selectedStudent.activo" class="form-input">
-                <option [ngValue]="1">Activo</option>
-                <option [ngValue]="0">Inactivo</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Progreso de Documentos (Solo lectura) -->
-        <div class="form-section">
-          <h4>Progreso de Documentos</h4>
-          <div class="documents-progress">
-            <div class="progress-header">
-              <span class="progress-label">Completado:</span>
-              <span class="progress-fraction">
-                {{ selectedStudent.documentos_aprobados }}/{{ selectedStudent.documentos_requeridos }}
-              </span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="getDocumentProgressPercentage(selectedStudent)"></div>
-            </div>
-          </div>
-          <p style="color: #666; font-size: 14px; margin-top: 8px;">
-            La barra de progreso se actualiza automáticamente cuando se suben y aprueban documentos
-          </p>
+        <div class="form-field">
+          <label>Grupo</label>
+          <select [(ngModel)]="selectedStudent.grupo_id" class="form-control">
+            <option [ngValue]="null">Sin Grupo</option>
+            <option [ngValue]="1">Grupo A</option>
+            <option [ngValue]="2">Grupo B</option>
+            <option [ngValue]="3">Grupo C</option>
+          </select>
         </div>
       </div>
-      
-      <div class="modal-footer">
-        <button class="btn-modal-primary" (click)="saveStudentChanges()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-            <polyline points="7 3 7 8 15 8"></polyline>
-          </svg>
-          Guardar Cambios
-        </button>
-        <button class="btn-modal-cancel" (click)="closeEditStudent()">Cancelar</button>
+
+      <!-- Estado -->
+      <div class="form-field">
+        <label>Estado</label>
+        <select [(ngModel)]="selectedStudent.activo" class="form-control">
+          <option [ngValue]="1">Activo</option>
+          <option [ngValue]="0">Inactivo</option>
+        </select>
+      </div>
+
+      <!-- Documentos - Barra de progreso DINÁMICA -->
+      <div class="documents-section">
+        <h4>Documentos</h4>
+        <div class="progress-info">
+          <span>Completado:</span>
+          <span class="progress-fraction">
+            {{ selectedStudent.documentos_aprobados }}/{{ selectedStudent.documentos_requeridos }}
+          </span>
+        </div>
+        <div class="progress-bar-edit">
+          <div 
+            class="progress-bar-fill" 
+            [style.width.%]="getDocumentProgressPercentage(selectedStudent)"></div>
+        </div>
+        <p class="progress-note">
+          La barra se actualiza automáticamente cuando se aprueban documentos
+        </p>
       </div>
     </div>
-  </div>
 
-  <!-- Edit Professor Modal -->
-  <div class="modal-overlay" *ngIf="showEditProfessorModal" (click)="closeEditProfessor()">
-    <div class="modal modal-large" (click)="$event.stopPropagation()" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
-      <div class="modal-header">
-        <h2>Editar Profesor: {{ selectedProfessor?.nombre_completo }}</h2>
-        <button class="close-btn" (click)="closeEditProfessor()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-      
-      <div class="modal-body" *ngIf="selectedProfessor">
-        <p class="modal-subtitle">Modifica los datos del profesor</p>
-        
-        <!-- Datos Personales -->
-        <div class="form-section">
-          <h4>Datos Personales</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Nombre(s) *</label>
-              <input type="text" [(ngModel)]="selectedProfessor.nombres" class="form-input">
-            </div>
-          </div>
-
-          <div class="form-row two-cols">
-            <div class="form-group">
-              <label>Apellido Paterno *</label>
-              <input type="text" [(ngModel)]="selectedProfessor.apellido_paterno" class="form-input">
-            </div>
-            <div class="form-group">
-              <label>Apellido Materno</label>
-              <input type="text" [(ngModel)]="selectedProfessor.apellido_materno" class="form-input">
-            </div>
-          </div>
-        </div>
-
-        <!-- Datos de Contacto -->
-        <div class="form-section">
-          <h4>Datos de Contacto</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Email Institucional *</label>
-              <input type="email" [(ngModel)]="selectedProfessor.correo" class="form-input">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Teléfono</label>
-              <input type="tel" [(ngModel)]="selectedProfessor.telefono" class="form-input">
-            </div>
-          </div>
-        </div>
-
-        <!-- Datos Académicos -->
-        <div class="form-section">
-          <h4>Datos Académicos</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Licenciatura/Especialización</label>
-              <input type="text" [(ngModel)]="selectedProfessor.licenciatura" class="form-input">
-            </div>
-          </div>
-        </div>
-
-        <!-- Estado de la Cuenta -->
-        <div class="form-section">
-          <h4>Estado de la Cuenta</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Estado</label>
-              <select [(ngModel)]="selectedProfessor.activo" class="form-input">
-                <option [ngValue]="1">Activo</option>
-                <option [ngValue]="0">Inactivo</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Materias y Grupos Asignados (Solo lectura) -->
-        <div class="form-section">
-          <h4>Asignaciones Actuales</h4>
-          <div class="info-section">
-            <p *ngIf="selectedProfessor.materias_asignadas && selectedProfessor.materias_asignadas.length > 0">
-              <strong>Materias asignadas ({{ selectedProfessor.materias_asignadas.length }}):</strong><br>
-              {{ selectedProfessor.materias_asignadas.join(', ') }}
-            </p>
-            <p *ngIf="!selectedProfessor.materias_asignadas || selectedProfessor.materias_asignadas.length === 0" style="color: #999;">
-              Sin materias asignadas
-            </p>
-          </div>
-
-          <div class="info-section" style="margin-top: 12px;">
-            <p *ngIf="selectedProfessor.grupos_asignados && selectedProfessor.grupos_asignados.length > 0">
-              <strong>Grupos asignados ({{ selectedProfessor.grupos_asignados.length }}):</strong><br>
-              <span *ngFor="let grupo of selectedProfessor.grupos_asignados; let last = last">
-                Grupo {{ grupo.grupo_id }} - {{ grupo.turno }}<span *ngIf="!last">, </span>
-              </span>
-            </p>
-            <p *ngIf="!selectedProfessor.grupos_asignados || selectedProfessor.grupos_asignados.length === 0" style="color: #999;">
-              Sin grupos asignados
-            </p>
-          </div>
-        </div>
-      </div>
-      
-      <div class="modal-footer">
-        <button class="btn-modal-primary" (click)="saveProfessorChanges()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-            <polyline points="7 3 7 8 15 8"></polyline>
-          </svg>
-          Guardar Cambios
-        </button>
-        <button class="btn-modal-cancel" (click)="closeEditProfessor()">Cancelar</button>
-      </div>
+    <!-- Footer con botones -->
+    <div class="modal-edit-footer">
+      <button class="btn-save" (click)="saveStudentChanges()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+          <polyline points="17 21 17 13 7 13 7 21"></polyline>
+          <polyline points="7 3 7 8 15 8"></polyline>
+        </svg>
+        Guardar Cambios
+      </button>
+      <button class="btn-cancel" (click)="closeEditStudent()">Cancelar</button>
     </div>
   </div>
+</div>
+
+  <!-- Modal Editar Profesor -->
+<div class="modal-overlay" *ngIf="showEditProfessorModal" (click)="closeEditProfessor()">
+  <div class="modal-edit" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-edit-header">
+      <h2>Editar Profesor: {{ selectedProfessor?.nombre_completo }}</h2>
+      <button class="close-btn" (click)="closeEditProfessor()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <p class="modal-subtitle">Modifica los datos del profesor</p>
+
+    <!-- Body con scroll -->
+    <div class="modal-edit-body" *ngIf="selectedProfessor">
+      
+      <!-- Nombre Completo -->
+      <div class="form-field">
+        <label>Nombre Completo</label>
+        <input 
+          type="text" 
+          [value]="selectedProfessor.nombres + ' ' + selectedProfessor.apellido_paterno + ' ' + (selectedProfessor.apellido_materno || '')"
+          disabled
+          class="form-control">
+      </div>
+
+      <!-- Email Institucional -->
+      <div class="form-field">
+        <label>Email Institucional</label>
+        <input 
+          type="email" 
+          [(ngModel)]="selectedProfessor.correo" 
+          class="form-control"
+          placeholder="profesor@universidad.edu">
+      </div>
+
+      <!-- Teléfono -->
+      <div class="form-field">
+        <label>Teléfono</label>
+        <input 
+          type="tel" 
+          [(ngModel)]="selectedProfessor.telefono" 
+          class="form-control"
+          placeholder="+52 555 1234">
+      </div>
+
+      <!-- Licenciatura/Especialización -->
+      <div class="form-field">
+        <label>Licenciatura/Especialización</label>
+        <input 
+          type="text" 
+          [(ngModel)]="selectedProfessor.licenciatura" 
+          class="form-control"
+          placeholder="Ej: Licenciado en Matemáticas">
+      </div>
+
+      <!-- Estado -->
+      <div class="form-field">
+        <label>Estado</label>
+        <select [(ngModel)]="selectedProfessor.activo" class="form-control">
+          <option [ngValue]="1">Activo</option>
+          <option [ngValue]="0">Inactivo</option>
+        </select>
+      </div>
+
+      <!-- Materias Asignadas -->
+      <div class="info-section" *ngIf="selectedProfessor.materias_asignadas && selectedProfessor.materias_asignadas.length > 0">
+        <h4>Materias Asignadas ({{ selectedProfessor.materias_asignadas.length }})</h4>
+        <div class="tags-container">
+          <span class="tag" *ngFor="let materia of selectedProfessor.materias_asignadas">
+            {{ materia }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Grupos Asignados -->
+      <div class="info-section" *ngIf="selectedProfessor.grupos_asignados && selectedProfessor.grupos_asignados.length > 0">
+        <h4>Grupos Asignados ({{ selectedProfessor.grupos_asignados.length }})</h4>
+        <div class="groups-list">
+          <div class="group-item" *ngFor="let grupo of selectedProfessor.grupos_asignados">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span>Grupo {{ grupo.grupo_id }} - {{ grupo.turno }}</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="info-note">
+        * Las materias y grupos se gestionan desde la sección de asignaciones
+      </p>
+    </div>
+
+    <!-- Footer con botones -->
+    <div class="modal-edit-footer">
+      <button class="btn-save" (click)="saveProfessorChanges()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+          <polyline points="17 21 17 13 7 13 7 21"></polyline>
+          <polyline points="7 3 7 8 15 8"></polyline>
+        </svg>
+        Guardar Cambios
+      </button>
+      <button class="btn-cancel" (click)="closeEditProfessor()">Cancelar</button>
+    </div>
+  </div>
+</div>
 
  <!-- Modal Dar de Baja a Usuario -->
   <div class="modal-overlay" *ngIf="showBajaModal" (click)="closeBajaModal()">

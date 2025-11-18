@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { NotificationsComponent } from '../../notificaciones/notificaciones';
+
 
 interface Student {
   id_estudiante: number;
@@ -55,7 +57,7 @@ interface NavItem {
 @Component({
   selector: 'app-admin-gestion',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, NotificationsComponent],
   templateUrl: './admin-gestion.html',
   styleUrls: ['./admin-gestion.css']
 })
