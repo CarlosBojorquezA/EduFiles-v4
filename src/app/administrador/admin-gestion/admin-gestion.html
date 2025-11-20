@@ -588,15 +588,11 @@
         <div class="form-section">
           <h4>Datos de Contacto</h4>
           <div class="form-row">
-            <div class="form-group">
-              <label>Email Institucional *</label>
-              <input type="email" [(ngModel)]="newProfessor.correoInstitucional" placeholder="profesor@universidad.edu" class="form-input">
-            </div>
           </div>
           <div class="form-row">
             <div class="form-group">
               <label>Email Personal</label>
-              <input type="email" [(ngModel)]="newProfessor.correoPersonal" placeholder="personal@email.com" class="form-input">
+              <input type="email" [(ngModel)]="newProfessor.correo" placeholder="personal@email.com" class="form-input">
             </div>
           </div>
           <div class="form-row">
@@ -808,7 +804,7 @@
 
         <div class="info-box" style="margin-top: 16px; padding: 12px; background: #e8f4fd; border-left: 4px solid #2196f3; border-radius: 4px;">
           <p style="margin: 0; color: #1565c0; font-size: 14px;">
-            📧 <strong>Nota:</strong> Al registrar al profesor, se enviarán automáticamente las credenciales de acceso al correo institucional proporcionado.
+            📧 <strong>Nota:</strong> Al registrar al profesor, se enviarán automáticamente las credenciales de acceso al correo proporcionado.
           </p>
         </div>
       </div>

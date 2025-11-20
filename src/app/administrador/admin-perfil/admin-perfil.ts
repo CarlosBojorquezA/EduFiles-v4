@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NotificationsComponent } from '../../notificaciones/notificaciones';
+import { AuthService } from '../../auth.service';
 
 interface NavItem {
   icon: string;
@@ -19,22 +20,24 @@ interface NavItem {
   styleUrls: ['./admin-perfil.css']
 })
 export class AdminPerfilComponent implements OnInit {
-  userRole: 'administrador' | 'estudiante' | 'profesor' = 'administrador';
-  userName: string = 'Carlos Rodríguez';
-  notificationCount: number = 5;
+  userRole: string = 'administrador';
+  userName: string = '';
   currentRoute: string = '/perfil';
 
   // Tabs
   activeTab: 'contacto' | 'seguridad' = 'contacto';
 
   // User profile data
-  userProfile = {
-    fullName: 'Carlos Rodríguez',
-    email: 'admin@gmail.com',
-    alternativeEmail: 'email.alternativo@ejemplo.com',
-    phone: '555-1234-5678',
-    department: 'Administración Académica',
-    position: 'Coordinador de Documentos'
+  userProfile: any = {
+    fullName: '',
+    nombres: '',
+    apellido_paterno: '', 
+    apellido_materno: '',
+    email: '',
+    alternativeEmail: '',
+    phone: '',
+    department: '',
+    position: ''
   };
 
   // Edit mode
@@ -42,13 +45,14 @@ export class AdminPerfilComponent implements OnInit {
   originalProfile: any = null;
 
   // Security data
-  lastPasswordUpdate: string = 'hace 30 días';
+  lastPasswordUpdate: string = 'No registrado';
   twoFactorEnabled: boolean = false;
   activeSessions: number = 1;
 
   // Change password modal
   showChangePasswordModal: boolean = false;
   showVerificationModal: boolean = false;
+
   passwordForm = {
     currentPassword: '',
     newPassword: '',
@@ -59,11 +63,47 @@ export class AdminPerfilComponent implements OnInit {
 
   navigationItems: NavItem[] = [];
 
-  constructor(private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router) {}
 
   ngOnInit(): void {
+    this.loadUserProfile();
     this.loadNavigation();
     this.currentRoute = this.router.url;
+  }
+
+  loadUserProfile(): void {
+    this.authService.getPerfil().subscribe({
+      next: (data) => {
+        // data contiene: id, rol, correo, detalles, etc
+        this.userRole = data.rol.toLowerCase();
+        this.loadNavigation();
+
+        const detalles = data.detalles || {};
+        
+        // Construir nombre completo
+        const nombreCompleto = `${detalles.nombres} ${detalles.apellido_paterno} ${detalles.apellido_materno || ''}`.trim();
+        this.userName = nombreCompleto;
+
+        // Mapear datos del backend al objeto del frontend
+        this.userProfile = {
+          fullName: nombreCompleto,
+          nombres: detalles.nombres,
+          apellido_paterno: detalles.apellido_paterno,
+          apellido_materno: detalles.apellido_materno || '',
+          email: data.correo,
+          alternativeEmail: detalles.correo_alternativo || '',
+          phone: detalles.telefono || '', 
+          department: detalles.departamento || '',
+          position: detalles.puesto || ''
+        };
+      },
+      error: (err) => {
+        console.error('Error cargando perfil', err);
+        if (err.status === 401) this.router.navigate(['']);
+      }
+    });
   }
 
   loadNavigation(): void {
@@ -88,7 +128,7 @@ export class AdminPerfilComponent implements OnInit {
       ]
     };
 
-    this.navigationItems = navigationConfig[this.userRole];
+    this.navigationItems = navigationConfig['administrador'];
   }
 
   setTab(tab: 'contacto' | 'seguridad'): void {
@@ -109,55 +149,120 @@ export class AdminPerfilComponent implements OnInit {
   }
 
   saveContactChanges(): void {
-    console.log('Guardar cambios de contacto:', this.userProfile);
-    this.isEditingContact = false;
-    this.originalProfile = null;
+    // 1. Separar el nombre completo en partes
+    const nombreCompleto = this.userProfile.fullName.trim();
+    const partes = nombreCompleto.split(' ');
+    
+    let nuevosNombres = '';
+    let nuevoPaterno = '';
+    let nuevoMaterno = '';
+
+    // Lógica simple para separar Nombres y Apellidos
+    if (partes.length === 1) {
+      nuevosNombres = partes[0];
+    } else if (partes.length === 2) {
+      nuevosNombres = partes[0];
+      nuevoPaterno = partes[1];
+    } else {
+      // Si hay 3 o más palabras, asumimos que las dos últimas son apellidos
+      // Ejemplo: "Juan Carlos Perez Lopez"
+      nuevoMaterno = partes.pop() || ''; // Lopez
+      nuevoPaterno = partes.pop() || ''; // Perez
+      nuevosNombres = partes.join(' ');  // Juan Carlos
+    }
+    
+    // 2. Actualizar el objeto local ANTES de enviar
+    // Esto es crucial para que la UI se refresque y para futuras ediciones
+    this.userProfile.nombres = nuevosNombres;
+    this.userProfile.apellido_paterno = nuevoPaterno;
+    this.userProfile.apellido_materno = nuevoMaterno;
+
+    const payload = {
+      email: this.userProfile.email,
+      
+      // USAR LAS VARIABLES YA ACTUALIZADAS
+      nombres: this.userProfile.nombres, 
+      apellido_paterno: this.userProfile.apellido_paterno,
+      apellido_materno: this.userProfile.apellido_materno,
+      
+      telefono: this.userProfile.phone,       
+      departamento: this.userProfile.department, 
+      puesto: this.userProfile.position,
+      correo_alternativo: this.userProfile.alternativeEmail
+    };
+
+    this.authService.actualizarPerfil(payload).subscribe({
+      next: () => {
+        // Actualizar el nombre en el encabezado inmediatamente
+        this.userName = this.userProfile.fullName;
+        
+        // Forzar actualización del localStorage para que otras ventanas (header global) lo vean
+        const currentUser = JSON.parse(localStorage.getItem('userData') || '{}');
+        if (currentUser && currentUser.detalles) {
+            currentUser.detalles.nombres = this.userProfile.nombres;
+            currentUser.detalles.apellido_paterno = this.userProfile.apellido_paterno;
+            currentUser.detalles.apellido_materno = this.userProfile.apellido_materno;
+            localStorage.setItem('userData', JSON.stringify(currentUser));
+        }
+
+        alert('Perfil actualizado exitosamente');
+        this.isEditingContact = false;
+        this.originalProfile = null;
+        this.loadUserProfile();
+      },
+      error: (err) => {
+        console.error('Error al actualizar', err);
+        alert('Error al guardar los cambios');
+      }
+    });
   }
 
-  openChangePasswordModal(): void {
-    this.showChangePasswordModal = true;
-    this.passwordForm = {
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    };
-  }
-
-  closeChangePasswordModal(): void {
-    this.showChangePasswordModal = false;
-    this.passwordForm = {
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    };
-  }
+  openChangePasswordModal(): void { this.showChangePasswordModal = true; }
+  closeChangePasswordModal(): void { this.showChangePasswordModal = false; }
 
   requestPasswordChange(): void {
-    // Validaciones básicas
-    if (!this.passwordForm.currentPassword || !this.passwordForm.newPassword || !this.passwordForm.confirmPassword) {
-      alert('Por favor completa todos los campos');
-      return;
-    }
-
-    if (this.passwordForm.newPassword !== this.passwordForm.confirmPassword) {
-      alert('Las contraseñas no coinciden');
-      return;
-    }
-
-    if (this.passwordForm.newPassword.length < 6) {
-      alert('La contraseña debe tener al menos 6 caracteres');
-      return;
-    }
-
-    // Generar código de verificación (en producción vendría del backend)
-    this.generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log('Código de verificación generado:', this.generatedCode);
-    console.log('Enviando código al email:', this.userProfile.email);
-
-    // Cerrar modal de contraseña y abrir modal de verificación
-    this.showChangePasswordModal = false;
-    this.showVerificationModal = true;
+  // Validaciones básicas del formulario
+  if (!this.passwordForm.currentPassword || !this.passwordForm.newPassword || !this.passwordForm.confirmPassword) {
+    alert('Por favor completa todos los campos');
+    return;
   }
+
+  if (this.passwordForm.newPassword !== this.passwordForm.confirmPassword) {
+    alert('Las contraseñas nuevas no coinciden');
+    return;
+  }
+
+  if (this.passwordForm.newPassword.length < 6) {
+    alert('La contraseña debe tener al menos 6 caracteres');
+    return;
+  }
+    
+    // 2. Solicitar código al Backend
+  // Mostramos un indicador de carga o mensaje
+  const btn = document.querySelector('.btn-modal-primary') as HTMLButtonElement;
+  if(btn) btn.innerText = 'Enviando código...';
+  if(btn) btn.disabled = true;
+
+  this.authService.solicitarCodigoCambio().subscribe({
+    next: (res) => {
+      console.log('Código enviado:', res);
+      
+      // Ocultar modal de contraseña y mostrar el de verificación
+      this.showChangePasswordModal = false;
+      this.showVerificationModal = true;
+      
+      // Restaurar botón por si acaso
+      if(btn) btn.innerText = 'Cambiar Contraseña';
+      if(btn) btn.disabled = false;
+    },
+    error: (err) => {
+      console.error(err);
+      alert('Error al enviar el código: ' + (err.error?.error || 'Error de servidor'));
+      if(btn) btn.innerText = 'Cambiar Contraseña';
+      if(btn) btn.disabled = false;
+    }
+  });
+}
 
   closeVerificationModal(): void {
     this.showVerificationModal = false;
@@ -166,23 +271,37 @@ export class AdminPerfilComponent implements OnInit {
   }
 
   verifyAndChangePassword(): void {
-    if (!this.verificationCode) {
-      alert('Por favor introduce el código de verificación');
-      return;
-    }
-
-    if (this.verificationCode === this.generatedCode) {
-      console.log('Código verificado correctamente');
-      console.log('Cambiando contraseña...');
-      
-      alert('¡Contraseña cambiada exitosamente!');
-      
-      this.closeVerificationModal();
-      this.lastPasswordUpdate = 'hace unos segundos';
-    } else {
-      alert('Código de verificación incorrecto');
-    }
+  if (!this.verificationCode) {
+    alert('Por favor introduce el código de verificación');
+    return;
   }
+
+  // Llamar al endpoint de confirmación
+  this.authService.confirmarCambioPassword(
+    this.verificationCode,
+    this.passwordForm.currentPassword,
+    this.passwordForm.newPassword
+  ).subscribe({
+    next: (res) => {
+      alert('¡Contraseña cambiada exitosamente!');
+      this.closeVerificationModal();
+      this.closeChangePasswordModal(); // Asegurar que ambos se cierren
+      
+      // Limpiar formulario
+      this.passwordForm = {
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      };
+      this.verificationCode = '';
+      this.lastPasswordUpdate = 'hace unos segundos';
+    },
+    error: (err) => {
+      console.error(err);
+      alert(err.error?.error || 'Código incorrecto o expirado');
+    }
+  });
+}
 
   configureTwoFactor(): void {
     console.log('Configurar autenticación de dos factores');
@@ -211,6 +330,7 @@ export class AdminPerfilComponent implements OnInit {
   }
 
   logout(): void {
+    localStorage.clear();
     this.router.navigate(['']);
   }
 }

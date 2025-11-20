@@ -90,15 +90,22 @@ export class AuthService {
   }
 
   // ========== CAMBIAR CONTRASEÑA ==========
-  cambiarPassword(old_password: string, new_password: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/cambiar-password`, { 
-      old_password, 
-      new_password 
-    }, { 
-      headers: this.getAuthHeaders() 
-    });
-  }
+  solicitarCodigoCambio(): Observable<any> {
+  return this.http.post(`${this.apiUrl}/auth/solicitar-codigo-cambio`, {}, {
+    headers: this.getAuthHeaders()
+  });
+}
 
+// Confirmar el cambio con el código (Paso 2)
+confirmarCambioPassword(codigo: string, currentPass: string, newPass: string): Observable<any> {
+  return this.http.post(`${this.apiUrl}/auth/confirmar-cambio-password`, {
+    codigo: codigo,
+    current_password: currentPass,
+    new_password: newPass
+  }, {
+    headers: this.getAuthHeaders()
+  });
+}
   // ========== PERFIL ==========
   getPerfil(): Observable<any> {
     return this.http.get(`${this.apiUrl}/auth/perfil`, { 

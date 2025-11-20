@@ -148,8 +148,7 @@ export class AdminGestionComponent implements OnInit {
     nombres: '',
     apellidoPaterno: '',
     apellidoMaterno: '',
-    correoInstitucional: '',
-    correoPersonal: '',
+    correo: '',
     telefono: '',
     nivelEducativo: '',
     especializacion: '',
@@ -451,15 +450,15 @@ export class AdminGestionComponent implements OnInit {
   }
 
   registerNewProfessor(): void {
-    if (!this.newProfessor.nombres || !this.newProfessor.apellidoPaterno ||
-        !this.newProfessor.correoInstitucional) {
+    if (!this.newProfessor.nombres || !this.newProfessor.apellidoPaterno )
+      {
       alert('Por favor completa todos los campos obligatorios');
       return;
     }
 
     this.http.post(`${this.apiUrl}/admin/registro-profesor`, this.newProfessor).subscribe({
       next: (response: any) => {
-        alert(`Profesor registrado exitosamente\n\nUsuario: ${response.num_usuario}\nContraseña temporal: ${response.password_temporal}\n\nSe han enviado las credenciales a: ${this.newProfessor.correoInstitucional}`);
+        alert(`Profesor registrado exitosamente\n\nUsuario: ${response.num_usuario}\nContraseña temporal: ${response.password_temporal}\n\nSe han enviado las credenciales a: ${this.newProfessor.correo}`);
         this.clearForm();
         this.loadProfessors();
         this.setMainTab('profesores');
@@ -484,7 +483,7 @@ export class AdminGestionComponent implements OnInit {
     } else {
       this.newProfessor = {
         nombres: '', apellidoPaterno: '', apellidoMaterno: '',
-        correoInstitucional: '', correoPersonal: '', telefono: '',
+        correo: '', telefono: '',
         nivelEducativo: '', especializacion: '', departamento: '',
         puesto: '', tipoContrato: '', fechaInicio: '', salarioMensual: null,
         subjects: [], availableDays: [], preferredSchedule: '',
