@@ -60,42 +60,31 @@
   gap: 12px;
 }
 
-.notification-btn,
 .logout-btn {
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  background: transparent;
   border: none;
-  background-color: #000000;
-  color: white;
   cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  transition: all 0.2s ease;
+  align-items: center;     
+  justify-content: center; 
 }
 
-.notification-btn:hover,
+.logout-btn svg {
+  width: 100%;
+  height: 100%;
+  color: white;
+}
+
 .logout-btn:hover {
   background-color: #555555;
 }
 
-.notification-btn .badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  background-color: #ef4444;
-  color: white;
-  font-size: 11px;
-  font-weight: 600;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+
 
 /* Main Content */
 .main-content {
@@ -295,6 +284,157 @@
   background-color: rgba(245, 158, 11, 0.2);
   color: #dcb227;
   border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.loading-container {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 20px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #1a1a1a;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 15px;
+  color: #666;
+  margin: 0;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: white;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+
+.empty-state svg {
+  color: #d1d5db;
+  margin: 0 auto 16px;
+  display: block;
+}
+
+.empty-state h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+/* Document Card Hover Effect Enhancement */
+.document-card {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.document-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Alert Card Animation */
+.alert-card {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Progress Bar Animation */
+.progress-bar-fill {
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Pulse animation for notification badge */
+.notification-btn .badge {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .loading-container {
+    padding: 40px 20px;
+  }
+  
+  .spinner {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .empty-state {
+    padding: 40px 16px;
+  }
+  
+  .empty-state svg {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+/* Tooltip for truncated text */
+.document-comment {
+  position: relative;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  line-clamp: 2;
+  box-orient: vertical;
+}
+
+/* Improved status badges */
+.status-badge {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Document icon enhancement */
+.document-icon {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.document-card:hover .document-icon {
+  transform: scale(1.1);
 }
 
 /* Bottom Navigation */

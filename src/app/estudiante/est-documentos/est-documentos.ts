@@ -2,21 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-
-interface Document {
-  id: string;
-  name: string;
-  category: 'fixed' | 'periodic';
-  status: 'approved' | 'rejected' | 'pending' | 'missing';
-  statusLabel: string;
-  required: boolean;
-  description: string;
-  dueDate?: string;
-  uploadDate?: string;
-  rejectionReason?: string;
-  badgeColor: string;
-  periodicity?: string;
-}
+import { DocumentosService, DocumentoDetalle, Plantilla } from '../../services/documentos.service';
+import { AuthService } from '../../auth.service';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { NotificationsComponent } from '../../notificaciones/notificaciones';
 
 interface Alert {
   type: 'error' | 'warning';
@@ -31,142 +20,123 @@ interface NavItem {
   badge?: number;
 }
 
+interface DocumentoUI {
+  id_documento?: number;
+  id_plantilla: number;
+  name: string;
+  category: 'fixed' | 'periodic';
+  status: 'approved' | 'rejected' | 'pending' | 'missing';
+  statusLabel: string;
+  required: boolean;
+  description: string;
+  dueDate?: string;
+  uploadDate?: string;
+  rejectionReason?: string;
+  badgeColor: string;
+  periodicity?: string;
+}
+
 @Component({
   selector: 'app-est-documentos',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, NotificationsComponent],
   templateUrl: './est-documentos.html',
   styleUrls: ['./est-documentos.css']
 })
 export class EstDocumentosComponent implements OnInit {
   userRole: 'estudiante' = 'estudiante';
-  userName: string = 'María García';
-  userAccountNumber: string = '2024001234';
-  userCareer: string = 'Ingeniería de Sistemas';
-  userGradeGroup: string = '2°A';
+  userName: string = '';
+  userAccountNumber: string = '';
+  userCareer: string = '';
+  userGradeGroup: string = '';
   notificationCount: number = 3;
   currentRoute: string = '/est-documentos';
 
   // Student type
-  studentType: string = 'Reinscripción';
-  studentTypeLabel: string = 'Reingreso';
+  studentType: string = '';
+  studentTypeLabel: string = '';
+  tipoEstudiante: 'NUEVO_INGRESO' | 'REINGRESO' = 'NUEVO_INGRESO';
 
   // Progress
-  documentsApproved: number = 3;
-  documentsTotal: number = 6;
+  documentsApproved: number = 0;
+  documentsTotal: number = 0;
 
   // Active tab
   activeTab: 'todos' | 'fijos' | 'periodicos' = 'todos';
 
   // Alerts
-  alerts: Alert[] = [
-    {
-      type: 'error',
-      title: 'Identificación Oficial:',
-      message: 'Imagen borrosa, volver a subir'
-    },
-    {
-      type: 'warning',
-      title: 'Comprobante de Domicilio:',
-      message: ''
-    }
-  ];
-
-  // Additional info
-  additionalInfo: string = '+1 documentos más requieren atención';
+  alerts: Alert[] = [];
+  additionalInfo: string = '';
 
   // Documents
-  documents: Document[] = [
-    {
-      id: '1',
-      name: 'CURP',
-      category: 'fixed',
-      status: 'approved',
-      statusLabel: 'Aprobado',
-      required: true,
-      description: 'Clave Única de Registro de Población',
-      uploadDate: '14/02/2024',
-      badgeColor: '#1a1a1a'
-    },
-    {
-      id: '2',
-      name: 'Identificación Oficial',
-      category: 'fixed',
-      status: 'rejected',
-      statusLabel: 'Rechazado',
-      required: true,
-      description: 'INE, Pasaporte o Cédula Profesional',
-      uploadDate: '15/02/2024',
-      rejectionReason: 'Imagen borrosa, volver a subir',
-      badgeColor: '#ef4444'
-    },
-    {
-      id: '3',
-      name: 'Certificado de Estudios',
-      category: 'fixed',
-      status: 'approved',
-      statusLabel: 'Aprobado',
-      required: true,
-      description: 'Certificado de nivel anterior',
-      uploadDate: '16/02/2024',
-      badgeColor: '#1a1a1a'
-    },
-    {
-      id: '4',
-      name: 'Acta de Nacimiento',
-      category: 'fixed',
-      status: 'approved',
-      statusLabel: 'Aprobado',
-      required: true,
-      description: 'Original y copia',
-      uploadDate: '17/02/2024',
-      badgeColor: '#1a1a1a'
-    },
-    {
-      id: '5',
-      name: 'Comprobante de Domicilio',
-      category: 'periodic',
-      status: 'missing',
-      statusLabel: 'Faltante',
-      required: true,
-      description: 'No mayor a 3 meses',
-      periodicity: 'Cada 6 meses',
-      badgeColor: '#666'
-    },
-    {
-      id: '6',
-      name: 'Documento de Reinscripción',
-      category: 'periodic',
-      status: 'missing',
-      statusLabel: 'Faltante',
-      required: true,
-      description: 'Documentos de reinscripción',
-      periodicity: 'Anual',
-      badgeColor: '#666'
-    }
-  ];
+  documents: DocumentoUI[] = [];
+  documentosOriginales: DocumentoDetalle[] = [];
 
   // Modals
   showViewModal: boolean = false;
   showDeleteModal: boolean = false;
   showUploadModal: boolean = false;
-  selectedDocument: Document | null = null;
+  selectedDocument: DocumentoUI | null = null;
+  
+  // Document preview
+  documentPreviewUrl: SafeUrl | null = null;
+  isLoadingPreview: boolean = false;
 
   // Upload form
   uploadForm = {
     documentType: '',
+    idPlantilla: 0,
     file: null as File | null,
     fileName: '',
     description: ''
   };
 
-  navigationItems: NavItem[] = [];
+  // Plantillas disponibles para subir
+  plantillasDisponibles: Plantilla[] = [];
 
-  constructor(private router: Router) {}
+  navigationItems: NavItem[] = [];
+  isLoading: boolean = true;
+  isMobile: boolean = false;
+
+  constructor(
+    private router: Router,
+    private documentosService: DocumentosService,
+    private authService: AuthService,
+    private sanitizer: DomSanitizer
+  ) {
+    this.isMobile = this.detectMobile();
+  }
 
   ngOnInit(): void {
+    this.loadUserData();
     this.loadNavigation();
+    this.loadDocuments();
     this.currentRoute = this.router.url;
+  }
+
+  detectMobile(): boolean {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }
+
+  loadUserData(): void {
+    const user = this.authService.getCurrentUser();
+    if (user && user.detalles) {
+      const detalles = user.detalles;
+      this.userName = `${detalles.nombres} ${detalles.apellido_paterno} ${detalles.apellido_materno || ''}`.trim();
+      this.userAccountNumber = user.num_usuario;
+      this.tipoEstudiante = detalles.tipo_estudiante || 'NUEVO_INGRESO';
+      this.studentType = detalles.tipo_estudiante === 'REINGRESO' ? 'Reinscripción' : 'Nuevo Ingreso';
+      this.studentTypeLabel = detalles.tipo_estudiante === 'REINGRESO' ? 'Reingreso' : 'Nuevo Ingreso';
+      
+      if (detalles.grado) {
+        this.userGradeGroup = `${detalles.grado}°`;
+        if (detalles.grupo_turno) {
+          this.userGradeGroup += ` ${detalles.grupo_turno}`;
+        }
+      }
+      
+      this.userCareer = detalles.nivel_educativo || 'Estudiante';
+    }
   }
 
   loadNavigation(): void {
@@ -179,11 +149,113 @@ export class EstDocumentosComponent implements OnInit {
     ];
   }
 
-  get progressPercentage(): number {
-    return (this.documentsApproved / this.documentsTotal) * 100;
+  loadDocuments(): void {
+    this.isLoading = true;
+
+    this.documentosService.getMisDocumentos().subscribe({
+      next: (documentos) => {
+        this.documentosOriginales = documentos;
+        this.processDocuments(documentos);
+        this.generateAlerts(documentos);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error cargando documentos:', error);
+        this.isLoading = false;
+      }
+    });
   }
 
-  get filteredDocuments(): Document[] {
+  processDocuments(documentos: DocumentoDetalle[]): void {
+    // Mapear documentos subidos
+    const documentosUI: DocumentoUI[] = documentos.map(doc => ({
+      id_documento: doc.id_documento,
+      id_plantilla: doc.id_plantilla,
+      name: doc.plantilla_nombre,
+      category: doc.es_fijo === 1 ? 'fixed' : 'periodic',
+      status: this.mapStatus(doc.estado),
+      statusLabel: this.getStatusLabel(doc.estado),
+      required: doc.obligatorio === 1,
+      description: doc.descripcion,
+      uploadDate: doc.fecha_subida ? this.formatDate(doc.fecha_subida) : '',
+      rejectionReason: doc.estado === 'RECHAZADO' ? (doc.comentario ?? undefined) : undefined,
+      badgeColor: this.getStatusColor(doc.estado),
+      periodicity: doc.requiere_actualizacion === 1 && doc.dias_vigencia 
+        ? `Cada ${Math.floor(doc.dias_vigencia / 30)} ${Math.floor(doc.dias_vigencia / 30) === 1 ? 'mes' : 'meses'}`
+        : undefined
+    }));
+
+    this.documents = documentosUI;
+    
+    // Calcular estadísticas
+    this.documentsTotal = documentos.length;
+    this.documentsApproved = documentos.filter(d => d.estado === 'APROBADO').length;
+  }
+
+  mapStatus(estado: string): 'approved' | 'rejected' | 'pending' | 'missing' {
+    switch (estado) {
+      case 'APROBADO': return 'approved';
+      case 'RECHAZADO': return 'rejected';
+      default: return 'pending';
+    }
+  }
+
+  getStatusLabel(estado: string): string {
+    switch (estado) {
+      case 'APROBADO': return 'Aprobado';
+      case 'RECHAZADO': return 'Rechazado';
+      case 'PENDIENTE': return 'Pendiente';
+      case 'EN_REVISION': return 'En Revisión';
+      default: return 'Faltante';
+    }
+  }
+
+  getStatusColor(estado: string): string {
+    switch (estado) {
+      case 'APROBADO': return '#1a1a1a';
+      case 'RECHAZADO': return '#ef4444';
+      default: return '#666';
+    }
+  }
+
+  generateAlerts(documentos: DocumentoDetalle[]): void {
+    this.alerts = [];
+    let additionalCount = 0;
+
+    documentos.forEach(doc => {
+      if (doc.estado === 'RECHAZADO' && doc.comentario) {
+        if (this.alerts.length < 2) {
+          this.alerts.push({
+            type: 'error',
+            title: `${doc.plantilla_nombre}:`,
+            message: doc.comentario
+          });
+        } else {
+          additionalCount++;
+        }
+      }
+    });
+
+    if (additionalCount > 0) {
+      this.additionalInfo = `+${additionalCount} documento${additionalCount > 1 ? 's' : ''} más requieren atención`;
+    }
+  }
+
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-MX', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric' 
+    });
+  }
+
+  get progressPercentage(): number {
+    if (this.documentsTotal === 0) return 0;
+    return Math.round((this.documentsApproved / this.documentsTotal) * 100);
+  }
+
+  get filteredDocuments(): DocumentoUI[] {
     if (this.activeTab === 'todos') return this.documents;
     if (this.activeTab === 'fijos') return this.documents.filter(d => d.category === 'fixed');
     if (this.activeTab === 'periodicos') return this.documents.filter(d => d.category === 'periodic');
@@ -191,9 +263,7 @@ export class EstDocumentosComponent implements OnInit {
   }
 
   get fixedDocumentsCount(): number {
-    const fixed = this.documents.filter(d => d.category === 'fixed');
-    const approved = fixed.filter(d => d.status === 'approved').length;
-    return approved;
+    return this.documents.filter(d => d.category === 'fixed' && d.status === 'approved').length;
   }
 
   get fixedDocumentsTotal(): number {
@@ -201,9 +271,7 @@ export class EstDocumentosComponent implements OnInit {
   }
 
   get periodicDocumentsCount(): number {
-    const periodic = this.documents.filter(d => d.category === 'periodic');
-    const approved = periodic.filter(d => d.status === 'approved').length;
-    return approved;
+    return this.documents.filter(d => d.category === 'periodic' && d.status === 'approved').length;
   }
 
   get periodicDocumentsTotal(): number {
@@ -214,19 +282,47 @@ export class EstDocumentosComponent implements OnInit {
     this.activeTab = tab;
   }
 
-  openViewModal(document: Document): void {
+  // ============ MODAL: VER DOCUMENTO ============
+  openViewModal(document: DocumentoUI): void {
+    if (!document.id_documento) return;
+    
     this.selectedDocument = document;
     this.showViewModal = true;
+    this.isLoadingPreview = true;
+    
+    this.documentosService.verDocumento(document.id_documento).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        this.documentPreviewUrl = this.sanitizer.bypassSecurityTrustUrl(url);
+        this.isLoadingPreview = false;
+      },
+      error: (error) => {
+        console.error('Error cargando preview:', error);
+        this.isLoadingPreview = false;
+        alert('Error al cargar el documento');
+      }
+    });
   }
 
   closeViewModal(): void {
     this.showViewModal = false;
     this.selectedDocument = null;
+    if (this.documentPreviewUrl) {
+      URL.revokeObjectURL(this.documentPreviewUrl as string);
+      this.documentPreviewUrl = null;
+    }
   }
 
-  openDeleteModal(document: Document): void {
+  // ============ MODAL: ELIMINAR Y RESUBIR ============
+  openDeleteModal(document: DocumentoUI): void {
     this.selectedDocument = document;
-    this.showDeleteModal = true;
+    
+    // Si está rechazado, eliminar directamente sin confirmación
+    if (document.status === 'rejected') {
+      this.confirmDelete();
+    } else {
+      this.showDeleteModal = true;
+    }
   }
 
   closeDeleteModal(): void {
@@ -235,22 +331,89 @@ export class EstDocumentosComponent implements OnInit {
   }
 
   confirmDelete(): void {
-    if (this.selectedDocument) {
-      console.log('Eliminando documento:', this.selectedDocument);
-      this.closeDeleteModal();
-      this.openUploadModal(this.selectedDocument);
-    }
+    if (!this.selectedDocument?.id_documento) return;
+
+    this.documentosService.eliminarDocumento(this.selectedDocument.id_documento).subscribe({
+      next: () => {
+        console.log('Documento eliminado');
+        this.closeDeleteModal();
+        
+        // Abrir modal de subida con el mismo documento
+        const plantillaInfo = {
+          id_plantilla: this.selectedDocument!.id_plantilla,
+          name: this.selectedDocument!.name,
+          description: this.selectedDocument!.description
+        };
+        
+        this.openUploadModalWithPlantilla(plantillaInfo);
+        
+        // Recargar documentos
+        this.loadDocuments();
+      },
+      error: (error) => {
+        console.error('Error eliminando documento:', error);
+        alert('Error al eliminar el documento');
+      }
+    });
   }
 
-  openUploadModal(document: Document): void {
+  // ============ MODAL: SUBIR DOCUMENTO ============
+  openUploadModal(document: DocumentoUI): void {
     this.selectedDocument = document;
     this.uploadForm = {
       documentType: document.name,
+      idPlantilla: document.id_plantilla,
       file: null,
       fileName: '',
       description: ''
     };
+    
+    // Cargar plantillas disponibles para el select
+    this.loadPlantillasDisponibles();
+    
     this.showUploadModal = true;
+  }
+
+  openUploadModalWithPlantilla(plantilla: any): void {
+    this.selectedDocument = {
+      id_plantilla: plantilla.id_plantilla,
+      name: plantilla.name,
+      description: plantilla.description,
+      category: 'fixed',
+      status: 'missing',
+      statusLabel: 'Faltante',
+      required: true,
+      badgeColor: '#666'
+    };
+    
+    this.uploadForm = {
+      documentType: plantilla.name,
+      idPlantilla: plantilla.id_plantilla,
+      file: null,
+      fileName: '',
+      description: ''
+    };
+    
+    this.loadPlantillasDisponibles();
+    this.showUploadModal = true;
+  }
+
+  loadPlantillasDisponibles(): void {
+    this.documentosService.getPlantillas(this.tipoEstudiante).subscribe({
+      next: (plantillas) => {
+        // Filtrar solo plantillas que no tienen documento subido
+        const idsSubidos = this.documents
+          .filter(d => d.id_documento)
+          .map(d => d.id_plantilla);
+        
+        this.plantillasDisponibles = plantillas.filter(p => 
+          !idsSubidos.includes(p.id_plantilla)
+        );
+      },
+      error: (error) => {
+        console.error('Error cargando plantillas:', error);
+      }
+    });
   }
 
   closeUploadModal(): void {
@@ -258,6 +421,7 @@ export class EstDocumentosComponent implements OnInit {
     this.selectedDocument = null;
     this.uploadForm = {
       documentType: '',
+      idPlantilla: 0,
       file: null,
       fileName: '',
       description: ''
@@ -267,24 +431,32 @@ export class EstDocumentosComponent implements OnInit {
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
+      // Validar tamaño (máx 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('El archivo es demasiado grande. Máximo 10MB');
+        return;
+      }
+      
+      // Validar tipo
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Solo se permiten archivos PDF, JPG y PNG');
+        return;
+      }
+      
       this.uploadForm.file = file;
       this.uploadForm.fileName = file.name;
     }
   }
 
-  submitUpload(): void {
-    if (!this.uploadForm.file) {
-      alert('Por favor selecciona un archivo');
-      return;
+  onPlantillaChange(event: any): void {
+    const idPlantilla = parseInt(event.target.value);
+    const plantilla = this.plantillasDisponibles.find(p => p.id_plantilla === idPlantilla);
+    
+    if (plantilla) {
+      this.uploadForm.documentType = plantilla.nombre;
+      this.uploadForm.idPlantilla = plantilla.id_plantilla;
     }
-
-    console.log('Subiendo documento:', {
-      document: this.selectedDocument,
-      form: this.uploadForm
-    });
-
-    alert('Documento subido exitosamente');
-    this.closeUploadModal();
   }
 
   triggerFileInput(): void {
@@ -294,6 +466,59 @@ export class EstDocumentosComponent implements OnInit {
     }
   }
 
+  submitUpload(): void {
+    if (!this.uploadForm.file || !this.uploadForm.idPlantilla) {
+      alert('Por favor selecciona un archivo y tipo de documento');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('archivo', this.uploadForm.file);
+    formData.append('id_plantilla', this.uploadForm.idPlantilla.toString());
+    
+    if (this.uploadForm.description) {
+      formData.append('descripcion', this.uploadForm.description);
+    }
+
+    this.documentosService.subirDocumento(formData).subscribe({
+      next: (response) => {
+        console.log('Documento subido:', response);
+        alert('Documento subido exitosamente');
+        this.closeUploadModal();
+        this.loadDocuments();
+      },
+      error: (error) => {
+        console.error('Error subiendo documento:', error);
+        alert(error.error?.error || 'Error al subir el documento');
+      }
+    });
+  }
+
+  // Escanear (solo móvil)
+  escanearDocumento(): void {
+    if (!this.isMobile) {
+      alert('Esta función solo está disponible en dispositivos móviles');
+      return;
+    }
+    
+    // Solicitar permiso de cámara
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment'; // Usar cámara trasera
+    
+    input.onchange = (e: any) => {
+      const file = e.target.files[0];
+      if (file) {
+        this.uploadForm.file = file;
+        this.uploadForm.fileName = file.name;
+      }
+    };
+    
+    input.click();
+  }
+
+  // Navegación
   navigateTo(route: string): void {
     this.currentRoute = route;
     this.router.navigate([route]);
@@ -311,7 +536,7 @@ export class EstDocumentosComponent implements OnInit {
   }
 
   logout(): void {
-    console.log('Cerrando sesión...');
+    this.authService.logout();
     this.router.navigate(['']);
   }
 }

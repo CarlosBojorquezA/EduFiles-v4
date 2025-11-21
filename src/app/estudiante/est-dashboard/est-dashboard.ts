@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { EstudianteService } from '../../services/estudiante.service';
+import { AuthService } from '../../auth.service';
+import { NotificationsComponent } from '../../notificaciones/notificaciones';
 
 interface Alert {
   type: 'error' | 'warning';
@@ -10,7 +13,7 @@ interface Alert {
 }
 
 interface Document {
-  id: string;
+  id_documento: number;
   name: string;
   status: 'approved' | 'rejected' | 'pending';
   statusLabel: string;
@@ -30,90 +33,142 @@ interface NavItem {
 @Component({
   selector: 'app-est-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, NotificationsComponent],
   templateUrl: './est-dashboard.html',
   styleUrls: ['./est-dashboard.css']
 })
 export class EstDashboardComponent implements OnInit {
   userRole: 'estudiante' = 'estudiante';
-  userName: string = 'María García';
-  userAccountNumber: string = '2024001234';
-  userCareer: string = 'Ingeniería de Sistemas';
-  userGradeGroup: string = '2°A';
-  notificationCount: number = 3;
+  userName: string = '';
+  userAccountNumber: string = '';
+  userCareer: string = '';
+  userGradeGroup: string = '';
+  notificationCount: number = 0;
   currentRoute: string = '/est-dashboard';
 
   // Progress
-  documentsApproved: number = 1;
-  documentsTotal: number = 4;
+  documentsApproved: number = 0;
+  documentsTotal: number = 0;
 
   // Alerts
-  alerts: Alert[] = [
-    {
-      type: 'error',
-      icon: 'alert-triangle',
-      message: 'Constancia de Estudios fue rechazado: El documento está borroso, por favor sube una versión más clara',
-      date: ''
-    },
-    {
-      type: 'warning',
-      icon: 'alert-circle',
-      message: 'Comprobante de Domicilio vence pronto (2024-03-30)',
-      date: ''
-    }
-  ];
+  alerts: Alert[] = [];
 
   // Documents
-  documents: Document[] = [
-    {
-      id: '1',
-      name: 'Certificado de Nacimiento',
-      status: 'approved',
-      statusLabel: 'Aprobado',
-      dueDate: '2024-03-15',
-      uploadDate: '2024-02-20',
-      comment: 'Documento aprobado correctamente',
-      iconColor: '#10b981'
-    },
-    {
-      id: '2',
-      name: 'Constancia de Estudios',
-      status: 'rejected',
-      statusLabel: 'Rechazado',
-      dueDate: '2024-03-20',
-      uploadDate: '2024-02-25',
-      comment: 'El documento está borroso, por favor sube una versión más clara',
-      iconColor: '#ef4444'
-    },
-    {
-      id: '3',
-      name: 'Comprobante de Domicilio',
-      status: 'pending',
-      statusLabel: 'Pendiente',
-      dueDate: '2024-03-30',
-      uploadDate: '',
-      comment: 'Documento pendiente de subir',
-      iconColor: '#f59e0b'
-    },
-    {
-      id: '4',
-      name: 'CURP',
-      status: 'pending',
-      statusLabel: 'Pendiente',
-      dueDate: '2024-04-05',
-      uploadDate: '',
-      comment: 'Documento pendiente de subir',
-      iconColor: '#f59e0b'
-    }
-  ];
+  documents: Document[] = [];
 
   navigationItems: NavItem[] = [];
 
-  constructor(private router: Router) {}
+  isLoading: boolean = true;
+
+  constructor(
+    private router: Router,
+    private estudianteService: EstudianteService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
+    this.loadUserData();
     this.loadNavigation();
+    this.loadDashboardData();
     this.currentRoute = this.router.url;
+  }
+
+  loadUserData(): void {
+    const user = this.authService.getCurrentUser();
+    if (user && user.detalles) {
+      const detalles = user.detalles;
+      this.userName = `${detalles.nombres} ${detalles.apellido_paterno} ${detalles.apellido_materno || ''}`.trim();
+      this.userAccountNumber = user.num_usuario;
+      
+      // Grupo y grado
+      if (detalles.grado) {
+        this.userGradeGroup = `${detalles.grado}°`;
+        if (detalles.grupo_turno) {
+          this.userGradeGroup += ` ${detalles.grupo_turno}`;
+        }
+      }
+      
+      // Carrera (puedes personalizar esto según tus necesidades)
+      this.userCareer = detalles.nivel_educativo || 'Estudiante';
+    }
+  }
+
+  loadDashboardData(): void {
+    this.isLoading = true;
+
+    // Cargar estadísticas
+    this.estudianteService.getEstadisticas().subscribe({
+      next: (stats) => {
+        this.documentsTotal = stats.total_requeridos;
+        this.documentsApproved = stats.documentos_aprobados;
+      },
+      error: (error) => {
+        console.error('Error cargando estadísticas:', error);
+      }
+    });
+
+    // Cargar documentos
+    this.estudianteService.getMisDocumentos().subscribe({
+      next: (documentos) => {
+        this.documents = this.mapDocuments(documentos);
+        
+        // Generar alertas basadas en los documentos
+        this.alerts = this.estudianteService.generarAlertas(documentos);
+        
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error cargando documentos:', error);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  mapDocuments(documentos: any[]): Document[] {
+    return documentos.map(doc => {
+      let status: 'approved' | 'rejected' | 'pending';
+      let statusLabel: string;
+      let iconColor: string;
+      
+      switch (doc.estado) {
+        case 'APROBADO':
+          status = 'approved';
+          statusLabel = 'Aprobado';
+          iconColor = '#10b981';
+          break;
+        case 'RECHAZADO':
+          status = 'rejected';
+          statusLabel = 'Rechazado';
+          iconColor = '#ef4444';
+          break;
+        default:
+          status = 'pending';
+          statusLabel = 'Pendiente';
+          iconColor = '#f59e0b';
+      }
+
+      return {
+        id_documento: doc.id_documento,
+        name: doc.plantilla_nombre,
+        status: status,
+        statusLabel: statusLabel,
+        dueDate: doc.fecha_vencimiento ? this.formatDate(doc.fecha_vencimiento) : '',
+        uploadDate: doc.fecha_subida ? this.formatDate(doc.fecha_subida) : '',
+        comment: doc.comentario || (status === 'approved' ? 'Documento aprobado correctamente' : 'Documento pendiente de subir'),
+        iconColor: iconColor
+      };
+    });
+  }
+
+  formatDate(dateString: string): string {
+    if (!dateString) return '';
+    
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${day}/${month}/${year}`;
   }
 
   loadNavigation(): void {
@@ -127,7 +182,8 @@ export class EstDashboardComponent implements OnInit {
   }
 
   get progressPercentage(): number {
-    return (this.documentsApproved / this.documentsTotal) * 100;
+    if (this.documentsTotal === 0) return 0;
+    return Math.round((this.documentsApproved / this.documentsTotal) * 100);
   }
 
   get pendingDocuments(): Document[] {
@@ -145,12 +201,19 @@ export class EstDashboardComponent implements OnInit {
 
   viewDocumentDetails(document: Document): void {
     console.log('Ver detalles del documento:', document);
-    // Navegar a detalles del documento
+    
+    // Navegar a la vista de documentos con el documento seleccionado
+    this.router.navigate(['/est-documentos'], { 
+      queryParams: { documento: document.id_documento } 
+    });
   }
 
   uploadDocument(document: Document): void {
     console.log('Subir documento:', document);
-    // Abrir modal o navegar a subir documento
+    // Navegar a subir documento
+    this.router.navigate(['/est-documentos'], { 
+      queryParams: { accion: 'subir', plantilla: document.name } 
+    });
   }
 
   getIcon(iconName: string): string {
@@ -173,6 +236,7 @@ export class EstDashboardComponent implements OnInit {
   }
 
   logout(): void {
+    this.authService.logout();
     this.router.navigate(['']);
   }
 }

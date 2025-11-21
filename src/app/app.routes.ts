@@ -16,21 +16,95 @@ import { ProfEstudiantesComponent } from './profesor/prof-estudiantes/prof-estud
 import { ProfChatEstudiantesComponent } from './profesor/prof-chat-estudiantes/prof-chat-estudiantes';
 import { ProfPerfilComponent } from './profesor/prof-perfil/prof-perfil';
 
+import { requireAuthGuard } from './guards/auth.guard';
+import { estudianteGuard } from './guards/estudiante.guard';
+import { profesorGuard } from './guards/profesor.guard';
+import { adminGuard } from './guards/admin.guard';
+
 export const routes: Routes = [
-    { path: '', component: LoginComponent }, // Ruta predeterminada Login
-    { path: 'est-dashboard', component: EstDashboardComponent }, // Ruta de inicio del rol de estudiante
-    { path: 'est-documentos', component: EstDocumentosComponent }, // Ruta de documentos del estudiante
-    { path: 'est-materiales', component: EstMaterialesComponent }, // Ruta de materiales de apoyo del estudiante
-    { path: 'est-profesores', component: EstProfesoresComponent }, // Ruta de los profesores asignados del estudiante 
-    { path: 'est-profesores-chat', component: ChatProfesorComponent }, // Ruta del chat de los profesores con el estudiante
-    { path: 'est-perfil', component: EstPerfilComponent }, // Ruta del perfil del estudiante
-    { path: 'admin-dashboard', component: AdminDashboardComponent }, // Ruta de inicio del rol de administrador
-    { path: 'admin-documentos', component: AdminDocumentosComponent }, // Ruta para la revision de documentos del administrador
-    { path: 'admin-gestion', component: AdminGestionComponent }, // Ruta para la gestion de usuarios 
-    { path: 'admin-perfil', component: AdminPerfilComponent }, // Ruta para el perfil del administrador
-    { path: 'prof-dashboard', component: ProfDashboardComponent }, // Ruta de inicio del rol de profesor
-    { path: 'prof-materiales', component: ProfMaterialesComponent }, // Ruta de materiales de apoyo que asigna el profesor
-    { path: 'prof-estudiantes', component: ProfEstudiantesComponent }, // Ruta para la busqueda de alumnos en el rol de profesor
-    { path: 'prof-chat-estudiantes', component: ProfChatEstudiantesComponent }, // Ruta para el chat con alumnos en el rol de profesor
-    { path: 'prof-perfil', component: ProfPerfilComponent }, // Ruta del perfil del profesor
+    { path: '', component: LoginComponent },
+    
+    // Rutas de Estudiante (con guards)
+    { 
+        path: 'est-dashboard', 
+        component: EstDashboardComponent,
+        canActivate: [requireAuthGuard, estudianteGuard]
+    },
+    { 
+        path: 'est-documentos', 
+        component: EstDocumentosComponent,
+        canActivate: [requireAuthGuard, estudianteGuard]
+    },
+    { 
+        path: 'est-materiales', 
+        component: EstMaterialesComponent,
+        canActivate: [requireAuthGuard, estudianteGuard]
+    },
+    { 
+        path: 'est-profesores', 
+        component: EstProfesoresComponent,
+        canActivate: [requireAuthGuard, estudianteGuard]
+    },
+    { 
+        path: 'est-profesores-chat', 
+        component: ChatProfesorComponent,
+        canActivate: [requireAuthGuard, estudianteGuard]
+    },
+    { 
+        path: 'est-perfil', 
+        component: EstPerfilComponent,
+        canActivate: [requireAuthGuard, estudianteGuard]
+    },
+    
+    // Rutas de Administrador (con guards)
+    { 
+        path: 'admin-dashboard', 
+        component: AdminDashboardComponent,
+        canActivate: [requireAuthGuard, adminGuard]
+    },
+    { 
+        path: 'admin-documentos', 
+        component: AdminDocumentosComponent,
+        canActivate: [requireAuthGuard, adminGuard]
+    },
+    { 
+        path: 'admin-gestion', 
+        component: AdminGestionComponent,
+        canActivate: [requireAuthGuard, adminGuard]
+    },
+    { 
+        path: 'admin-perfil', 
+        component: AdminPerfilComponent,
+        canActivate: [requireAuthGuard, adminGuard]
+    },
+    
+    // Rutas de Profesor (con guards)
+    { 
+        path: 'prof-dashboard', 
+        component: ProfDashboardComponent,
+        canActivate: [requireAuthGuard, profesorGuard]
+    },
+    { 
+        path: 'prof-materiales', 
+        component: ProfMaterialesComponent,
+        canActivate: [requireAuthGuard, profesorGuard]
+    },
+    { 
+        path: 'prof-estudiantes', 
+        component: ProfEstudiantesComponent,
+        canActivate: [requireAuthGuard, profesorGuard]
+    },
+    { 
+        path: 'prof-chat-estudiantes', 
+        component: ProfChatEstudiantesComponent,
+        canActivate: [requireAuthGuard, profesorGuard]
+    },
+    { 
+        path: 'prof-perfil', 
+        component: ProfPerfilComponent,
+        canActivate: [requireAuthGuard, profesorGuard]
+    },
+    
+    // Redirect por defecto
+    { path: '**', redirectTo: '' }
 ];

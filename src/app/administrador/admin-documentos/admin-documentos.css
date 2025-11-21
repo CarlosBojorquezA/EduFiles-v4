@@ -79,6 +79,10 @@
   color: white;
 }
 
+.logout-btn:hover {
+  background-color: #555555;
+}
+
 /* Page Title */
 .page-title {
   padding: 20px 20px 0 20px;

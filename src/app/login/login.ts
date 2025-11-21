@@ -347,7 +347,7 @@ export class LoginComponent {
     
     const credentials: any = {
       'Estudiante': { num_usuario: '00000005', password: 'contra123' },
-      'Administrador': { num_usuario: '00000001', password: 'contra123' },
+      'Administrador': { num_usuario: '00000001', password: 'contra1326' },
       'Profesor': { num_usuario: '00000003', password: 'contra123' }
     };
 

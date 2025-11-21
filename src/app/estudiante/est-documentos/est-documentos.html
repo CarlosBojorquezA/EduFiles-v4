@@ -14,13 +14,7 @@
       </div>
     </div>
     <div class="header-right">
-      <button class="notification-btn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-        </svg>
-        <span class="badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
-      </button>
+      <app-notifications></app-notifications>
       <button class="logout-btn" (click)="logout()">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -35,121 +29,130 @@
   <main class="main-content">
     <h1 class="page-title">Documentos</h1>
 
-    <!-- Alerts -->
-    <div class="alerts-section" *ngIf="alerts.length > 0">
-      <div class="alert-card" *ngFor="let alert of alerts" [class.error]="alert.type === 'error'" [class.warning]="alert.type === 'warning'">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z M12 9v4 M12 17h.01"></path>
-        </svg>
-        <div class="alert-content">
-          <strong>{{ alert.title }}</strong>
-          <span *ngIf="alert.message">{{ alert.message }}</span>
-        </div>
-      </div>
-      <p class="additional-info" *ngIf="additionalInfo">{{ additionalInfo }}</p>
+    <!-- Loading State -->
+    <div *ngIf="isLoading" style="text-align: center; padding: 60px 20px;">
+      <div style="width: 40px; height: 40px; margin: 0 auto 16px; border: 3px solid #e5e7eb; border-top-color: #1a1a1a; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+      <p style="color: #666;">Cargando documentos...</p>
     </div>
 
-    <!-- Student Type & Progress -->
-    <div class="student-info">
-      <div class="student-type">
-        <h3>Tipo de Estudiante</h3>
-        <p>{{ studentType }}</p>
-        <span class="type-badge">{{ studentTypeLabel }}</span>
-      </div>
-      <div class="progress-bar-container">
-        <div class="progress-bar-fill" [style.width.%]="progressPercentage"></div>
-      </div>
-      <p class="progress-text">{{ documentsApproved }} de {{ documentsTotal }} documentos aprobados ({{ progressPercentage }}%)</p>
-    </div>
-
-    <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab" [class.active]="activeTab === 'todos'" (click)="setTab('todos')">
-        Todos ({{ documentsApproved }}/{{ documentsTotal }})
-      </button>
-      <button class="tab" [class.active]="activeTab === 'fijos'" (click)="setTab('fijos')">
-        Fijos ({{ fixedDocumentsCount }}/{{ fixedDocumentsTotal }})
-      </button>
-      <button class="tab" [class.active]="activeTab === 'periodicos'" (click)="setTab('periodicos')">
-        Periódicos ({{ periodicDocumentsCount }}/{{ periodicDocumentsTotal }})
-      </button>
-    </div>
-
-    <!-- Periodic Documents Info -->
-    <div class="periodic-info" *ngIf="activeTab === 'periodicos'">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-        <circle cx="12" cy="13" r="4"></circle>
-      </svg>
-      <div>
-        <strong>Documentos Periódicos</strong>
-        <p>Documentos que deben actualizarse periódicamente</p>
-      </div>
-    </div>
-
-    <!-- Documents List -->
-    <div class="documents-list">
-      <div class="document-card" *ngFor="let document of filteredDocuments">
-        <div class="document-header">
-          <div class="document-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path *ngIf="document.status === 'approved'" d="M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4L12 14.01l-3-3"></path>
-              <path *ngIf="document.status === 'rejected' || document.status === 'missing'" d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z M12 9v4 M12 17h.01"></path>
-            </svg>
-          </div>
-          <div class="document-info">
-            <div class="document-title">
-              <h3>{{ document.name }}</h3>
-              <span class="required-badge" *ngIf="document.required">Requerido</span>
-            </div>
-            <p class="document-description">{{ document.description }}</p>
-            <p class="document-date" *ngIf="document.uploadDate">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              Subido: {{ document.uploadDate }}
-            </p>
-            <p class="document-periodicity" *ngIf="document.periodicity">{{ document.periodicity }}</p>
-            <p class="document-rejection" *ngIf="document.rejectionReason">{{ document.rejectionReason }}</p>
-          </div>
-          <span class="status-badge" [style.background-color]="document.badgeColor">{{ document.statusLabel }}</span>
-        </div>
-
-        <!-- Actions -->
-        <div class="document-actions" *ngIf="document.status !== 'missing'">
-          <button class="btn-action" (click)="openViewModal(document)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
-            Ver Documento
-          </button>
-          <button class="btn-action delete" (click)="openDeleteModal(document)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
-            Eliminar y Volver a Subir
-          </button>
-        </div>
-
-        <!-- Upload Button for Missing Documents -->
-        <button class="btn-upload" *ngIf="document.status === 'missing'" (click)="openUploadModal(document)">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
+    <!-- Content -->
+    <div *ngIf="!isLoading">
+      <!-- Alerts -->
+      <div class="alerts-section" *ngIf="alerts.length > 0">
+        <div class="alert-card" *ngFor="let alert of alerts" [class.error]="alert.type === 'error'" [class.warning]="alert.type === 'warning'">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z M12 9v4 M12 17h.01"></path>
           </svg>
-          Subir Documento
+          <div class="alert-content">
+            <strong>{{ alert.title }}</strong>
+            <span *ngIf="alert.message">{{ alert.message }}</span>
+          </div>
+        </div>
+        <p class="additional-info" *ngIf="additionalInfo">{{ additionalInfo }}</p>
+      </div>
+
+      <!-- Student Type & Progress -->
+      <div class="student-info">
+        <div class="student-type">
+          <h3>Tipo de Estudiante</h3>
+          <p>{{ studentType }}</p>
+          <span class="type-badge">{{ studentTypeLabel }}</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" [style.width.%]="progressPercentage"></div>
+        </div>
+        <p class="progress-text">{{ documentsApproved }} de {{ documentsTotal }} documentos aprobados ({{ progressPercentage }}%)</p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab" [class.active]="activeTab === 'todos'" (click)="setTab('todos')">
+          Todos ({{ documentsApproved }}/{{ documentsTotal }})
         </button>
+        <button class="tab" [class.active]="activeTab === 'fijos'" (click)="setTab('fijos')">
+          Fijos ({{ fixedDocumentsCount }}/{{ fixedDocumentsTotal }})
+        </button>
+        <button class="tab" [class.active]="activeTab === 'periodicos'" (click)="setTab('periodicos')">
+          Periódicos ({{ periodicDocumentsCount }}/{{ periodicDocumentsTotal }})
+        </button>
+      </div>
+
+      <!-- Periodic Info -->
+      <div class="periodic-info" *ngIf="activeTab === 'periodicos'">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+          <circle cx="12" cy="13" r="4"></circle>
+        </svg>
+        <div>
+          <strong>Documentos Periódicos</strong>
+          <p>Documentos que deben actualizarse periódicamente</p>
+        </div>
+      </div>
+
+      <!-- Documents List -->
+      <div class="documents-list">
+        <div class="document-card" *ngFor="let document of filteredDocuments">
+          <div class="document-header">
+            <div class="document-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path *ngIf="document.status === 'approved'" d="M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4L12 14.01l-3-3"></path>
+                <path *ngIf="document.status === 'rejected' || document.status === 'missing'" d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z M12 9v4 M12 17h.01"></path>
+              </svg>
+            </div>
+            <div class="document-info">
+              <div class="document-title">
+                <h3>{{ document.name }}</h3>
+                <span class="required-badge" *ngIf="document.required">Requerido</span>
+              </div>
+              <p class="document-description">{{ document.description }}</p>
+              <p class="document-date" *ngIf="document.uploadDate">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                Subido: {{ document.uploadDate }}
+              </p>
+              <p class="document-periodicity" *ngIf="document.periodicity">{{ document.periodicity }}</p>
+              <p class="document-rejection" *ngIf="document.rejectionReason">{{ document.rejectionReason }}</p>
+            </div>
+            <span class="status-badge" [style.background-color]="document.badgeColor">{{ document.statusLabel }}</span>
+          </div>
+
+          <!-- Actions -->
+          <div class="document-actions" *ngIf="document.status !== 'missing'">
+            <button class="btn-action" (click)="openViewModal(document)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              Ver Documento
+            </button>
+            <button class="btn-action delete" (click)="openDeleteModal(document)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              Eliminar y Volver a Subir
+            </button>
+          </div>
+
+          <!-- Upload Button -->
+          <button class="btn-upload" *ngIf="document.status === 'missing'" (click)="openUploadModal(document)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            Subir Documento
+          </button>
+        </div>
       </div>
     </div>
   </main>
 
-  <!-- View Document Modal -->
+  <!-- ========== MODAL: VER DOCUMENTO ========== -->
   <div class="modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
     <div class="modal modal-view" (click)="$event.stopPropagation()">
       <button class="close-btn" (click)="closeViewModal()">
@@ -159,16 +162,20 @@
         </svg>
       </button>
       <h2>Vista del Documento</h2>
-      <div class="document-preview">
-        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-          <line x1="16" y1="13" x2="8" y2="13"></line>
-          <line x1="16" y1="17" x2="8" y2="17"></line>
-        </svg>
+      
+      <!-- Loading Preview -->
+      <div *ngIf="isLoadingPreview" class="document-preview">
+        <div style="width: 40px; height: 40px; margin: 0 auto; border: 3px solid #e5e7eb; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+        <p>Cargando documento...</p>
+      </div>
+      
+      <!-- Preview Content -->
+      <div *ngIf="!isLoadingPreview && documentPreviewUrl" class="document-preview">
+        <iframe [src]="documentPreviewUrl" style="width: 100%; height: 500px; border: none; border-radius: 8px;"></iframe>
         <h3>{{ selectedDocument?.name }}</h3>
         <p>Simulación de visualización del documento</p>
       </div>
+      
       <div class="modal-info">
         <p>• En una implementación real, aquí se mostraría el PDF o imagen del documento</p>
         <p>• Se podría descargar, imprimir o compartir</p>
@@ -176,7 +183,7 @@
     </div>
   </div>
 
-  <!-- Delete Confirmation Modal -->
+  <!-- ========== MODAL: ELIMINAR DOCUMENTO ========== -->
   <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
     <div class="modal modal-delete" (click)="$event.stopPropagation()">
       <button class="close-btn" (click)="closeDeleteModal()">
@@ -211,7 +218,7 @@
     </div>
   </div>
 
-  <!-- Upload Document Modal -->
+  <!-- ========== MODAL: SUBIR DOCUMENTO ========== -->
   <div class="modal-overlay" *ngIf="showUploadModal" (click)="closeUploadModal()">
     <div class="modal modal-upload" (click)="$event.stopPropagation()">
       <button class="close-btn" (click)="closeUploadModal()">
@@ -222,14 +229,14 @@
       </button>
       <h2>Subir {{ selectedDocument?.name }}</h2>
 
-      <!-- Scanner Section -->
-      <div class="scanner-section">
+      <!-- Scanner Section (Solo móvil) -->
+      <div class="scanner-section" *ngIf="isMobile">
         <h3>
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
             <circle cx="12" cy="13" r="4"></circle>
           </svg>
-          Escáner de Documentos (esta en VEREMOS)
+          Escáner de Documentos
         </h3>
         <p class="scanner-description">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -239,7 +246,7 @@
           Escanea o sube imágenes que se convertirán automáticamente a PDF
         </p>
         <div class="scanner-buttons">
-          <button class="btn-scan" type="button">
+          <button class="btn-scan" type="button" (click)="escanearDocumento()">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
               <circle cx="12" cy="13" r="4"></circle>
@@ -263,14 +270,27 @@
         
         <div class="form-group">
           <label>Tipo de Documento</label>
-          <select [(ngModel)]="uploadForm.documentType" name="documentType" class="form-input" disabled>
-            <option [value]="selectedDocument?.name">{{ selectedDocument?.name }}</option>
+          <select 
+            [(ngModel)]="uploadForm.idPlantilla" 
+            name="documentType" 
+            class="form-input"
+            (change)="onPlantillaChange($event)"
+            [disabled]="selectedDocument?.id_plantilla ? true : false">
+            <option [value]="selectedDocument.id_plantilla" *ngIf="selectedDocument">{{ selectedDocument.name }}</option>
+            <option *ngFor="let plantilla of plantillasDisponibles" [value]="plantilla.id_plantilla">
+              {{ plantilla.nombre }}
+            </option>
           </select>
         </div>
 
         <div class="form-group">
           <label>Archivo</label>
-          <input type="file" id="fileInput" (change)="onFileSelected($event)" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+          <input 
+            type="file" 
+            id="fileInput" 
+            (change)="onFileSelected($event)" 
+            accept=".pdf,.jpg,.jpeg,.png,image/*" 
+            style="display: none;">
           <div class="file-upload-area" (click)="triggerFileInput()">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -281,7 +301,7 @@
             <p *ngIf="uploadForm.fileName" class="file-selected">{{ uploadForm.fileName }}</p>
             <span class="file-types">PDF, JPG, PNG (máximo 10MB)</span>
           </div>
-          <p class="file-status" *ngIf="!uploadForm.fileName">Seleccionar archivo: Ningún archivo seleccionado</p>
+          <p class="file-status" *ngIf="!uploadForm.fileName">Ningún archivo seleccionado</p>
           <p class="file-status selected" *ngIf="uploadForm.fileName">Archivo seleccionado: {{ uploadForm.fileName }}</p>
         </div>
 
@@ -319,3 +339,9 @@
     </button>
   </nav>
 </div>
+
+<style>
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+</style>
