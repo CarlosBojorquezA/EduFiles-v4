@@ -42,54 +42,7 @@
 
     <!-- Content -->
     <div *ngIf="!isLoading">
-      <!-- Barra de búsqueda y filtros -->
-      <div class="filters-container">
-        <div class="search-box">
-          <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/>
-            <path d="m21 21-4.35-4.35"/>
-          </svg>
-          <input 
-            type="text" 
-            class="search-input"
-            placeholder="Buscar materiales, materias o profesores..."
-            [(ngModel)]="searchText"
-            (input)="onSearchChange()"
-          />
-        </div>
-
-        <div class="filter-dropdowns">
-          <select [(ngModel)]="selectedCourse" (change)="onCourseChange()" class="...">
-             <option value="all">Todas las materias</option> 
-                <option *ngFor="let materia of materiasDisponibles" [ngValue]="materia.id">
-                  {{ materia.label }}
-              </option>
-          </select>
-
-          <div class="custom-dropdown">
-            <button class="filter-select" (click)="toggleCategoryDropdown()">
-              {{ getCategoryLabel() }}
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </button>
-            <div class="dropdown-menu" *ngIf="showCategoryDropdown">
-              <button 
-                *ngFor="let category of categories"
-                class="dropdown-item"
-                [class.selected]="selectedCategory === category.value"
-                (click)="onCategoryChange(category.value)">
-                {{ category.label }}
-                <svg *ngIf="selectedCategory === category.value" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Estadísticas -->
+      <!-- Estadísticas (4 cards) -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-number">{{ totalMaterials }}</div>
@@ -100,8 +53,58 @@
           <div class="stat-label">Materias</div>
         </div>
         <div class="stat-card">
+          <div class="stat-number">{{ totalProfesores }}</div>
+          <div class="stat-label">Profesores</div>
+        </div>
+        <div class="stat-card">
           <div class="stat-number">{{ newMaterials }}</div>
           <div class="stat-label">Nuevos</div>
+        </div>
+      </div>
+
+      <!-- Barra de búsqueda -->
+      <div class="search-box-full">
+        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input 
+          type="text" 
+          class="search-input"
+          placeholder="Buscar materiales, materias o profesores..."
+          [(ngModel)]="searchText"
+          (input)="onSearchChange()"
+        />
+      </div>
+
+      <!-- Filtros (Misma línea, mismo tamaño) -->
+      <div class="filters-row">
+        <select [(ngModel)]="selectedCourse" (change)="onCourseChange()" class="filter-select">
+          <option value="all">Todas las materias</option> 
+          <option *ngFor="let materia of materiasDisponibles" [ngValue]="materia.id_materia">
+            {{ materia.nombre }}
+          </option>
+        </select>
+
+        <div class="custom-dropdown">
+          <button class="filter-select" (click)="toggleCategoryDropdown()">
+            {{ getCategoryLabel() }}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="dropdown-menu" *ngIf="showCategoryDropdown">
+            <button 
+              *ngFor="let category of categories"
+              class="dropdown-item"
+              [class.selected]="selectedCategory === category.value"
+              (click)="onCategoryChange(category.value)">
+              {{ category.label }}
+              <svg *ngIf="selectedCategory === category.value" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -134,7 +137,7 @@
               </div>
               <div class="meta-item" *ngIf="material.semestre">
                 <span>•</span>
-                <span>{{ material.semestre }}° Grado</span>
+                <span>{{ material.semestre }}° Semestre</span>
               </div>
               <div class="meta-item" *ngIf="material.es_nuevo === 1">
                 <span class="new-badge">Nuevo</span>
@@ -219,18 +222,3 @@
     </button>
   </nav>
 </div>
-
-<style>
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.new-badge {
-  background-color: #10b981;
-  color: white;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 10px;
-}
-</style>

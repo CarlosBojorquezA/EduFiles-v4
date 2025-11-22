@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Material {
@@ -8,21 +8,31 @@ export interface Material {
   descripcion: string;
   categoria: 'GUIA' | 'APOYO' | 'AVISO' | 'EXAMEN' | 'TAREA' | 'OTRO';
   materia: string;
-  semestre: number | null;
+  id_materia?: number;
+  semestre?: number;
+  grupo_id?: number;
   nombre_archivo: string;
+  url_archivo: string;
   tamaño_archivo: number;
-  tamaño_legible?: string;
+  tipo_mime: string;
   fecha_subida: string;
-  fecha_formateada?: string;
   nombre_profesor: string;
-  turno: string | null;
+  nombre_materia_tabla?: string;
   es_nuevo: number;
+  tamaño_legible?: string;
+  fecha_formateada?: string;
 }
 
 export interface MaterialStats {
   total_materiales: number;
   total_materias: number;
   nuevos: number;
+  total_profesores: number; // NUEVO
+}
+
+export interface MateriaDisponible {
+  id_materia: number;
+  nombre: string;
 }
 
 @Injectable({
@@ -33,27 +43,72 @@ export class MaterialesService {
 
   constructor(private http: HttpClient) {}
 
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+  }
+
+  // ==================== OBTENER MATERIALES ====================
   getMisMateriales(): Observable<Material[]> {
-    return this.http.get<Material[]>(`${this.apiUrl}/mis-materiales`);
+    const headers = this.getHeaders();
+    return this.http.get<Material[]>(`${this.apiUrl}/mis-materiales`, { headers });
   }
 
+  // ==================== OBTENER MATERIAS DISPONIBLES ====================
+  getMateriasDisponibles(): Observable<MateriaDisponible[]> {
+    const headers = this.getHeaders();
+    return this.http.get<MateriaDisponible[]>(`${this.apiUrl}/materias-disponibles`, { headers });
+  }
+
+  // ==================== ESTADÍSTICAS ====================
   getStats(): Observable<MaterialStats> {
-    return this.http.get<MaterialStats>(`${this.apiUrl}/stats`);
+    const headers = this.getHeaders();
+    return this.http.get<MaterialStats>(`${this.apiUrl}/stats`, { headers });
   }
 
-  getMateriasDisponibles(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.apiUrl}/materias-disponibles`);
-  }
-
+  // ==================== VER MATERIAL ====================
   verMaterial(idMaterial: number): Observable<Blob> {
+    const headers = this.getHeaders();
     return this.http.get(`${this.apiUrl}/ver/${idMaterial}`, {
+      headers,
       responseType: 'blob'
     });
   }
 
+  // ==================== DESCARGAR MATERIAL ====================
   descargarMaterial(idMaterial: number): Observable<Blob> {
+    const headers = this.getHeaders();
     return this.http.get(`${this.apiUrl}/descargar/${idMaterial}`, {
+      headers,
       responseType: 'blob'
     });
+  }
+
+  // ==================== MÉTODOS PARA PROFESORES (Admin) ====================
+  
+  // Subir material (profesor)
+  subirMaterial(formData: FormData): Observable<any> {
+    const headers = this.getHeaders();
+    return this.http.post(`${this.apiUrl}/subir`, formData, { headers });
+  }
+
+  // Obtener materiales del profesor
+  getMisMaterialesProfesor(): Observable<Material[]> {
+    const headers = this.getHeaders();
+    return this.http.get<Material[]>(`${this.apiUrl}/mis-materiales-profesor`, { headers });
+  }
+
+  // Eliminar material
+  eliminarMaterial(idMaterial: number): Observable<any> {
+    const headers = this.getHeaders();
+    return this.http.delete(`${this.apiUrl}/eliminar/${idMaterial}`, { headers });
+  }
+
+  // Actualizar material
+  actualizarMaterial(idMaterial: number, data: any): Observable<any> {
+    const headers = this.getHeaders();
+    return this.http.put(`${this.apiUrl}/actualizar/${idMaterial}`, data, { headers });
   }
 }

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { MaterialesService, Material, MaterialStats } from '../../services/materiales.service';
+import { MaterialesService, Material, MaterialStats, MateriaDisponible } from '../../services/materiales.service';
 import { AuthService } from '../../auth.service';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { NotificationsComponent } from '../../notificaciones/notificaciones';
@@ -12,11 +12,6 @@ interface NavItem {
   label: string;
   route: string;
   badge?: number;
-}
-
-interface MateriaOption {
-  id: string | number; 
-  label: string;       
 }
 
 @Component({
@@ -54,11 +49,12 @@ export class EstMaterialesComponent implements OnInit {
   allMaterials: Material[] = [];
   filteredMaterials: Material[] = [];
   
-  materiasDisponibles: MateriaOption[] = []; 
+  materiasDisponibles: MateriaDisponible[] = []; 
   
   totalMaterials: number = 0;
   totalCourses: number = 0;
   newMaterials: number = 0;
+  totalProfesores: number = 0; // NUEVO
 
   navigationItems: NavItem[] = [];
   isLoading: boolean = true;
@@ -111,44 +107,40 @@ export class EstMaterialesComponent implements OnInit {
     // Cargar estadísticas
     this.materialesService.getStats().subscribe({
       next: (stats) => {
+        console.log('[MATERIALES] Estadísticas:', stats);
         this.totalMaterials = stats.total_materiales;
         this.totalCourses = stats.total_materias;
         this.newMaterials = stats.nuevos;
       },
-      error: (error) => console.error('Error cargando stats:', error)
+      error: (error) => {
+        console.error('[MATERIALES] Error cargando stats:', error);
+      }
     });
 
     // Cargar materias disponibles
     this.materialesService.getMateriasDisponibles().subscribe({
-      next: (data: any[]) => {
-        // Adaptador: Detecta si vienen strings o objetos desde la nueva tabla
-        this.materiasDisponibles = data.map(item => {
-            if (typeof item === 'string') {
-                return { id: item, label: item };
-            } else {
-                // Asume que vienen objetos con { id_materia, nombre } o similar
-                return { 
-                    id: item.id_materia || item.id || item.nombre, 
-                    label: item.nombre || item.materia || 'Sin nombre' 
-                };
-            }
-        });
+      next: (materias: MateriaDisponible[]) => {
+        console.log('[MATERIALES] Materias disponibles:', materias);
+        this.materiasDisponibles = materias;
       },
-      error: (error) => console.error('Error cargando materias:', error)
+      error: (error) => {
+        console.error('[MATERIALES] Error cargando materias:', error);
+      }
     });
 
     // Cargar materiales
     this.materialesService.getMisMateriales().subscribe({
       next: (materiales) => {
-        console.log('Materiales recibidos:', materiales); 
+        console.log('[MATERIALES] Materiales recibidos:', materiales); 
         this.allMaterials = materiales;
         this.materials = materiales;
         this.filterMaterials(); 
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error cargando materiales:', error);
+        console.error('[MATERIALES] Error cargando materiales:', error);
         this.isLoading = false;
+        alert('Error al cargar los materiales. Por favor, recarga la página.');
       }
     });
   }
@@ -157,7 +149,7 @@ export class EstMaterialesComponent implements OnInit {
     if (!this.allMaterials) return;
 
     this.filteredMaterials = this.allMaterials.filter(material => {
-      // Maneja el caso donde material.materia sea null o undefined
+      // Texto de búsqueda
       const materiaNombre = material.materia || ''; 
       const profesorNombre = material.nombre_profesor || '';
       
@@ -172,16 +164,22 @@ export class EstMaterialesComponent implements OnInit {
         material.categoria === this.selectedCategory;
 
       // Filtro de Curso (Materia)
-      // Comparamos tanto con el nombre como con el ID si existe
+      // Comparar por id_materia si existe, sino por nombre
       let matchesCourse = true;
       if (this.selectedCourse !== 'all') {
-          // Si material tiene id_materia lo usa, Si no, usa el nombre
-          const matId = (material as any).id_materia || material.materia;
-          matchesCourse = matId == this.selectedCourse || material.materia == this.selectedCourse;
+        if (material.id_materia) {
+          // Comparar por ID de materia
+          matchesCourse = material.id_materia == this.selectedCourse;
+        } else {
+          // Comparar por nombre de materia
+          matchesCourse = material.materia == this.selectedCourse;
+        }
       }
 
       return matchesSearch && matchesCategory && matchesCourse;
     });
+
+    console.log('[MATERIALES] Filtrados:', this.filteredMaterials.length);
   }
 
   onSearchChange(): void {
@@ -195,8 +193,7 @@ export class EstMaterialesComponent implements OnInit {
   }
 
   onCourseChange(): void {
-    // Esto se dispara cuando cambia el <select> de materias
-    console.log('Curso seleccionado:', this.selectedCourse);
+    console.log('[MATERIALES] Curso seleccionado:', this.selectedCourse);
     this.filterMaterials();
   }
 
@@ -246,22 +243,25 @@ export class EstMaterialesComponent implements OnInit {
   }
 
   viewMaterial(material: Material): void {
-    console.log('Ver material:', material);
+    console.log('[VER MATERIAL]', material);
     
     this.materialesService.verMaterial(material.id_material).subscribe({
       next: (blob) => {
         const url = URL.createObjectURL(blob);
         window.open(url, '_blank');
+        
+        // Liberar memoria después de un tiempo
+        setTimeout(() => URL.revokeObjectURL(url), 100);
       },
       error: (error) => {
-        console.error('Error visualizando material:', error);
-        alert('Error al cargar el material');
+        console.error('[VER MATERIAL] Error:', error);
+        alert('Error al cargar el material. Verifica que el archivo exista en el servidor.');
       }
     });
   }
 
   downloadMaterial(material: Material): void {
-    console.log('Descargar material:', material);
+    console.log('[DESCARGAR MATERIAL]', material);
     
     this.materialesService.descargarMaterial(material.id_material).subscribe({
       next: (blob) => {
@@ -273,10 +273,12 @@ export class EstMaterialesComponent implements OnInit {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        
+        console.log('[DESCARGAR] ✓ Descarga iniciada');
       },
       error: (error) => {
-        console.error('Error descargando material:', error);
-        alert('Error al descargar el material');
+        console.error('[DESCARGAR] Error:', error);
+        alert('Error al descargar el material. Verifica que el archivo exista en el servidor.');
       }
     });
   }
