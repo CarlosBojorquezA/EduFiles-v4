@@ -47,9 +47,9 @@ export class EstudianteService {
   }
 
   // Obtener documentos del estudiante
-  getMisDocumentos(): Observable<DocumentoEstudiante[]> {
-    return this.http.get<DocumentoEstudiante[]>(`${this.apiUrl}/documentos/mis-documentos`);
-  }
+  getMisDocumentos() {
+  return this.http.get<any[]>('/api/documents/mis-documentos-completo');
+}
 
   // Generar alertas en el frontend basadas en los documentos
   generarAlertas(documentos: DocumentoEstudiante[]): AlertaEstudiante[] {

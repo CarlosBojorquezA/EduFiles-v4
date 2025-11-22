@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { EstudianteService } from '../../services/estudiante.service';
+import { DocumentosService } from '../../services/documentos.service';
 import { AuthService } from '../../auth.service';
 import { NotificationsComponent } from '../../notificaciones/notificaciones';
+import { forkJoin } from 'rxjs';
 
 interface Alert {
   type: 'error' | 'warning';
@@ -13,9 +15,10 @@ interface Alert {
 }
 
 interface Document {
-  id_documento: number;
+  id_documento?: number;
+  id_plantilla: number;
   name: string;
-  status: 'approved' | 'rejected' | 'pending';
+  status: 'approved' | 'rejected' | 'pending' | 'missing';
   statusLabel: string;
   dueDate: string;
   uploadDate: string;
@@ -57,12 +60,12 @@ export class EstDashboardComponent implements OnInit {
   documents: Document[] = [];
 
   navigationItems: NavItem[] = [];
-
   isLoading: boolean = true;
 
   constructor(
     private router: Router,
     private estudianteService: EstudianteService,
+    private documentosService: DocumentosService,
     private authService: AuthService
   ) {}
 
@@ -80,7 +83,6 @@ export class EstDashboardComponent implements OnInit {
       this.userName = `${detalles.nombres} ${detalles.apellido_paterno} ${detalles.apellido_materno || ''}`.trim();
       this.userAccountNumber = user.num_usuario;
       
-      // Grupo y grado
       if (detalles.grado) {
         this.userGradeGroup = `${detalles.grado}°`;
         if (detalles.grupo_turno) {
@@ -88,7 +90,6 @@ export class EstDashboardComponent implements OnInit {
         }
       }
       
-      // Carrera (puedes personalizar esto según tus necesidades)
       this.userCareer = detalles.nivel_educativo || 'Estudiante';
     }
   }
@@ -96,68 +97,95 @@ export class EstDashboardComponent implements OnInit {
   loadDashboardData(): void {
     this.isLoading = true;
 
-    // Cargar estadísticas
-    this.estudianteService.getEstadisticas().subscribe({
-      next: (stats) => {
+    // Usar el nuevo método getTodosDocumentos()
+    forkJoin({
+      stats: this.estudianteService.getEstadisticas(),
+      todosDocumentos: this.documentosService.getTodosDocumentos()
+    }).subscribe({
+      next: ({ stats, todosDocumentos }) => {
+        console.log('[DASHBOARD] Documentos recibidos:', todosDocumentos);
+        
+        // Actualizar estadísticas desde backend
         this.documentsTotal = stats.total_requeridos;
         this.documentsApproved = stats.documentos_aprobados;
-      },
-      error: (error) => {
-        console.error('Error cargando estadísticas:', error);
-      }
-    });
 
-    // Cargar documentos
-    this.estudianteService.getMisDocumentos().subscribe({
-      next: (documentos) => {
-        this.documents = this.mapDocuments(documentos);
-        
-        // Generar alertas basadas en los documentos
-        this.alerts = this.estudianteService.generarAlertas(documentos);
+        // Mapear todos los documentos
+        this.documents = todosDocumentos.map(doc => this.mapDocumentFromBackend(doc));
+
+        // Generar alertas solo de documentos subidos
+        const documentosSubidos = todosDocumentos.filter((d: any) => d.tipo_registro === 'SUBIDO');
+        this.alerts = this.generateAlerts(documentosSubidos);
         
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error cargando documentos:', error);
+        console.error('[DASHBOARD] Error cargando datos:', error);
         this.isLoading = false;
+        
+        // Mostrar mensaje de error al usuario
+        this.alerts.push({
+          type: 'error',
+          icon: 'alert-triangle',
+          message: 'Error al cargar los datos. Por favor, recarga la página.'
+        });
       }
     });
   }
 
-  mapDocuments(documentos: any[]): Document[] {
-    return documentos.map(doc => {
-      let status: 'approved' | 'rejected' | 'pending';
-      let statusLabel: string;
-      let iconColor: string;
-      
-      switch (doc.estado) {
-        case 'APROBADO':
-          status = 'approved';
-          statusLabel = 'Aprobado';
-          iconColor = '#10b981';
-          break;
-        case 'RECHAZADO':
-          status = 'rejected';
-          statusLabel = 'Rechazado';
-          iconColor = '#ef4444';
-          break;
-        default:
-          status = 'pending';
-          statusLabel = 'Pendiente';
-          iconColor = '#f59e0b';
-      }
-
+  mapDocumentFromBackend(doc: any): Document {
+    // Si es un documento faltante
+    if (doc.estado === 'FALTANTE') {
       return {
-        id_documento: doc.id_documento,
+        id_plantilla: doc.id_plantilla,
         name: doc.plantilla_nombre,
-        status: status,
-        statusLabel: statusLabel,
-        dueDate: doc.fecha_vencimiento ? this.formatDate(doc.fecha_vencimiento) : '',
-        uploadDate: doc.fecha_subida ? this.formatDate(doc.fecha_subida) : '',
-        comment: doc.comentario || (status === 'approved' ? 'Documento aprobado correctamente' : 'Documento pendiente de subir'),
-        iconColor: iconColor
+        status: 'missing',
+        statusLabel: 'Faltante',
+        dueDate: '',
+        uploadDate: '',
+        comment: 'Documento pendiente de subir',
+        iconColor: '#6b7280'
       };
-    });
+    }
+
+    // Si es un documento subido
+    let status: 'approved' | 'rejected' | 'pending' | 'missing';
+    let statusLabel: string;
+    let iconColor: string;
+    
+    switch (doc.estado) {
+      case 'APROBADO':
+        status = 'approved';
+        statusLabel = 'Aprobado';
+        iconColor = '#10b981';
+        break;
+      case 'RECHAZADO':
+        status = 'rejected';
+        statusLabel = 'Rechazado';
+        iconColor = '#ef4444';
+        break;
+      case 'EN_REVISION':
+      case 'PENDIENTE':
+      default:
+        status = 'pending';
+        statusLabel = 'Pendiente';
+        iconColor = '#f59e0b';
+    }
+
+    return {
+      id_documento: doc.id_documento,
+      id_plantilla: doc.id_plantilla,
+      name: doc.plantilla_nombre,
+      status: status,
+      statusLabel: statusLabel,
+      dueDate: doc.fecha_vencimiento ? this.formatDate(doc.fecha_vencimiento) : '',
+      uploadDate: doc.fecha_subida ? this.formatDate(doc.fecha_subida) : '',
+      comment: doc.comentario || (
+        status === 'approved' ? 'Documento aprobado correctamente' : 
+        status === 'rejected' ? 'Documento rechazado, revisa los comentarios' : 
+        'En espera de revisión'
+      ),
+      iconColor: iconColor
+    };
   }
 
   formatDate(dateString: string): string {
@@ -169,6 +197,38 @@ export class EstDashboardComponent implements OnInit {
     const year = date.getFullYear();
     
     return `${day}/${month}/${year}`;
+  }
+
+  generateAlerts(documentos: any[]): Alert[] {
+    const alertas: Alert[] = [];
+    
+    documentos.forEach(doc => {
+      // Alerta de documento rechazado
+      if (doc.estado === 'RECHAZADO' && doc.comentario) {
+        alertas.push({
+          type: 'error',
+          icon: 'alert-triangle',
+          message: `${doc.plantilla_nombre}: ${doc.comentario}`
+        });
+      }
+      
+      // Alerta de documento próximo a vencer
+      if (doc.fecha_vencimiento) {
+        const fechaVencimiento = new Date(doc.fecha_vencimiento);
+        const hoy = new Date();
+        const diferenciaDias = Math.ceil((fechaVencimiento.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (diferenciaDias <= 7 && diferenciaDias > 0 && doc.estado === 'APROBADO') {
+          alertas.push({
+            type: 'warning',
+            icon: 'alert-circle',
+            message: `${doc.plantilla_nombre} vence en ${diferenciaDias} día${diferenciaDias > 1 ? 's' : ''}`
+          });
+        }
+      }
+    });
+    
+    return alertas;
   }
 
   loadNavigation(): void {
@@ -186,34 +246,25 @@ export class EstDashboardComponent implements OnInit {
     return Math.round((this.documentsApproved / this.documentsTotal) * 100);
   }
 
-  get pendingDocuments(): Document[] {
-    return this.documents.filter(doc => doc.status === 'pending');
-  }
-
-  get rejectedDocuments(): Document[] {
-    return this.documents.filter(doc => doc.status === 'rejected');
-  }
-
   navigateTo(route: string): void {
     this.currentRoute = route;
     this.router.navigate([route]);
   }
 
   viewDocumentDetails(document: Document): void {
-    console.log('Ver detalles del documento:', document);
+    console.log('[DASHBOARD] Ver detalles del documento:', document);
     
-    // Navegar a la vista de documentos con el documento seleccionado
-    this.router.navigate(['/est-documentos'], { 
-      queryParams: { documento: document.id_documento } 
-    });
-  }
-
-  uploadDocument(document: Document): void {
-    console.log('Subir documento:', document);
-    // Navegar a subir documento
-    this.router.navigate(['/est-documentos'], { 
-      queryParams: { accion: 'subir', plantilla: document.name } 
-    });
+    if (document.id_documento) {
+      // Documento subido - navegar con ID
+      this.router.navigate(['/est-documentos'], { 
+        queryParams: { documento: document.id_documento } 
+      });
+    } else {
+      // Documento faltante - navegar para subirlo
+      this.router.navigate(['/est-documentos'], { 
+        queryParams: { plantilla: document.id_plantilla } 
+      });
+    }
   }
 
   getIcon(iconName: string): string {

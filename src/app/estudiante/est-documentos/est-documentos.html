@@ -55,7 +55,6 @@
       <div class="student-info">
         <div class="student-type">
           <h3>Tipo de Estudiante</h3>
-          <p>{{ studentType }}</p>
           <span class="type-badge">{{ studentTypeLabel }}</span>
         </div>
         <div class="progress-bar-container">
@@ -80,12 +79,13 @@
       <!-- Periodic Info -->
       <div class="periodic-info" *ngIf="activeTab === 'periodicos'">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-          <circle cx="12" cy="13" r="4"></circle>
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="2" x2="12" y2="6"></line>
+          <line x1="12" y1="18" x2="12" y2="22"></line>
         </svg>
         <div>
           <strong>Documentos Periódicos</strong>
-          <p>Documentos que deben actualizarse periódicamente</p>
+          <p>Estos documentos deben actualizarse periódicamente según su vigencia</p>
         </div>
       </div>
 
@@ -96,7 +96,8 @@
             <div class="document-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path *ngIf="document.status === 'approved'" d="M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4L12 14.01l-3-3"></path>
-                <path *ngIf="document.status === 'rejected' || document.status === 'missing'" d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z M12 9v4 M12 17h.01"></path>
+                <path *ngIf="document.status === 'rejected' || document.status === 'pending'" d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z M12 9v4 M12 17h.01"></path>
+                <path *ngIf="document.status === 'missing'" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6"></path>
               </svg>
             </div>
             <div class="document-info">
@@ -115,12 +116,12 @@
                 Subido: {{ document.uploadDate }}
               </p>
               <p class="document-periodicity" *ngIf="document.periodicity">{{ document.periodicity }}</p>
-              <p class="document-rejection" *ngIf="document.rejectionReason">{{ document.rejectionReason }}</p>
+              <p class="document-rejection" *ngIf="document.rejectionReason">Motivo del rechazo: {{ document.rejectionReason }}</p>
             </div>
             <span class="status-badge" [style.background-color]="document.badgeColor">{{ document.statusLabel }}</span>
           </div>
 
-          <!-- Actions -->
+          <!-- Actions para documentos SUBIDOS -->
           <div class="document-actions" *ngIf="document.status !== 'missing'">
             <button class="btn-action" (click)="openViewModal(document)">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -129,16 +130,24 @@
               </svg>
               Ver Documento
             </button>
+            <button class="btn-action" (click)="descargarDocumento(document)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Descargar
+            </button>
             <button class="btn-action delete" (click)="openDeleteModal(document)">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="3 6 5 6 21 6"></polyline>
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
               </svg>
-              Eliminar y Volver a Subir
+              Eliminar
             </button>
           </div>
 
-          <!-- Upload Button -->
+          <!-- Upload Button para documentos FALTANTES -->
           <button class="btn-upload" *ngIf="document.status === 'missing'" (click)="openUploadModal(document)">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -148,6 +157,16 @@
             Subir Documento
           </button>
         </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredDocuments.length === 0" class="no-results">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+        </svg>
+        <h3>No hay documentos</h3>
+        <p>No se encontraron documentos en esta categoría</p>
       </div>
     </div>
   </main>
@@ -173,12 +192,13 @@
       <div *ngIf="!isLoadingPreview && documentPreviewUrl" class="document-preview">
         <iframe [src]="documentPreviewUrl" style="width: 100%; height: 500px; border: none; border-radius: 8px;"></iframe>
         <h3>{{ selectedDocument?.name }}</h3>
-        <p>Simulación de visualización del documento</p>
+        <p>Documento visualizado correctamente</p>
       </div>
       
-      <div class="modal-info">
-        <p>• En una implementación real, aquí se mostraría el PDF o imagen del documento</p>
-        <p>• Se podría descargar, imprimir o compartir</p>
+      <div class="modal-info" *ngIf="!isLoadingPreview">
+        <p><strong>Tipo:</strong> {{ selectedDocument?.name }}</p>
+        <p *ngIf="selectedDocument?.uploadDate"><strong>Subido:</strong> {{ selectedDocument?.uploadDate }}</p>
+        <p><strong>Estado:</strong> {{ selectedDocument?.statusLabel }}</p>
       </div>
     </div>
   </div>
@@ -192,7 +212,7 @@
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
       </button>
-      <h2>Advertencia: Documento en Revisión</h2>
+      <h2>¿Eliminar Documento?</h2>
       <div class="warning-box">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"></circle>
@@ -201,18 +221,18 @@
         </svg>
         <div>
           <strong>¡Atención!</strong>
-          <p>Este documento ya ha sido aprobado.</p>
+          <p>Esta acción no se puede deshacer.</p>
         </div>
       </div>
-      <p class="modal-text">Si eliminas y vuelves a subir este documento:</p>
+      <p class="modal-text">Al eliminar este documento:</p>
       <ul class="modal-list">
-        <li>El documento actual será eliminado permanentemente</li>
-        <li>El nuevo documento quedará marcado como <strong>Pendiente</strong></li>
-        <li>Deberá ser revisado nuevamente por un administrador</li>
+        <li>El documento será eliminado permanentemente del sistema</li>
+        <li>Podrás subir un nuevo documento en cualquier momento</li>
+        <li>El nuevo documento deberá ser revisado por un administrador</li>
       </ul>
-      <p class="modal-question">¿Estás seguro de que deseas continuar?</p>
+      <p class="modal-question">¿Estás seguro de que deseas eliminar este documento?</p>
       <div class="modal-actions">
-        <button class="btn-confirm" (click)="confirmDelete()">Sí, Eliminar y Resubir</button>
+        <button class="btn-confirm" (click)="confirmDelete()">Sí, Eliminar</button>
         <button class="btn-cancel" (click)="closeDeleteModal()">Cancelar</button>
       </div>
     </div>
@@ -229,58 +249,17 @@
       </button>
       <h2>Subir {{ selectedDocument?.name }}</h2>
 
-      <!-- Scanner Section (Solo móvil) -->
-      <div class="scanner-section" *ngIf="isMobile">
-        <h3>
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-            <circle cx="12" cy="13" r="4"></circle>
-          </svg>
-          Escáner de Documentos
-        </h3>
-        <p class="scanner-description">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-          </svg>
-          Escanea o sube imágenes que se convertirán automáticamente a PDF
-        </p>
-        <div class="scanner-buttons">
-          <button class="btn-scan" type="button" (click)="escanearDocumento()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-              <circle cx="12" cy="13" r="4"></circle>
-            </svg>
-            Escanear
-          </button>
-          <button class="btn-upload-image" type="button" (click)="triggerFileInput()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="17 8 12 3 7 8"></polyline>
-              <line x1="12" y1="3" x2="12" y2="15"></line>
-            </svg>
-            Subir Imagen
-          </button>
-        </div>
-      </div>
-
       <!-- Upload Form -->
       <form class="upload-form" (ngSubmit)="submitUpload()">
         <h3>Subir Documento</h3>
         
         <div class="form-group">
           <label>Tipo de Documento</label>
-          <select 
-            [(ngModel)]="uploadForm.idPlantilla" 
-            name="documentType" 
+          <input 
+            type="text"
+            [value]="selectedDocument?.name || 'Documento'"
             class="form-input"
-            (change)="onPlantillaChange($event)"
-            [disabled]="selectedDocument?.id_plantilla ? true : false">
-            <option [value]="selectedDocument.id_plantilla" *ngIf="selectedDocument">{{ selectedDocument.name }}</option>
-            <option *ngFor="let plantilla of plantillasDisponibles" [value]="plantilla.id_plantilla">
-              {{ plantilla.nombre }}
-            </option>
-          </select>
+            disabled>
         </div>
 
         <div class="form-group">

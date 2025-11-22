@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DocumentosService, DocumentoDetalle, Plantilla } from '../../services/documentos.service';
 import { AuthService } from '../../auth.service';
@@ -70,7 +70,6 @@ export class EstDocumentosComponent implements OnInit {
 
   // Documents
   documents: DocumentoUI[] = [];
-  documentosOriginales: DocumentoDetalle[] = [];
 
   // Modals
   showViewModal: boolean = false;
@@ -91,15 +90,13 @@ export class EstDocumentosComponent implements OnInit {
     description: ''
   };
 
-  // Plantillas disponibles para subir
-  plantillasDisponibles: Plantilla[] = [];
-
   navigationItems: NavItem[] = [];
   isLoading: boolean = true;
   isMobile: boolean = false;
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private documentosService: DocumentosService,
     private authService: AuthService,
     private sanitizer: DomSanitizer
@@ -112,6 +109,17 @@ export class EstDocumentosComponent implements OnInit {
     this.loadNavigation();
     this.loadDocuments();
     this.currentRoute = this.router.url;
+    
+    // Manejar query params (para abrir modal desde dashboard)
+    this.route.queryParams.subscribe(params => {
+      if (params['plantilla']) {
+        const idPlantilla = parseInt(params['plantilla'], 10);
+        const doc = this.documents.find(d => d.id_plantilla === idPlantilla);
+        if (doc) {
+          setTimeout(() => this.openUploadModal(doc), 500);
+        }
+      }
+    });
   }
 
   detectMobile(): boolean {
@@ -152,70 +160,95 @@ export class EstDocumentosComponent implements OnInit {
   loadDocuments(): void {
     this.isLoading = true;
 
-    this.documentosService.getMisDocumentos().subscribe({
-      next: (documentos) => {
-        this.documentosOriginales = documentos;
-        this.processDocuments(documentos);
-        this.generateAlerts(documentos);
+    // Usar el nuevo método que combina documentos
+    this.documentosService.getTodosDocumentos().subscribe({
+      next: (todosDocumentos) => {
+        console.log('[DOCUMENTOS] Documentos recibidos:', todosDocumentos);
+        
+        // Mapear documentos
+        this.documents = todosDocumentos.map(doc => this.mapDocumentFromBackend(doc));
+        
+        // Calcular estadísticas
+        this.documentsTotal = this.documents.length;
+        this.documentsApproved = this.documents.filter(d => d.status === 'approved').length;
+        
+        // Generar alertas solo de documentos subidos
+        const documentosSubidos = todosDocumentos.filter(d => d.tipo_registro === 'SUBIDO');
+        this.generateAlerts(documentosSubidos);
+        
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error cargando documentos:', error);
+        console.error('[DOCUMENTOS] Error cargando documentos:', error);
         this.isLoading = false;
+        
+        // Mostrar alerta de error
+        this.alerts.push({
+          type: 'error',
+          title: 'Error de carga',
+          message: 'No se pudieron cargar los documentos. Por favor, recarga la página.'
+        });
       }
     });
   }
 
-  processDocuments(documentos: DocumentoDetalle[]): void {
-    // Mapear documentos subidos
-    const documentosUI: DocumentoUI[] = documentos.map(doc => ({
+  mapDocumentFromBackend(doc: any): DocumentoUI {
+    // Si es un documento faltante
+    if (doc.estado === 'FALTANTE') {
+      return {
+        id_plantilla: doc.id_plantilla,
+        name: doc.plantilla_nombre,
+        category: doc.es_fijo === 1 ? 'fixed' : 'periodic',
+        status: 'missing',
+        statusLabel: 'Faltante',
+        required: doc.obligatorio === 1,
+        description: doc.descripcion,
+        badgeColor: '#6b7280',
+        periodicity: doc.requiere_actualizacion === 1 && doc.dias_vigencia 
+          ? `Cada ${Math.floor(doc.dias_vigencia / 30)} ${Math.floor(doc.dias_vigencia / 30) === 1 ? 'mes' : 'meses'}`
+          : undefined
+      };
+    }
+
+    // Si es un documento subido
+    let status: 'approved' | 'rejected' | 'pending' | 'missing';
+    let statusLabel: string;
+    let badgeColor: string;
+    
+    switch (doc.estado) {
+      case 'APROBADO':
+        status = 'approved';
+        statusLabel = 'Aprobado';
+        badgeColor = '#10b981';
+        break;
+      case 'RECHAZADO':
+        status = 'rejected';
+        statusLabel = 'Rechazado';
+        badgeColor = '#ef4444';
+        break;
+      default:
+        status = 'pending';
+        statusLabel = 'Pendiente';
+        badgeColor = '#f59e0b';
+    }
+
+    return {
       id_documento: doc.id_documento,
       id_plantilla: doc.id_plantilla,
       name: doc.plantilla_nombre,
       category: doc.es_fijo === 1 ? 'fixed' : 'periodic',
-      status: this.mapStatus(doc.estado),
-      statusLabel: this.getStatusLabel(doc.estado),
+      status: status,
+      statusLabel: statusLabel,
       required: doc.obligatorio === 1,
       description: doc.descripcion,
       uploadDate: doc.fecha_subida ? this.formatDate(doc.fecha_subida) : '',
-      rejectionReason: doc.estado === 'RECHAZADO' ? (doc.comentario ?? undefined) : undefined,
-      badgeColor: this.getStatusColor(doc.estado),
+      dueDate: doc.fecha_vencimiento ? this.formatDate(doc.fecha_vencimiento) : '',
+      rejectionReason: doc.estado === 'RECHAZADO' ? doc.comentario ?? undefined : undefined,
+      badgeColor: badgeColor,
       periodicity: doc.requiere_actualizacion === 1 && doc.dias_vigencia 
         ? `Cada ${Math.floor(doc.dias_vigencia / 30)} ${Math.floor(doc.dias_vigencia / 30) === 1 ? 'mes' : 'meses'}`
         : undefined
-    }));
-
-    this.documents = documentosUI;
-    
-    // Calcular estadísticas
-    this.documentsTotal = documentos.length;
-    this.documentsApproved = documentos.filter(d => d.estado === 'APROBADO').length;
-  }
-
-  mapStatus(estado: string): 'approved' | 'rejected' | 'pending' | 'missing' {
-    switch (estado) {
-      case 'APROBADO': return 'approved';
-      case 'RECHAZADO': return 'rejected';
-      default: return 'pending';
-    }
-  }
-
-  getStatusLabel(estado: string): string {
-    switch (estado) {
-      case 'APROBADO': return 'Aprobado';
-      case 'RECHAZADO': return 'Rechazado';
-      case 'PENDIENTE': return 'Pendiente';
-      case 'EN_REVISION': return 'En Revisión';
-      default: return 'Faltante';
-    }
-  }
-
-  getStatusColor(estado: string): string {
-    switch (estado) {
-      case 'APROBADO': return '#1a1a1a';
-      case 'RECHAZADO': return '#ef4444';
-      default: return '#666';
-    }
+    };
   }
 
   generateAlerts(documentos: DocumentoDetalle[]): void {
@@ -242,6 +275,7 @@ export class EstDocumentosComponent implements OnInit {
   }
 
   formatDate(dateString: string): string {
+    if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('es-MX', { 
       day: '2-digit', 
@@ -284,7 +318,10 @@ export class EstDocumentosComponent implements OnInit {
 
   // ============ MODAL: VER DOCUMENTO ============
   openViewModal(document: DocumentoUI): void {
-    if (!document.id_documento) return;
+    if (!document.id_documento) {
+      alert('Este documento aún no ha sido subido');
+      return;
+    }
     
     this.selectedDocument = document;
     this.showViewModal = true;
@@ -293,11 +330,11 @@ export class EstDocumentosComponent implements OnInit {
     this.documentosService.verDocumento(document.id_documento).subscribe({
       next: (blob) => {
         const url = URL.createObjectURL(blob);
-        this.documentPreviewUrl = this.sanitizer.bypassSecurityTrustUrl(url);
+        this.documentPreviewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
         this.isLoadingPreview = false;
       },
       error: (error) => {
-        console.error('Error cargando preview:', error);
+        console.error('[VER DOCUMENTO] Error:', error);
         this.isLoadingPreview = false;
         alert('Error al cargar el documento');
       }
@@ -308,21 +345,47 @@ export class EstDocumentosComponent implements OnInit {
     this.showViewModal = false;
     this.selectedDocument = null;
     if (this.documentPreviewUrl) {
-      URL.revokeObjectURL(this.documentPreviewUrl as string);
+      const url = this.documentPreviewUrl.toString();
+      if (url.startsWith('blob:')) {
+        URL.revokeObjectURL(url);
+      }
       this.documentPreviewUrl = null;
     }
   }
 
-  // ============ MODAL: ELIMINAR Y RESUBIR ============
-  openDeleteModal(document: DocumentoUI): void {
-    this.selectedDocument = document;
-    
-    // Si está rechazado, eliminar directamente sin confirmación
-    if (document.status === 'rejected') {
-      this.confirmDelete();
-    } else {
-      this.showDeleteModal = true;
+  descargarDocumento(doc: DocumentoUI): void {
+    if (!doc.id_documento) {
+      alert('Este documento aún no ha sido subido');
+      return;
     }
+
+    this.documentosService.descargarDocumento(doc.id_documento).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = window.document.createElement('a');
+        link.href = url;
+        link.download = `${doc.name}.pdf`;
+        window.document.body.appendChild(link);
+        link.click();
+        window.URL.revokeObjectURL(url);
+        window.document.body.removeChild(link);
+      },
+      error: (error) => {
+        console.error('[DESCARGAR] Error:', error);
+        alert('Error al descargar el documento');
+      }
+    });
+  }
+
+  // ============ MODAL: ELIMINAR DOCUMENTO ============
+  openDeleteModal(document: DocumentoUI): void {
+    if (!document.id_documento) {
+      alert('No hay documento para eliminar');
+      return;
+    }
+    
+    this.selectedDocument = document;
+    this.showDeleteModal = true;
   }
 
   closeDeleteModal(): void {
@@ -335,23 +398,13 @@ export class EstDocumentosComponent implements OnInit {
 
     this.documentosService.eliminarDocumento(this.selectedDocument.id_documento).subscribe({
       next: () => {
-        console.log('Documento eliminado');
+        console.log('[ELIMINAR] Documento eliminado');
+        alert('Documento eliminado exitosamente');
         this.closeDeleteModal();
-        
-        // Abrir modal de subida con el mismo documento
-        const plantillaInfo = {
-          id_plantilla: this.selectedDocument!.id_plantilla,
-          name: this.selectedDocument!.name,
-          description: this.selectedDocument!.description
-        };
-        
-        this.openUploadModalWithPlantilla(plantillaInfo);
-        
-        // Recargar documentos
-        this.loadDocuments();
+        this.loadDocuments(); // Recargar lista
       },
       error: (error) => {
-        console.error('Error eliminando documento:', error);
+        console.error('[ELIMINAR] Error:', error);
         alert('Error al eliminar el documento');
       }
     });
@@ -368,52 +421,7 @@ export class EstDocumentosComponent implements OnInit {
       description: ''
     };
     
-    // Cargar plantillas disponibles para el select
-    this.loadPlantillasDisponibles();
-    
     this.showUploadModal = true;
-  }
-
-  openUploadModalWithPlantilla(plantilla: any): void {
-    this.selectedDocument = {
-      id_plantilla: plantilla.id_plantilla,
-      name: plantilla.name,
-      description: plantilla.description,
-      category: 'fixed',
-      status: 'missing',
-      statusLabel: 'Faltante',
-      required: true,
-      badgeColor: '#666'
-    };
-    
-    this.uploadForm = {
-      documentType: plantilla.name,
-      idPlantilla: plantilla.id_plantilla,
-      file: null,
-      fileName: '',
-      description: ''
-    };
-    
-    this.loadPlantillasDisponibles();
-    this.showUploadModal = true;
-  }
-
-  loadPlantillasDisponibles(): void {
-    this.documentosService.getPlantillas(this.tipoEstudiante).subscribe({
-      next: (plantillas) => {
-        // Filtrar solo plantillas que no tienen documento subido
-        const idsSubidos = this.documents
-          .filter(d => d.id_documento)
-          .map(d => d.id_plantilla);
-        
-        this.plantillasDisponibles = plantillas.filter(p => 
-          !idsSubidos.includes(p.id_plantilla)
-        );
-      },
-      error: (error) => {
-        console.error('Error cargando plantillas:', error);
-      }
-    });
   }
 
   closeUploadModal(): void {
@@ -449,16 +457,6 @@ export class EstDocumentosComponent implements OnInit {
     }
   }
 
-  onPlantillaChange(event: any): void {
-    const idPlantilla = parseInt(event.target.value);
-    const plantilla = this.plantillasDisponibles.find(p => p.id_plantilla === idPlantilla);
-    
-    if (plantilla) {
-      this.uploadForm.documentType = plantilla.nombre;
-      this.uploadForm.idPlantilla = plantilla.id_plantilla;
-    }
-  }
-
   triggerFileInput(): void {
     const fileInput = document.getElementById('fileInput') as HTMLInputElement;
     if (fileInput) {
@@ -468,7 +466,7 @@ export class EstDocumentosComponent implements OnInit {
 
   submitUpload(): void {
     if (!this.uploadForm.file || !this.uploadForm.idPlantilla) {
-      alert('Por favor selecciona un archivo y tipo de documento');
+      alert('Por favor selecciona un archivo');
       return;
     }
 
@@ -482,40 +480,16 @@ export class EstDocumentosComponent implements OnInit {
 
     this.documentosService.subirDocumento(formData).subscribe({
       next: (response) => {
-        console.log('Documento subido:', response);
+        console.log('[SUBIR] Documento subido:', response);
         alert('Documento subido exitosamente');
         this.closeUploadModal();
-        this.loadDocuments();
+        this.loadDocuments(); // Recargar lista
       },
       error: (error) => {
-        console.error('Error subiendo documento:', error);
+        console.error('[SUBIR] Error:', error);
         alert(error.error?.error || 'Error al subir el documento');
       }
     });
-  }
-
-  // Escanear (solo móvil)
-  escanearDocumento(): void {
-    if (!this.isMobile) {
-      alert('Esta función solo está disponible en dispositivos móviles');
-      return;
-    }
-    
-    // Solicitar permiso de cámara
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.capture = 'environment'; // Usar cámara trasera
-    
-    input.onchange = (e: any) => {
-      const file = e.target.files[0];
-      if (file) {
-        this.uploadForm.file = file;
-        this.uploadForm.fileName = file.name;
-      }
-    };
-    
-    input.click();
   }
 
   // Navegación
