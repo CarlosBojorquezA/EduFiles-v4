@@ -60,7 +60,6 @@
   gap: 12px;
 }
 
-.notification-btn,
 .logout-btn {
   width: 40px;
   height: 40px;
@@ -76,25 +75,8 @@
   transition: all 0.2s ease;
 }
 
-.notification-btn:hover,
 .logout-btn:hover {
   background-color: #555555;
-}
-
-.notification-btn .badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  background-color: #ef4444;
-  color: white;
-  font-size: 11px;
-  font-weight: 600;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 /* Main Content */
@@ -278,8 +260,52 @@
   color: #f59e0b;
 }
 
-/* Chat detail view */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 
+.no-results {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: white;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+
+.no-results svg {
+  color: #d1d5db;
+  margin: 0 auto 16px;
+}
+
+.no-results h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.no-results p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.unread-badge {
+  background-color: #ef4444;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 8px;
+}
 
 /* Bottom Navigation */
 .bottom-nav {

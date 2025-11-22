@@ -4,7 +4,7 @@ import { EstDashboardComponent } from './estudiante/est-dashboard/est-dashboard'
 import { EstDocumentosComponent } from './estudiante/est-documentos/est-documentos';
 import { EstMaterialesComponent } from './estudiante/est-materiales/est-materiales';
 import { EstProfesoresComponent } from './estudiante/est-profesores/est-profesores';
-import { ChatProfesorComponent } from './estudiante/est-profesores-chat/est-profesores-chat';
+import { EstProfesoresChatComponent } from './estudiante/est-profesores-chat/est-profesores-chat';
 import { EstPerfilComponent } from './estudiante/est-perfil/est-perfil';
 import { AdminDashboardComponent } from './administrador/admin-dashboard/admin-dashboard';
 import { AdminDocumentosComponent } from './administrador/admin-documentos/admin-documentos';
@@ -46,8 +46,8 @@ export const routes: Routes = [
         canActivate: [requireAuthGuard, estudianteGuard]
     },
     { 
-        path: 'est-profesores-chat', 
-        component: ChatProfesorComponent,
+        path: 'est-profesores-chat/:id', 
+        component: EstProfesoresChatComponent,
         canActivate: [requireAuthGuard, estudianteGuard]
     },
     { 

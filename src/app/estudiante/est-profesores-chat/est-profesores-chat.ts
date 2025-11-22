@@ -1,27 +1,11 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-
-interface Message {
-  id: string;
-  sender: 'student' | 'teacher';
-  content: string;
-  timestamp: Date;
-  read: boolean;
-}
-
-interface Professor {
-  id: string;
-  name: string;
-  initials: string;
-  subject: string;
-  department: string;
-  email: string;
-  phone: string;
-  status: 'online' | 'offline';
-  unreadMessages: number;
-}
+import { ProfesoresService, Profesor, Mensaje } from '../../services/profesores.service';
+import { AuthService } from '../../auth.service';
+import { NotificationsComponent } from '../../notificaciones/notificaciones';
+import { interval } from 'rxjs';
 
 interface NavItem {
   icon: string;
@@ -31,89 +15,60 @@ interface NavItem {
 }
 
 @Component({
-  selector: 'app-chat-profesor',
+  selector: 'app-est-profesores-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NotificationsComponent],
   templateUrl: './est-profesores-chat.html',
   styleUrls: ['./est-profesores-chat.css']
 })
-export class ChatProfesorComponent implements OnInit, AfterViewChecked {
-  userRole: 'estudiante' = 'estudiante';
-  userName: string = 'María García';
-  userAccountNumber: string = '2024001234';
-  userCareer: string = 'Ingeniería de Sistemas';
-  userGradeGroup: string = '2°A';
-  notificationCount: number = 3;
-
-  // Views
-  currentView: 'list' | 'chat' | 'profile' = 'list';
-  selectedProfessor: Professor | null = null;
+export class EstProfesoresChatComponent implements OnInit, AfterViewChecked {
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
+
+  userRole: 'estudiante' = 'estudiante';
+  userName: string = '';
+  userAccountNumber: string = '';
+  userCareer: string = '';
+  userGradeGroup: string = '';
   currentRoute: string = '/est-profesores-chat';
+  notificationCount: number = 0;
 
-  teacher: Professor = {
-    id: '1',
-      name: 'Dr. Ana López',
-      initials: 'DAL',
-      subject: 'Matemáticas',
-      department: 'Ciencias Exactas',
-      email: 'ana.lopez@universidad.edu',
-      phone: '+52 555 1234',
-      status: 'online',
-      unreadMessages: 1
-  };
-
-  messages: Message[] = [
-    {
-      id: '1',
-      sender: 'teacher',
-      content: 'Holanda, que me cuentas¿',
-      timestamp: new Date(Date.now() - 3600000),
-      read: true
-    },
-    {
-      id: '2',
-      sender: 'student',
-      content: 'tinguililingui',
-      timestamp: new Date(Date.now() - 1800000),
-      read: true
-    },
-    {
-      id: '3',
-      sender: 'student',
-      content: 'hola papu',
-      timestamp: new Date(Date.now() - 1740000),
-      read: true
-    }
-  ];
-
+  idProfesor: number = 0;
+  profesor: Profesor | null = null;
+  mensajes: Mensaje[] = [];
   newMessage: string = '';
-  currentPage: number = 20;
-  totalPages: number = 3;
-  private shouldScrollToBottom = false;
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router
-  ) {}
+  currentPage: number = 1;
+  totalPages: number = 1;
 
   navigationItems: NavItem[] = [];
+  isLoading: boolean = true;
+  isSending: boolean = false;
+  shouldScrollToBottom: boolean = false;
 
-  backToList(): void {
-    this.currentView = 'list';
-    this.selectedProfessor = null;
-    this.messages = [];
-    this.newMessage = '';
-  }
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private profesoresService: ProfesoresService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
+    this.loadUserData();
     this.loadNavigation();
-    this.currentRoute = this.router.url;
-  }
-
-  navigateTo(route: string): void {
-    this.currentRoute = route;
-    this.router.navigate([route]);
+    
+    // Obtener ID del profesor desde la ruta
+    this.route.params.subscribe(params => {
+      this.idProfesor = +params['id'];
+      if (this.idProfesor) {
+        this.loadProfesorData();
+        this.loadMensajes();
+        
+        // Polling para actualizar mensajes cada 5 segundos
+        interval(5000).subscribe(() => {
+          this.loadMensajes(false); // Sin mostrar loading
+        });
+      }
+    });
   }
 
   ngAfterViewChecked(): void {
@@ -123,38 +78,21 @@ export class ChatProfesorComponent implements OnInit, AfterViewChecked {
     }
   }
 
-  sendMessage(): void {
-    if (this.newMessage.trim()) {
-      const message: Message = {
-        id: Date.now().toString(),
-        sender: 'student',
-        content: this.newMessage.trim(),
-        timestamp: new Date(),
-        read: false
-      };
-
-      this.messages.push(message);
-      this.newMessage = '';
-      this.shouldScrollToBottom = true;
-
-      // this.chatService.sendMessage(this.teacher.id, message).subscribe();
-    }
-  }
-
-  formatTime(date: Date): string {
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
-  }
-
-  private scrollToBottom(): void {
-    try {
-      if (this.messagesContainer) {
-        this.messagesContainer.nativeElement.scrollTop = 
-          this.messagesContainer.nativeElement.scrollHeight;
+  loadUserData(): void {
+    const user = this.authService.getCurrentUser();
+    if (user && user.detalles) {
+      const detalles = user.detalles;
+      this.userName = `${detalles.nombres} ${detalles.apellido_paterno} ${detalles.apellido_materno || ''}`.trim();
+      this.userAccountNumber = user.num_usuario;
+      
+      if (detalles.grado) {
+        this.userGradeGroup = `${detalles.grado}°`;
+        if (detalles.grupo_turno) {
+          this.userGradeGroup += ` ${detalles.grupo_turno}`;
+        }
       }
-    } catch(err) {
-      console.error('Error scrolling to bottom:', err);
+      
+      this.userCareer = detalles.nivel_educativo || 'Estudiante';
     }
   }
 
@@ -168,6 +106,113 @@ export class ChatProfesorComponent implements OnInit, AfterViewChecked {
     ];
   }
 
+  loadProfesorData(): void {
+    this.profesoresService.getDetalleProfesor(this.idProfesor).subscribe({
+      next: (profesor) => {
+        console.log('[CHAT] Datos del profesor:', profesor);
+        this.profesor = profesor;
+      },
+      error: (error) => {
+        console.error('[CHAT] Error cargando profesor:', error);
+        alert('Error al cargar datos del profesor');
+        this.backToList();
+      }
+    });
+  }
+
+  loadMensajes(showLoading: boolean = true): void {
+    if (showLoading) {
+      this.isLoading = true;
+    }
+
+    this.profesoresService.getMensajesChat(this.idProfesor).subscribe({
+      next: (mensajes) => {
+        console.log('[CHAT] Mensajes recibidos:', mensajes);
+        
+        const mensajesAntesCount = this.mensajes.length;
+        this.mensajes = mensajes;
+        
+        // Si hay nuevos mensajes, hacer scroll
+        if (mensajes.length > mensajesAntesCount) {
+          this.shouldScrollToBottom = true;
+        }
+        
+        // Calcular páginas (simulado, 20 mensajes por página)
+        this.totalPages = Math.ceil(mensajes.length / 20) || 1;
+        this.currentPage = this.totalPages;
+        
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('[CHAT] Error cargando mensajes:', error);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  sendMessage(): void {
+    if (!this.newMessage.trim() || this.isSending) {
+      return;
+    }
+
+    const mensajeTexto = this.newMessage.trim();
+    this.isSending = true;
+
+    console.log('[CHAT] Enviando mensaje:', mensajeTexto);
+
+    this.profesoresService.enviarMensaje(this.idProfesor, mensajeTexto).subscribe({
+      next: (response) => {
+        console.log('[CHAT] Mensaje enviado:', response);
+        
+        // Limpiar input
+        this.newMessage = '';
+        
+        // Recargar mensajes
+        this.loadMensajes(false);
+        
+        // Hacer scroll al final
+        this.shouldScrollToBottom = true;
+        
+        this.isSending = false;
+      },
+      error: (error) => {
+        console.error('[CHAT] Error enviando mensaje:', error);
+        alert('Error al enviar el mensaje. Intenta de nuevo.');
+        this.isSending = false;
+      }
+    });
+  }
+
+  formatTime(timestamp: string): string {
+    if (!timestamp) return '';
+    
+    const date = new Date(timestamp);
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    
+    return `${hours}:${minutes}`;
+  }
+
+  scrollToBottom(): void {
+    try {
+      if (this.messagesContainer) {
+        this.messagesContainer.nativeElement.scrollTop = 
+          this.messagesContainer.nativeElement.scrollHeight;
+      }
+    } catch(err) {
+      console.error('Error scrolling to bottom:', err);
+    }
+  }
+
+  backToList(): void {
+    this.router.navigate(['/est-profesores']);
+  }
+
+  navigateTo(route: string): void {
+    this.currentRoute = route;
+    this.router.navigate([route]);
+  }
+
   getIcon(iconName: string): string {
     const icons: { [key: string]: string } = {
       'home': 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
@@ -176,11 +221,11 @@ export class ChatProfesorComponent implements OnInit, AfterViewChecked {
       'users': 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
       'user': 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'
     };
-    return icons[iconName] || icons['users'];
+    return icons[iconName] || icons['file-text'];
   }
 
   logout(): void {
+    this.authService.logout();
     this.router.navigate(['']);
   }
-
 }

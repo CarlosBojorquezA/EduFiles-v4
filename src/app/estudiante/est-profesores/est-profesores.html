@@ -2,13 +2,7 @@
   <!-- Header -->
   <header class="header">
     <div class="header-left">
-      <button class="back-btn" *ngIf="currentView !== 'list'" (click)="backToList()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="19" y1="12" x2="5" y2="12"></line>
-          <polyline points="12 19 5 12 12 5"></polyline>
-        </svg>
-      </button>
-      <div class="user-info" *ngIf="currentView === 'list'">
+      <div class="user-info">
         <div class="avatar">
           <span>{{ userName.substring(0, 2).toUpperCase() }}</span>
         </div>
@@ -18,28 +12,9 @@
           <p class="user-career">{{ userCareer }} • {{ userGradeGroup }}</p>
         </div>
       </div>
-      <div class="professor-info" *ngIf="currentView !== 'list' && selectedProfessor">
-        <div class="professor-avatar">
-          <span>{{ selectedProfessor.initials }}</span>
-        </div>
-        <div class="professor-details">
-          <h3>{{ selectedProfessor.name }}</h3>
-          <p class="professor-subject">
-            {{ selectedProfessor.subject }}
-            <span class="status-dot" *ngIf="currentView === 'chat'" [class.online]="selectedProfessor.status === 'online'"></span>
-            <span class="status-text" *ngIf="currentView === 'chat'">{{ selectedProfessor.status === 'online' ? 'En línea' : '' }}</span>
-          </p>
-        </div>
-      </div>
     </div>
     <div class="header-right">
-      <button class="notification-btn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-        </svg>
-        <span class="badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
-      </button>
+      <app-notifications></app-notifications>
       <button class="logout-btn" (click)="logout()">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -53,88 +28,70 @@
   <!-- Main Content -->
   <main class="main-content">
     
+    <!-- Loading State -->
+    <div *ngIf="isLoading" style="text-align: center; padding: 60px 20px;">
+      <div style="width: 40px; height: 40px; margin: 0 auto 16px; border: 3px solid #e5e7eb; border-top-color: #1a1a1a; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+      <p style="color: #666;">Cargando profesores...</p>
+    </div>
+
     <!-- LIST VIEW -->
-    <div *ngIf="currentView === 'list'" class="list-view">
+    <div *ngIf="!isLoading" class="list-view">
       <div class="info-card">
         <h2>Mis Profesores</h2>
         <p>Contacta a tus profesores para resolver dudas escolares o consulta para tutores</p>
       </div>
 
-      <div class="professors-list">
-        <div class="professor-card" *ngFor="let professor of professors">
+      <!-- Empty State -->
+      <div *ngIf="profesores.length === 0" class="no-results">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <h3>No hay profesores asignados</h3>
+        <p>Aún no tienes profesores asignados a tu grupo</p>
+      </div>
+
+      <!-- Professors List -->
+      <div class="professors-list" *ngIf="profesores.length > 0">
+        <div class="professor-card" *ngFor="let profesor of profesores">
           <div class="professor-main">
             <div class="professor-avatar-large">
-              <span>{{ professor.initials }}</span>
-              <span class="status-indicator" [class.online]="professor.status === 'online'"></span>
+              <span>{{ profesor.iniciales }}</span>
+              <span class="status-indicator" [class.online]="profesor.estado === 'En línea'"></span>
             </div>
             <div class="professor-info-full">
-              <h3>{{ professor.name }}</h3>
-              <p class="subject">{{ professor.subject }}</p>
-              <p class="department">{{ professor.department }}</p>
+              <h3>{{ profesor.nombre_completo }}</h3>
+              <p class="subject">{{ profesor.materia }}</p>
+              <p class="department">{{ profesor.departamento || 'Departamento Académico' }}</p>
               <div class="contact-info">
                 <span class="contact-item">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                     <polyline points="22,6 12,13 2,6"></polyline>
                   </svg>
-                  {{ professor.email }}
+                  {{ profesor.correo }}
                 </span>
-                <span class="contact-item">
+                <span class="contact-item" *ngIf="profesor.telefono">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                   </svg>
-                  {{ professor.phone }}
+                  {{ profesor.telefono }}
                 </span>
               </div>
             </div>
-            <span class="status-badge" [class.online]="professor.status === 'online'">
-              {{ professor.status === 'online' ? 'En línea' : 'Ocupado' }}
+            <span class="status-badge" [class.online]="profesor.estado === 'En línea'">
+              {{ profesor.estado }}
             </span>
           </div>
-          <button class="chat-btn" (click)="irAlChat()">
+          <button class="chat-btn" (click)="irAlChat(profesor)">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
             </svg>
             Chat
-            <span class="unread-badge" *ngIf="professor.unreadMessages > 0">{{ professor.unreadMessages }}</span>
+            <span class="unread-badge" *ngIf="profesor.mensajes_no_leidos > 0">{{ profesor.mensajes_no_leidos }}</span>
           </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- PROFILE VIEW -->
-    <div *ngIf="currentView === 'profile' && selectedProfessor" class="profile-view">
-      <div class="profile-card">
-        <div class="profile-avatar-large">
-          <span>{{ selectedProfessor.initials }}</span>
-        </div>
-        <h2>{{ selectedProfessor.name }}</h2>
-        <p class="profile-subject">{{ selectedProfessor.subject }}</p>
-        <p class="profile-department">{{ selectedProfessor.department }}</p>
-      </div>
-
-      <div class="contact-card">
-        <h3>Información de Contacto</h3>
-        <div class="contact-details">
-          <div class="contact-row">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-              <polyline points="22,6 12,13 2,6"></polyline>
-            </svg>
-            <div>
-              <label>Email</label>
-              <p>{{ selectedProfessor.email }}</p>
-            </div>
-          </div>
-          <div class="contact-row">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-            </svg>
-            <div>
-              <label>Teléfono</label>
-              <p>{{ selectedProfessor.phone }}</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

@@ -1,26 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-
-interface Professor {
-  id: string;
-  name: string;
-  initials: string;
-  subject: string;
-  department: string;
-  email: string;
-  phone: string;
-  status: 'online' | 'offline';
-  unreadMessages: number;
-}
-
-interface Message {
-  id: string;
-  sender: 'student' | 'professor';
-  text: string;
-  timestamp: string;
-}
+import { ProfesoresService, Profesor } from '../../services/profesores.service';
+import { AuthService } from '../../auth.service';
+import { NotificationsComponent } from '../../notificaciones/notificaciones';
 
 interface NavItem {
   icon: string;
@@ -30,77 +13,55 @@ interface NavItem {
 }
 
 @Component({
-  selector: 'app-est-maestros',
+  selector: 'app-est-profesores',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, NotificationsComponent],
   templateUrl: './est-profesores.html',
   styleUrls: ['./est-profesores.css']
 })
 export class EstProfesoresComponent implements OnInit {
   userRole: 'estudiante' = 'estudiante';
-  userName: string = 'María García';
-  userAccountNumber: string = '2024001234';
-  userCareer: string = 'Ingeniería de Sistemas';
-  userGradeGroup: string = '2°A';
-  notificationCount: number = 3;
-  currentRoute: string = '/est-maestros';
+  userName: string = '';
+  userAccountNumber: string = '';
+  userCareer: string = '';
+  userGradeGroup: string = '';
+  currentRoute: string = '/est-profesores';
+  currentView: 'list' = 'list';
 
-  // Views
-  currentView: 'list' | 'chat' | 'profile' = 'list';
-  selectedProfessor: Professor | null = null;
-
-  // Chat
-  newMessage: string = '';
-  messages: Message[] = [];
-
-  // Professors list
-  professors: Professor[] = [
-    {
-      id: '1',
-      name: 'Dr. Ana López',
-      initials: 'DAL',
-      subject: 'Matemáticas',
-      department: 'Ciencias Exactas',
-      email: 'ana.lopez@universidad.edu',
-      phone: '+52 555 1234',
-      status: 'online',
-      unreadMessages: 1
-    },
-    {
-      id: '2',
-      name: 'Prof. Carlos Mendoza',
-      initials: 'PCM',
-      subject: 'Historia',
-      department: 'Humanidades',
-      email: 'carlos.mendoza@universidad.edu',
-      phone: '+52 555 5678',
-      status: 'offline',
-      unreadMessages: 0
-    },
-    {
-      id: '3',
-      name: 'Dra. Elena Ramírez',
-      initials: 'DER',
-      subject: 'Química',
-      department: 'Ciencias Naturales',
-      email: 'elena.ramirez@universidad.edu',
-      phone: '+52 555 9012',
-      status: 'online',
-      unreadMessages: 0
-    }
-  ];
-
+  profesores: Profesor[] = [];
+  
   navigationItems: NavItem[] = [];
+  isLoading: boolean = true;
 
-  constructor(private router: Router) {}
-
-  irAlChat(): void {
-    this.router.navigate(['/est-profesores-chat']);
-  }
+  constructor(
+    private router: Router,
+    private profesoresService: ProfesoresService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
+    this.loadUserData();
     this.loadNavigation();
+    this.loadProfesores();
     this.currentRoute = this.router.url;
+  }
+
+  loadUserData(): void {
+    const user = this.authService.getCurrentUser();
+    if (user && user.detalles) {
+      const detalles = user.detalles;
+      this.userName = `${detalles.nombres} ${detalles.apellido_paterno} ${detalles.apellido_materno || ''}`.trim();
+      this.userAccountNumber = user.num_usuario;
+      
+      if (detalles.grado) {
+        this.userGradeGroup = `${detalles.grado}°`;
+        if (detalles.grupo_turno) {
+          this.userGradeGroup += ` ${detalles.grupo_turno}`;
+        }
+      }
+      
+      this.userCareer = detalles.nivel_educativo || 'Estudiante';
+    }
   }
 
   loadNavigation(): void {
@@ -113,11 +74,27 @@ export class EstProfesoresComponent implements OnInit {
     ];
   }
 
-  backToList(): void {
-    this.currentView = 'list';
-    this.selectedProfessor = null;
-    this.messages = [];
-    this.newMessage = '';
+  loadProfesores(): void {
+    this.isLoading = true;
+
+    this.profesoresService.getMisProfesores().subscribe({
+      next: (profesores) => {
+        console.log('[PROFESORES] Profesores recibidos:', profesores);
+        this.profesores = profesores;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('[PROFESORES] Error cargando profesores:', error);
+        this.isLoading = false;
+        alert('Error al cargar los profesores');
+      }
+    });
+  }
+
+  irAlChat(profesor: Profesor): void {
+    console.log('[PROFESORES] Ir al chat con:', profesor);
+    // Navegar al componente de chat con el ID del profesor
+    this.router.navigate(['/est-profesores-chat', profesor.id_profesor]);
   }
 
   navigateTo(route: string): void {
@@ -133,10 +110,11 @@ export class EstProfesoresComponent implements OnInit {
       'users': 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
       'user': 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'
     };
-    return icons[iconName] || icons['users'];
+    return icons[iconName] || icons['file-text'];
   }
 
   logout(): void {
+    this.authService.logout();
     this.router.navigate(['']);
   }
 }
