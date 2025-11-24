@@ -28,13 +28,7 @@
   <!-- Contenido principal -->
   <div class="content-section">
     <div class="section-header">
-      <div class="section-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/>
-          <path d="m21 21-4.35-4.35"/>
-        </svg>
-      </div>
-      <h2>Buscar Estudiantes</h2>
+      <h2>Mis Estudiantes</h2>
     </div>
 
     <!-- Loading State -->
@@ -92,71 +86,73 @@
           *ngFor="let student of filteredEstudiantes" 
           class="student-card">
           
-          <div class="student-avatar-container">
-            <div class="student-avatar">{{ student.iniciales || 'ES' }}</div>
-            <span class="online-indicator"></span>
-          </div>
-
-          <div class="student-info">
-            <div class="student-header">
-              <div class="student-name-section">
+          <div class="student-header-row">
+            <div class="student-avatar-name">
+              <div class="student-avatar">{{ student.iniciales || 'ES' }}</div>
+              <div class="student-basic-info">
                 <h3 class="student-name">{{ student.nombre_completo }}</h3>
-                <span class="student-status" [ngClass]="getEstadoColor(student.estado_documentos)">
-                  {{ student.estado_documentos }}
-                </span>
-              </div>
-              <div class="student-grade">{{ student.grado }}° - {{ student.grupo_nombre || 'Sin grupo' }}</div>
-            </div>
-
-            <p class="student-account">No. Cuenta: {{ student.num_usuario }}</p>
-
-            <div class="student-contact">
-              <div class="contact-item">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                  <polyline points="22,6 12,13 2,6"/>
-                </svg>
-                <span>{{ student.correo }}</span>
-              </div>
-              <div class="contact-item" *ngIf="student.telefono">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                </svg>
-                <span>{{ student.telefono }}</span>
+                <p class="student-account">No. Cuenta: {{ student.num_usuario }}</p>
               </div>
             </div>
 
-            <div class="student-subjects" *ngIf="student.materias_comunes && student.materias_comunes.length > 0">
-              <span>Materias:</span>
-              <span *ngFor="let subject of student.materias_comunes; let last = last" class="subject-tag">
-                {{ subject }}<span *ngIf="!last">, </span>
-              </span>
+            <div class="student-status-badge" [ngClass]="getEstadoConexionClass(getEstadoConexion(student))">
+              <span class="status-dot"></span>
+              <span class="status-text">{{ getEstadoConexion(student) }}</span>
             </div>
-
-            <div class="student-footer">
-               <div class="student-actions">
-                 <button 
-                     class="btn-action btn-chat" 
-                      (click)="irAlChat(student); $event.stopPropagation()">
-                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                  </svg>
-                   Chat
-                 <span class="message-badge" *ngIf="student.mensajes_no_leidos > 0">
-              {{ student.mensajes_no_leidos }}
-              </span>
-             </button>
           </div>
 
-          <div class="last-message" *ngIf="student.ultimo_mensaje">
-           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-             <circle cx="12" cy="12" r="10"/>
-           <polyline points="12 6 12 12 16 14"/>
-         </svg>
-             <span class="message-text">{{ student.ultimo_mensaje }}</span>
-              <span class="message-time">{{ formatLastMessageTime(student.fecha_ultimo_mensaje) }}</span>
-               </div>
+          <div class="student-info-grid">
+            <div class="info-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              <span>{{ student.correo }}</span>
             </div>
+            
+            <div class="info-item" *ngIf="student.telefono">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+              <span>{{ student.telefono }}</span>
+            </div>
+
+            <div class="info-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+              </svg>
+              <span>{{ getGrupoCode(student.grado, student.grupo_nombre) }}</span>
+            </div>
+          </div>
+
+          <div class="student-subjects" *ngIf="student.materias_comunes && student.materias_comunes.length > 0">
+            <span class="subjects-label">Materias:</span>
+            <span *ngFor="let subject of student.materias_comunes; let last = last" class="subject-tag">
+              {{ subject }}<span *ngIf="!last">, </span>
+            </span>
+          </div>
+
+          <button class="chat-btn-full" (click)="irAlChat(student); $event.stopPropagation()">
+            <div class="chat-btn-content">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span>Chat</span>
+              <span class="message-badge" *ngIf="student.mensajes_no_leidos > 0">
+                {{ student.mensajes_no_leidos }}
+              </span>
+            </div>
+          </button>
+
+          <div class="last-message-container" *ngIf="student.ultimo_mensaje">
+            <div class="last-message-content">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span class="message-text">{{ student.ultimo_mensaje }}</span>
+            </div>
+            <span class="message-time-stamp">{{ formatLastMessageTime(student.fecha_ultimo_mensaje) }}</span>
           </div>
         </div>
 

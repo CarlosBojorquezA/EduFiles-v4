@@ -1,4 +1,4 @@
-.maestros-container {
+.perfil-container {
   min-height: 100vh;
   background-color: #f5f5f5;
   color: rgb(255, 255, 255);
@@ -80,54 +80,118 @@
 }
 
 /* Main Content */
-.main-content {
+.content-section {
   padding: 24px 20px;
   max-width: 1000px;
   margin: 0 auto;
 }
 
-/* LIST VIEW */
-.list-view {
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.page-title {
-  font-size: 24px;
-  font-weight: 600;
-  margin: 0 0 20px 0;
-  color: #1a1a1a;
-}
-
-.info-card {
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
   background-color: white;
+  padding: 20px 24px;
   border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
-  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.info-card h2 {
-  margin: 0 0 8px 0;
-  font-size: 18px;
+.section-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a1a1a;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 20px;
   font-weight: 600;
   color: #1a1a1a;
 }
 
-.info-card p {
+/* Barra de búsqueda */
+.main-search-box {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  z-index: 1;
+}
+
+.search-input {
+  width: 100%;
+  padding: 16px 16px 16px 48px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 15px;
+  background-color: white;
+  color: #1a1a1a;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Filtros */
+.filters-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.filter-select {
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: white;
+  color: #1a1a1a;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-select:hover {
+  border-color: #1a1a1a;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+.results-counter {
+  margin-bottom: 20px;
+}
+
+.results-counter p {
   margin: 0;
   font-size: 14px;
   color: #666;
+  font-weight: 500;
 }
 
+/* Lista de profesores */
 .professors-list {
   display: flex;
   flex-direction: column;
-  cursor: pointer;
   gap: 16px;
 }
 
@@ -135,146 +199,235 @@
   background-color: white;
   border-radius: 12px;
   padding: 20px;
-  border: 1px solid #000000;
-  cursor: pointer;
-}
-
-.professor-main {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
-  cursor: pointer;
+  border: 1px solid #e5e7eb;
   transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.professor-main:hover {
-  opacity: 0.8;
+.professor-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 
-.professor-avatar-large {
-  width: 56px;
-  height: 56px;
+/* Header del profesor */
+.professor-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.professor-avatar-name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.professor-avatar {
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background-color: #1a1a1a;
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 20px;
-  color: white;
+  font-size: 18px;
   flex-shrink: 0;
-  position: relative;
 }
 
-.status-indicator {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background-color: #64748b;
-  border: 3px solid white;
-}
-
-.status-indicator.online {
-  background-color: #10b981;
-}
-
-.professor-info-full {
+.professor-basic-info {
   flex: 1;
 }
 
-.professor-info-full h3 {
+.professor-name {
   margin: 0 0 4px 0;
   font-size: 17px;
   font-weight: 600;
   color: #1a1a1a;
 }
 
-.subject {
-  margin: 0 0 2px 0;
-  font-size: 14px;
+.professor-subject {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
   font-weight: 500;
-  color: #1a1a1a;
 }
 
-.department {
-  margin: 0;
+/* Status badge */
+.professor-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.professor-status-badge .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-online {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-online .status-dot {
+  background-color: #10b981;
+}
+
+.status-offline {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.status-offline .status-dot {
+  background-color: #9ca3af;
+}
+
+/* Grid de información */
+.professor-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 13px;
   color: #666;
 }
 
-.professor-actions {
+.info-item svg {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+/* Experiencia */
+.professor-experience {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
   gap: 8px;
-}
-
-.contact-item{
-  margin: 0;
   font-size: 13px;
-  color:#000000
 }
 
-.status-badge.online{
-  margin: 0;
-  font-size: 14px;
-  color:#000000
+.experience-label {
+  color: #666;
+  font-weight: 500;
 }
 
-.chat-btn {
+.experience-value {
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+/* Botón de chat */
+.chat-btn-full {
   width: 100%;
   padding: 14px 20px;
   border-radius: 8px;
   border: none;
   background-color: #1a1a1a;
   color: white;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   transition: all 0.2s ease;
+  position: relative;
 }
 
-.chat-btn:hover {
+.chat-btn-full:hover {
   background-color: #000;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.status-label {
+.chat-btn-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.message-badge {
+  background-color: #ef4444;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  margin-left: 4px;
+}
+
+/* Último mensaje */
+.last-message-container {
+  background-color: #f9fafb;
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.last-message-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.last-message-content svg {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.message-text {
+  flex: 1;
   font-size: 13px;
-  font-weight: 500;
-  color: #64748b;
+  color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.status-label.online {
-  color: #10b981;
+.message-time-stamp {
+  font-size: 12px;
+  color: #94a3b8;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.status-label.busy {
-  color: #f59e0b;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
+/* Sin resultados */
 .no-results {
   text-align: center;
   padding: 60px 20px;
   background-color: white;
   border-radius: 12px;
-  margin-top: 20px;
 }
 
 .no-results svg {
   color: #d1d5db;
-  margin: 0 auto 16px;
+  margin-bottom: 16px;
 }
 
 .no-results h3 {
@@ -288,23 +441,6 @@
   margin: 0;
   font-size: 14px;
   color: #666;
-}
-
-.contact-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: 8px;
-}
-
-.unread-badge {
-  background-color: #ef4444;
-  color: white;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 10px;
-  margin-left: 8px;
 }
 
 /* Bottom Navigation */
@@ -375,17 +511,22 @@
   font-weight: 500;
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Responsive */
-@media (max-width: 640px) {
-  .tabs {
+@media (max-width: 768px) {
+  .filters-container {
     grid-template-columns: 1fr;
   }
 
-  .scanner-buttons {
-    grid-template-columns: 1fr;
+  .professor-header-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .modal-actions {
-    flex-direction: column-reverse;
+  .professor-status-badge {
+    align-self: flex-start;
   }
 }

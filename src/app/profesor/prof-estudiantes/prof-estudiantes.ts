@@ -1,4 +1,3 @@
-// src/app/profesor/prof-estudiantes/prof-estudiantes.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -22,21 +21,17 @@ interface NavItem {
   styleUrls: ['./prof-estudiantes.css']
 })
 export class ProfEstudiantesComponent implements OnInit {
-  // Datos del usuario
   userRole: string = 'Profesor';
   userName: string = '';
   userAccountNumber: string = '';
   userMateria: string = '';
   currentRoute: string = '/prof-estudiantes';
 
-  // Filtros y búsqueda
   searchText: string = '';
   selectedSubject: string = 'todas';
   selectedGrade: string = 'todos';
   selectedGroup: string = 'todos';
-  selectedDocStatus: string = 'todos';
 
-  // Datos
   estudiantes: Estudiante[] = [];
   filteredEstudiantes: Estudiante[] = [];
   subjects: { value: string; label: string }[] = [];
@@ -86,11 +81,7 @@ export class ProfEstudiantesComponent implements OnInit {
       next: (estudiantes) => {
         console.log('[PROF-ESTUDIANTES] Estudiantes recibidos:', estudiantes);
         this.estudiantes = estudiantes;
-        
-        // Extraer filtros únicos
         this.extractFilters();
-        
-        // Aplicar filtros iniciales
         this.applyFilters();
         this.isLoading = false;
       },
@@ -103,7 +94,6 @@ export class ProfEstudiantesComponent implements OnInit {
   }
 
   extractFilters(): void {
-    // Materias únicas
     const materiasSet = new Set<string>();
     this.estudiantes.forEach(est => {
       if (est.materias_comunes) {
@@ -116,11 +106,9 @@ export class ProfEstudiantesComponent implements OnInit {
       ...Array.from(materiasSet).map(mat => ({ value: mat, label: mat }))
     ];
 
-    // Grados únicos
     const gradosSet = new Set(this.estudiantes.map(e => e.grado.toString()));
     this.grades = ['todos', ...Array.from(gradosSet).sort()];
 
-    // Grupos únicos
     const gruposSet = new Set(
       this.estudiantes
         .filter(e => e.grupo_nombre)
@@ -132,7 +120,6 @@ export class ProfEstudiantesComponent implements OnInit {
   applyFilters(): void {
     let filtered = [...this.estudiantes];
 
-    // Filtro de búsqueda
     if (this.searchText) {
       const search = this.searchText.toLowerCase();
       filtered = filtered.filter(est => 
@@ -142,26 +129,18 @@ export class ProfEstudiantesComponent implements OnInit {
       );
     }
 
-    // Filtro de materia
     if (this.selectedSubject !== 'todas') {
       filtered = filtered.filter(est => 
         est.materias_comunes && est.materias_comunes.includes(this.selectedSubject)
       );
     }
 
-    // Filtro de grado
     if (this.selectedGrade !== 'todos') {
       filtered = filtered.filter(est => est.grado.toString() === this.selectedGrade);
     }
 
-    // Filtro de grupo
     if (this.selectedGroup !== 'todos') {
       filtered = filtered.filter(est => est.grupo_nombre === this.selectedGroup);
-    }
-
-    // Filtro de documentos
-    if (this.selectedDocStatus !== 'todos') {
-      filtered = filtered.filter(est => est.estado_documentos === this.selectedDocStatus);
     }
 
     this.filteredEstudiantes = filtered;
@@ -177,34 +156,48 @@ export class ProfEstudiantesComponent implements OnInit {
   }
 
   irAlChat(estudiante: Estudiante): void {
-  console.log('[PROF-ESTUDIANTES] Navegando al chat con estudiante:', estudiante.id_estudiante);
-  
-  // Prevenir la propagación del evento para evitar múltiples clicks
-  event?.stopPropagation();
-  
-  // Navegar con el ID correcto
-  this.router.navigate(['/prof-chat-estudiantes', estudiante.id_estudiante])
-    .then(success => {
-      if (success) {
-        console.log('[PROF-ESTUDIANTES] ✓ Navegación exitosa');
-      } else {
-        console.error('[PROF-ESTUDIANTES] ✗ Error en navegación');
-      }
-    })
-    .catch(error => {
-      console.error('[PROF-ESTUDIANTES] ✗ Error navegando:', error);
-    });
-}
-
-  getEstadoColor(estado: string): string {
-    switch(estado) {
-      case 'Completo': return 'status-complete';
-      case 'Incompleto': return 'status-incomplete';
-      case 'Pendiente': return 'status-pending';
-      default: return '';
-    }
+    console.log('[PROF-ESTUDIANTES] Navegando al chat con estudiante:', estudiante.id_estudiante);
+    event?.stopPropagation();
+    
+    this.router.navigate(['/prof-chat-estudiantes', estudiante.id_estudiante])
+      .then(success => {
+        if (success) {
+          console.log('[PROF-ESTUDIANTES] ✓ Navegación exitosa');
+        } else {
+          console.error('[PROF-ESTUDIANTES] ✗ Error en navegación');
+        }
+      })
+      .catch(error => {
+        console.error('[PROF-ESTUDIANTES] ✗ Error navegando:', error);
+      });
   }
 
+  // Generar código de grupo: grado + turno (01=matutino, 02=vespertino)
+  getGrupoCode(grado: number, grupo_nombre: string | null): string {
+    if (!grupo_nombre) return `${grado}° - Sin grupo`;
+    
+    const turno = grupo_nombre.toLowerCase().includes('matutino') ? '01' : '02';
+    return `${grado}° - ${grado}${turno}`;
+  }
+
+  // Determinar si el estudiante está "en línea" (simulado por ahora)
+  getEstadoConexion(estudiante: Estudiante): 'En línea' | 'Desconectado' {
+    // Por ahora simulado basado en último mensaje
+    if (!estudiante.fecha_ultimo_mensaje) return 'Desconectado';
+    
+    const fecha = new Date(estudiante.fecha_ultimo_mensaje);
+    const ahora = new Date();
+    const diffMinutos = Math.floor((ahora.getTime() - fecha.getTime()) / 60000);
+    
+    // Si el último mensaje fue hace menos de 10 minutos, considerarlo "en línea"
+    return diffMinutos < 10 ? 'En línea' : 'Desconectado';
+  }
+
+  getEstadoConexionClass(estado: string): string {
+    return estado === 'En línea' ? 'status-online' : 'status-offline';
+  }
+
+  // Formato de tiempo relativo mejorado
   formatLastMessageTime(fecha: string | null): string {
     if (!fecha) return '';
     
@@ -212,18 +205,21 @@ export class ProfEstudiantesComponent implements OnInit {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
     
     if (diffMins < 1) return 'Hace unos segundos';
     if (diffMins < 60) return `Hace ${diffMins} min`;
-    
-    const diffHours = Math.floor(diffMins / 60);
     if (diffHours < 24) return `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
-    
-    const diffDays = Math.floor(diffHours / 24);
     if (diffDays === 1) return 'Ayer';
     if (diffDays < 7) return `Hace ${diffDays} días`;
     
-    return date.toLocaleDateString();
+    // Formato de fecha específica
+    const day = date.getDate();
+    const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    const month = months[date.getMonth()];
+    
+    return `${day} ${month}`;
   }
 
   navigateTo(route: string): void {

@@ -60,7 +60,6 @@
   gap: 12px;
 }
 
-.notification-btn,
 .logout-btn {
   width: 40px;
   height: 40px;
@@ -76,31 +75,14 @@
   transition: all 0.2s ease;
 }
 
-.notification-btn:hover,
 .logout-btn:hover {
   background-color: #555555;
 }
 
-.notification-btn .badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  background-color: #ef4444;
-  color: white;
-  font-size: 11px;
-  font-weight: 600;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Contenido principal */
+/* Main Content */
 .content-section {
   padding: 24px 20px;
-  max-width: 1200px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
@@ -133,10 +115,10 @@
   color: #1a1a1a;
 }
 
-/* Barra de búsqueda principal */
+/* Barra de búsqueda */
 .main-search-box {
   position: relative;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .search-icon {
@@ -170,7 +152,7 @@
 .filters-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+  gap: 12px;
   margin-bottom: 16px;
 }
 
@@ -195,7 +177,6 @@
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
-/* Contador de resultados */
 .results-counter {
   margin-bottom: 20px;
 }
@@ -207,7 +188,7 @@
   font-weight: 500;
 }
 
-/* Lista de estudiantes */
+/* Lista de estudiantes - NUEVO DISEÑO */
 .students-list {
   display: flex;
   flex-direction: column;
@@ -218,26 +199,36 @@
   background-color: white;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  display: flex;
-  gap: 16px;
+  border: 1px solid #e5e7eb;
   transition: all 0.2s ease;
-  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .student-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
 }
 
-.student-avatar-container {
-  position: relative;
-  flex-shrink: 0;
+/* Header del estudiante */
+.student-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.student-avatar-name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
 }
 
 .student-avatar {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background-color: #1a1a1a;
   color: white;
@@ -245,75 +236,19 @@
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 20px;
+  font-size: 18px;
+  flex-shrink: 0;
 }
 
-.online-indicator {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background-color: #22c55e;
-  border: 3px solid white;
-}
-
-.student-info {
+.student-basic-info {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.student-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.student-name-section {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
 }
 
 .student-name {
-  margin: 0;
-  font-size: 18px;
+  margin: 0 0 4px 0;
+  font-size: 17px;
   font-weight: 600;
   color: #1a1a1a;
-}
-
-.student-status {
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.status-complete {
-  background-color: #dcfce7;
-  color: #166534;
-}
-
-.status-incomplete {
-  background-color: #fef3c7;
-  color: #92400e;
-}
-
-.status-pending {
-  background-color: #fee2e2;
-  color: #991b1b;
-}
-
-.student-grade {
-  font-size: 14px;
-  font-weight: 600;
-  color: #666;
-  white-space: nowrap;
 }
 
 .student-account {
@@ -322,13 +257,50 @@
   color: #666;
 }
 
-.student-contact {
+/* Status badge */
+.student-status-badge {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
-.contact-item {
+.student-status-badge .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-online {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-online .status-dot {
+  background-color: #10b981;
+}
+
+.status-offline {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.status-offline .status-dot {
+  background-color: #9ca3af;
+}
+
+/* Grid de información */
+.student-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-item {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -336,78 +308,61 @@
   color: #666;
 }
 
-.contact-item svg {
+.info-item svg {
   color: #94a3b8;
   flex-shrink: 0;
 }
 
+/* Materias */
 .student-subjects {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
   font-size: 13px;
+}
+
+.subjects-label {
   color: #666;
+  font-weight: 500;
 }
 
 .subject-tag {
-  font-weight: 600;
   color: #1a1a1a;
+  font-weight: 600;
 }
 
-.student-footer {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-top: 8px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.student-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.btn-action {
-  padding: 10px 20px;
-  border: 1px solid #e5e7eb;
+/* Botón de chat - NUEVO DISEÑO */
+.chat-btn-full {
+  width: 100%;
+  padding: 14px 20px;
   border-radius: 8px;
-  font-size: 14px;
+  border: none;
+  background-color: #1a1a1a;
+  color: white;
+  font-size: 15px;
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
   transition: all 0.2s ease;
-  background-color: white;
   position: relative;
 }
 
-.btn-chat {
-  color: #1a1a1a;
-  background-color: #1a1a1a;
-  color: white;
-  border-color: #1a1a1a;
+.chat-btn-full:hover {
+  background-color: #000;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.btn-chat:hover {
-  background-color: #333;
-}
-
-.btn-docs {
-  color: #1a1a1a;
-}
-
-.btn-docs:hover {
-  background-color: #f5f5f5;
-  border-color: #1a1a1a;
+.chat-btn-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .message-badge {
-  position: absolute;
-  top: -8px;
-  right: -8px;
   background-color: #ef4444;
   color: white;
   font-size: 11px;
@@ -419,35 +374,47 @@
   align-items: center;
   justify-content: center;
   padding: 0 6px;
+  margin-left: 4px;
 }
 
-.last-message {
+/* Último mensaje - REDISEÑADO */
+.last-message-container {
+  background-color: #f9fafb;
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.last-message-content {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
-  color: #666;
-  background-color: #f9fafb;
-  padding: 10px 12px;
-  border-radius: 8px;
+  flex: 1;
+  min-width: 0;
 }
 
-.last-message svg {
+.last-message-content svg {
   color: #94a3b8;
   flex-shrink: 0;
 }
 
 .message-text {
   flex: 1;
+  font-size: 13px;
+  color: #666;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.message-time {
+.message-time-stamp {
   font-size: 12px;
   color: #94a3b8;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Sin resultados */
@@ -544,33 +511,22 @@
   font-weight: 500;
 }
 
-/* Responsive */
-@media (min-width: 768px) {
-  .stats-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  .main-content {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-@media (max-width: 640px) {
-  .stat-card {
-    padding: 16px;
+/* Responsive */
+@media (max-width: 768px) {
+  .filters-container {
+    grid-template-columns: 1fr;
   }
 
-  .stat-icon {
-    width: 40px;
-    height: 40px;
+  .student-header-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .stat-info h2 {
-    font-size: 24px;
-  }
-
-  .nav-label {
-    font-size: 10px;
+  .student-status-badge {
+    align-self: flex-start;
   }
 }
