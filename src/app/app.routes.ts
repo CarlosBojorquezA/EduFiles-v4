@@ -95,7 +95,7 @@ export const routes: Routes = [
         canActivate: [requireAuthGuard, profesorGuard]
     },
     { 
-        path: 'prof-chat-estudiantes', 
+        path: 'prof-chat-estudiantes/:id', 
         component: ProfChatEstudiantesComponent,
         canActivate: [requireAuthGuard, profesorGuard]
     },

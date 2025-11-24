@@ -3,28 +3,28 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
-export interface Profesor {
-  id_profesor: number;
+export interface Estudiante {
+  id_estudiante: number;
   nombre_completo: string;
   nombres: string;
   apellido_paterno: string;
   apellido_materno: string;
-  telefono: string | null;
-  departamento: string | null;
-  licenciatura: string | null;
-  años_experiencia?: number;
+  num_usuario: string;
   correo: string;
-  url_foto_perfil: string | null;
-  materia: string;
-  materias?: string;
+  telefono: string | null;
+  grado: number;
+  grupo_id: number;
+  grupo_nombre: string;
+  curp: string;
+  estado_documentos: 'Completo' | 'Incompleto' | 'Pendiente';
   mensajes_no_leidos: number;
   ultimo_mensaje: string | null;
   fecha_ultimo_mensaje: string | null;
-  estado: 'En línea' | 'Desconectado';
+  materias_comunes: string[];
   iniciales: string;
 }
 
-export interface Mensaje {
+export interface MensajeProfesor {
   id_mensaje: number;
   id_remitente: number;
   id_destinatario: number;
@@ -39,15 +39,14 @@ export interface Mensaje {
 @Injectable({
   providedIn: 'root'
 })
-export class ProfesoresService {
-  // ⚠️ IMPORTANTE: Este servicio usa el endpoint de PROFESORES pero desde la perspectiva del ESTUDIANTE
+export class EstudiantesProfesorService {
   private apiUrl = 'http://localhost:5000/api/profesores';
 
   constructor(private http: HttpClient) {}
 
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
-    console.log('[PROFESORES SERVICE - EST] Token:', token ? 'Presente' : 'Ausente');
+    console.log('[EST-PROF SERVICE] Token:', token ? 'Presente' : 'Ausente');
     return new HttpHeaders({
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
@@ -55,10 +54,11 @@ export class ProfesoresService {
   }
 
   private handleError(error: HttpErrorResponse) {
-    console.error('[PROFESORES SERVICE - EST] Error HTTP:', error);
+    console.error('[EST-PROF SERVICE] Error HTTP:', error);
     
     if (error.status === 401) {
-      console.error('[PROFESORES SERVICE - EST] Error 401 - No autorizado');
+      console.error('[EST-PROF SERVICE] Error 401 - No autorizado');
+      // Limpiar token inválido
       localStorage.removeItem('token');
       localStorage.removeItem('userData');
       window.location.href = '/';
@@ -75,45 +75,44 @@ export class ProfesoresService {
     return throwError(() => new Error(errorMessage));
   }
 
-  // ==================== PROFESORES (ESTUDIANTE USA ESTO) ====================
-  getMisProfesores(): Observable<Profesor[]> {
-    console.log('[PROFESORES SERVICE - EST] Obteniendo mis profesores...');
+  // ==================== ESTUDIANTES ====================
+  getMisEstudiantes(): Observable<Estudiante[]> {
+    console.log('[EST-PROF SERVICE] Obteniendo estudiantes...');
     const headers = this.getHeaders();
     
-    return this.http.get<Profesor[]>(`${this.apiUrl}/mis-profesores`, { headers })
+    return this.http.get<Estudiante[]>(`${this.apiUrl}/mis-estudiantes`, { headers })
       .pipe(
         catchError(this.handleError.bind(this))
       );
   }
 
-  getDetalleProfesor(idProfesor: number): Observable<Profesor> {
-    console.log('[PROFESORES SERVICE - EST] Obteniendo detalle profesor:', idProfesor);
+  getDetalleEstudiante(idEstudiante: number): Observable<Estudiante> {
+    console.log('[EST-PROF SERVICE] Obteniendo detalle estudiante:', idEstudiante);
     const headers = this.getHeaders();
     
-    return this.http.get<Profesor>(`${this.apiUrl}/profesor/${idProfesor}`, { headers })
+    return this.http.get<Estudiante>(`${this.apiUrl}/estudiante/${idEstudiante}`, { headers })
       .pipe(
         catchError(this.handleError.bind(this))
       );
   }
 
-  // ==================== CHAT (ESTUDIANTE → PROFESOR) ====================
-  getMensajesChat(idProfesor: number): Observable<Mensaje[]> {
-    console.log('[PROFESORES SERVICE - EST] Obteniendo mensajes con profesor:', idProfesor);
+  // ==================== CHAT ====================
+  getMensajesChat(idEstudiante: number): Observable<MensajeProfesor[]> {
+    console.log('[EST-PROF SERVICE] Obteniendo mensajes chat con:', idEstudiante);
     const headers = this.getHeaders();
     
-    // ⚠️ CORRECCIÓN: El estudiante llama al endpoint correcto
-    return this.http.get<Mensaje[]>(`${this.apiUrl}/chat/${idProfesor}/mensajes`, { headers })
+    return this.http.get<MensajeProfesor[]>(`${this.apiUrl}/chat/${idEstudiante}/mensajes`, { headers })
       .pipe(
         catchError(this.handleError.bind(this))
       );
   }
 
-  enviarMensaje(idProfesor: number, mensaje: string): Observable<any> {
-    console.log('[PROFESORES SERVICE - EST] Enviando mensaje a profesor:', idProfesor);
+  enviarMensaje(idEstudiante: number, mensaje: string): Observable<any> {
+    console.log('[EST-PROF SERVICE] Enviando mensaje a:', idEstudiante);
     const headers = this.getHeaders();
     
     return this.http.post(
-      `${this.apiUrl}/chat/${idProfesor}/enviar`,
+      `${this.apiUrl}/chat/${idEstudiante}/enviar`,
       { mensaje },
       { headers }
     ).pipe(
@@ -121,12 +120,12 @@ export class ProfesoresService {
     );
   }
 
-  marcarMensajesLeidos(idProfesor: number): Observable<any> {
-    console.log('[PROFESORES SERVICE - EST] Marcando mensajes como leídos de profesor:', idProfesor);
+  marcarMensajesLeidos(idEstudiante: number): Observable<any> {
+    console.log('[EST-PROF SERVICE] Marcando mensajes como leídos de:', idEstudiante);
     const headers = this.getHeaders();
     
     return this.http.put(
-      `${this.apiUrl}/chat/${idProfesor}/marcar-leidos`,
+      `${this.apiUrl}/chat/${idEstudiante}/marcar-leidos`,
       {},
       { headers }
     ).pipe(
