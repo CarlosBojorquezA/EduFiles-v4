@@ -56,7 +56,6 @@ export class EstProfesoresChatComponent implements OnInit, AfterViewChecked {
     this.loadUserData();
     this.loadNavigation();
     
-    // Obtener ID del profesor desde la ruta
     this.route.params.subscribe(params => {
       this.idProfesor = +params['id'];
       if (this.idProfesor) {
@@ -65,7 +64,7 @@ export class EstProfesoresChatComponent implements OnInit, AfterViewChecked {
         
         // Polling para actualizar mensajes cada 5 segundos
         interval(5000).subscribe(() => {
-          this.loadMensajes(false); // Sin mostrar loading
+          this.loadMensajes(false);
         });
       }
     });
@@ -132,12 +131,10 @@ export class EstProfesoresChatComponent implements OnInit, AfterViewChecked {
         const mensajesAntesCount = this.mensajes.length;
         this.mensajes = mensajes;
         
-        // Si hay nuevos mensajes, hacer scroll
         if (mensajes.length > mensajesAntesCount) {
           this.shouldScrollToBottom = true;
         }
         
-        // Calcular páginas (simulado, 20 mensajes por página)
         this.totalPages = Math.ceil(mensajes.length / 20) || 1;
         this.currentPage = this.totalPages;
         
@@ -164,15 +161,9 @@ export class EstProfesoresChatComponent implements OnInit, AfterViewChecked {
       next: (response) => {
         console.log('[CHAT] Mensaje enviado:', response);
         
-        // Limpiar input
         this.newMessage = '';
-        
-        // Recargar mensajes
         this.loadMensajes(false);
-        
-        // Hacer scroll al final
         this.shouldScrollToBottom = true;
-        
         this.isSending = false;
       },
       error: (error) => {

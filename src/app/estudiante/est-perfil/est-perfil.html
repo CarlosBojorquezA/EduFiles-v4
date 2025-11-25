@@ -8,19 +8,13 @@
         </div>
         <div class="user-details">
           <h3>{{ userName }}</h3>
-          <p class="user-role">{{ userRole === 'estudiante' ? 'Estudiante' : 'Usuario' }} • {{ userAccountNumber }}</p>
+          <p class="user-role">Estudiante • {{ userAccountNumber }}</p>
           <p class="user-career">{{ userCareer }} • {{ userGradeGroup }}</p>
         </div>
       </div>
     </div>
     <div class="header-right">
-      <button class="notification-btn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-        </svg>
-        <span class="badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
-      </button>
+      <app-notifications></app-notifications>
       <button class="logout-btn" (click)="logout()">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -91,6 +85,7 @@
 
     <!-- CONTACTO TAB -->
     <div *ngIf="activeTab === 'contacto'" class="tab-content">
+      <!-- Datos de Contacto del Estudiante -->
       <div class="section-card">
         <div class="section-header">
           <h3>Datos de Contacto</h3>
@@ -138,7 +133,7 @@
               Email Alternativo (Opcional)
             </label>
             <div class="field-value" *ngIf="!isEditingContact">
-              {{ userProfile.alternativeEmail }}
+              {{ userProfile.alternativeEmail || 'No registrado' }}
             </div>
             <input 
               type="email" 
@@ -156,7 +151,7 @@
               Teléfono
             </label>
             <div class="field-value" *ngIf="!isEditingContact">
-              {{ userProfile.phone }}
+              {{ userProfile.phone || 'No registrado' }}
             </div>
             <input 
               type="tel" 
@@ -172,14 +167,9 @@
               </svg>
               Carrera
             </label>
-            <div class="field-value" *ngIf="!isEditingContact">
+            <div class="field-value">
               {{ userProfile.userCareer }}
             </div>
-            <input 
-              type="text" 
-              [(ngModel)]="userProfile.userCareer" 
-              class="form-input"
-              *ngIf="isEditingContact">
           </div>
 
           <div class="contact-field">
@@ -190,14 +180,9 @@
               </svg>
               Grado y Grupo
             </label>
-            <div class="field-value" *ngIf="!isEditingContact">
+            <div class="field-value">
               {{ userProfile.userGradeGroup }}
             </div>
-            <input 
-              type="text" 
-              [(ngModel)]="userProfile.userGradeGroup" 
-              class="form-input"
-              *ngIf="isEditingContact">
           </div>
         </div>
 
@@ -211,6 +196,49 @@
             Guardar Cambios
           </button>
         </div>
+      </div>
+
+      <!-- Datos del Tutor -->
+      <div class="section-card">
+        <h3>Datos del Tutor</h3>
+
+        <div class="contact-fields">
+          <div class="contact-field">
+            <label>Nombre Completo del Tutor</label>
+            <div class="field-value">
+              {{ userProfile.tutorFullName }}
+            </div>
+          </div>
+
+          <div class="contact-field">
+            <label>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              Email del Tutor
+            </label>
+            <div class="field-value">
+              {{ userProfile.tutorEmail }}
+            </div>
+          </div>
+
+          <div class="contact-field">
+            <label>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+              Teléfono del Tutor
+            </label>
+            <div class="field-value">
+              {{ userProfile.tutorPhone }}
+            </div>
+          </div>
+        </div>
+
+        <p style="margin-top: 16px; font-size: 13px; color: #666;">
+          Los datos del tutor no pueden ser editados desde aquí. Por favor contacta con la administración si necesitas actualizarlos.
+        </p>
       </div>
     </div>
 
@@ -233,15 +261,6 @@
               </svg>
               Cambiar
             </button>
-          </div>
-
-          <!-- Two Factor -->
-          <div class="security-item">
-            <div class="security-item-info">
-              <h4>Autenticación de dos factores</h4>
-              <p class="security-meta">{{ twoFactorEnabled ? 'Configurada' : 'No configurada' }}</p>
-            </div>
-            <button class="btn-action" (click)="configureTwoFactor()">Configurar</button>
           </div>
 
           <!-- Active Sessions -->

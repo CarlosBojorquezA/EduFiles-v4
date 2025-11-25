@@ -1,7 +1,7 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked, HostListener } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import { EstudiantesProfesorService, Estudiante, MensajeProfesor } from '../../services/estudiantes-profesor.service';
 import { AuthService } from '../../auth.service';
 import { NotificationsComponent } from '../../notificaciones/notificaciones';
@@ -24,6 +24,7 @@ interface NavItem {
 export class ProfChatEstudiantesComponent implements OnInit, AfterViewChecked {
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
 
+  userRole: 'profesor' = 'profesor';
   userName: string = '';
   userAccountNumber: string = '';
   userMateria: string = '';
@@ -42,9 +43,6 @@ export class ProfChatEstudiantesComponent implements OnInit, AfterViewChecked {
   isSending: boolean = false;
   shouldScrollToBottom: boolean = false;
 
-  // Para el header dinámico
-  isHeaderScrolled: boolean = false;
-
   constructor(
     private router: Router,
     private route: ActivatedRoute,
@@ -62,7 +60,7 @@ export class ProfChatEstudiantesComponent implements OnInit, AfterViewChecked {
         this.loadEstudianteData();
         this.loadMensajes();
         
-        // Polling cada 5 segundos
+        // Polling para actualizar mensajes cada 5 segundos
         interval(5000).subscribe(() => {
           this.loadMensajes(false);
         });
@@ -76,13 +74,6 @@ export class ProfChatEstudiantesComponent implements OnInit, AfterViewChecked {
       this.shouldScrollToBottom = false;
     }
   }
-
-  // Detectar scroll para header dinámico
-  @HostListener('window:scroll') 
-    onWindowScroll() {
-    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    this.isHeaderScrolled = scrollPosition > 10;
-}
 
   loadUserData(): void {
     const user = this.authService.getCurrentUser();
@@ -172,7 +163,6 @@ export class ProfChatEstudiantesComponent implements OnInit, AfterViewChecked {
     });
   }
 
-  // Formato de hora mejorado (HH:MM)
   formatTime(timestamp: string): string {
     if (!timestamp) return '';
     
@@ -183,50 +173,6 @@ export class ProfChatEstudiantesComponent implements OnInit, AfterViewChecked {
     return `${hours}:${minutes}`;
   }
 
-  // Formato de fecha para el indicador de página
-  formatMessageDate(timestamp: string): string {
-    if (!timestamp) return '';
-    
-    const date = new Date(timestamp);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    
-    // Si es hoy
-    if (date.toDateString() === today.toDateString()) {
-      return 'Hoy';
-    }
-    
-    // Si es ayer
-    if (date.toDateString() === yesterday.toDateString()) {
-      return 'Ayer';
-    }
-    
-    // Si es otra fecha
-    const day = date.getDate();
-    const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-    const month = months[date.getMonth()];
-    const year = date.getFullYear();
-    const currentYear = today.getFullYear();
-    
-    // Si es del mismo año, no mostrar el año
-    if (year === currentYear) {
-      return `${day} ${month}`;
-    }
-    
-    return `${day} ${month} ${year}`;
-  }
-
-  // Obtener fecha del primer mensaje visible (para el indicador)
-  getConversationDate(): string {
-    if (this.mensajes.length === 0) return '';
-    
-    // Tomar el mensaje más reciente
-    const ultimoMensaje = this.mensajes[this.mensajes.length - 1];
-    return this.formatMessageDate(ultimoMensaje.fecha_envio);
-  }
-
-  // Determinar estado de conexión
   getEstadoConexion(): 'En línea' | 'Desconectado' {
     if (!this.estudiante || this.mensajes.length === 0) return 'Desconectado';
     
