@@ -1,48 +1,50 @@
 <div class="chat-container">
-  <!-- Header -->
-  <header class="header">
-    <div class="header-left">
+  <!-- Header Dinámico -->
+  <header class="chat-header" [class.scrolled]="isHeaderScrolled">
+    <div class="header-content">
       <button class="back-btn" (click)="backToList()">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
           <polyline points="12 19 5 12 12 5"></polyline>
         </svg>
       </button>
-      <div class="professor-info" *ngIf="estudiante">
-        <div class="professor-avatar">
+
+      <div class="chat-user-info" *ngIf="estudiante">
+        <div class="chat-avatar">
           <span>{{ estudiante.iniciales || 'ES' }}</span>
         </div>
-        <div class="professor-details">
-          <h3>{{ estudiante.nombre_completo }}</h3>
-          <p class="professor-subject">
-            {{ estudiante.grado }}° - {{ estudiante.grupo_nombre || 'Sin grupo' }}
-            <span class="status-dot online"></span>
-            <span class="status-text">En línea</span>
+        <div class="chat-user-details">
+          <h3 class="chat-user-name">{{ estudiante.nombre_completo }}</h3>
+          <p class="chat-user-status">
+            <span class="status-indicator" [class.online]="getEstadoConexion() === 'En línea'"></span>
+            <span>{{ estudiante.grado }}° - {{ estudiante.grupo_nombre || 'Sin grupo' }}</span>
+            <span class="status-text">{{ getEstadoConexion() }}</span>
           </p>
         </div>
       </div>
-    </div>
-    <div class="header-right">
-      <app-notifications></app-notifications>
-      <button class="logout-btn" (click)="logout()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-          <polyline points="16 17 21 12 16 7"></polyline>
-          <line x1="21" y1="12" x2="9" y2="12"></line>
-        </svg>
-      </button>
+
+      <div class="header-actions">
+        <app-notifications></app-notifications>
+        <button class="logout-btn" (click)="logout()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </button>
+      </div>
     </div>
   </header>
 
   <!-- Loading State -->
-  <div *ngIf="isLoading" style="text-align: center; padding: 60px 20px;">
-    <div style="width: 40px; height: 40px; margin: 0 auto 16px; border: 3px solid #e5e7eb; border-top-color: #1a1a1a; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
-    <p style="color: #666;">Cargando chat...</p>
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando conversación...</p>
   </div>
 
-  <!-- Page indicator -->
-  <div class="page-indicator" *ngIf="!isLoading">
-    {{ currentPage }}/{{ totalPages }}
+  <!-- Indicador de fecha -->
+  <div class="date-indicator" *ngIf="!isLoading && mensajes.length > 0">
+    {{ getConversationDate() }}
   </div>
 
   <!-- Messages Container -->
@@ -51,26 +53,30 @@
       
       <!-- Empty State -->
       <div *ngIf="mensajes.length === 0" class="empty-chat">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        </svg>
+        <div class="empty-icon">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </div>
         <h3>Inicia una conversación</h3>
-        <p>Envía un mensaje para comenzar a chatear</p>
+        <p>Envía un mensaje para comenzar a chatear con {{ estudiante?.nombres }}</p>
       </div>
 
       <!-- Messages -->
       <div 
         *ngFor="let mensaje of mensajes" 
-        class="message-group"
+        class="message-wrapper"
         [class.sent]="mensaje.tipo === 'enviado'"
         [class.received]="mensaje.tipo === 'recibido'">
         
+        <!-- Mensaje recibido con nombre -->
+        <div *ngIf="mensaje.tipo === 'recibido'" class="message-sender-name">
+          {{ estudiante?.apellido_paterno || estudiante?.nombres }}
+        </div>
+
         <div class="message-bubble">
-          <div class="message-header" *ngIf="mensaje.tipo === 'recibido' && estudiante">
-            {{ estudiante.apellido_paterno || estudiante.nombre_completo }}
-          </div>
-          <p class="message-content">{{ mensaje.mensaje }}</p>
-          <span class="message-time">
+          <p class="message-text">{{ mensaje.mensaje }}</p>
+          <span class="message-timestamp">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"/>
               <path d="M12 6v6l4 2"/>
@@ -83,23 +89,25 @@
   </div>
 
   <!-- Message Input -->
-  <div class="message-input-container" *ngIf="!isLoading">
-    <input 
-      type="text" 
-      class="message-input"
-      placeholder="Escribe un mensaje..."
-      [(ngModel)]="newMessage"
-      (keyup.enter)="sendMessage()"
-      [disabled]="isSending"
-    />
-    <button 
-      class="send-button" 
-      (click)="sendMessage()"
-      [disabled]="!newMessage.trim() || isSending">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
-      </svg>
-    </button>
+  <div class="message-input-wrapper" *ngIf="!isLoading">
+    <div class="message-input-container">
+      <input 
+        type="text" 
+        class="message-input"
+        placeholder="Escribe un mensaje..."
+        [(ngModel)]="newMessage"
+        (keyup.enter)="sendMessage()"
+        [disabled]="isSending"
+      />
+      <button 
+        class="send-button" 
+        (click)="sendMessage()"
+        [disabled]="!newMessage.trim() || isSending">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+        </svg>
+      </button>
+    </div>
   </div>
 
   <!-- Bottom Navigation -->
