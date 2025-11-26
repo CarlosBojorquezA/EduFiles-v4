@@ -3,23 +3,17 @@
     <div class="header-left">
       <div class="user-info">
         <div class="avatar">
-          <span>{{ userProfile.userName.substring(0, 2).toUpperCase() }}</span>
+          <span>{{ userProfile.avatar }}</span>
         </div>
         <div class="user-details">
-          <h3>{{ userProfile.userName }}</h3>
-          <p class="user-role">{{ userProfile.userRole === 'Profesor' ? 'Profesor' : 'Usuario' }} • {{ userProfile.userAccountNumber }}</p>
-          <p class="user-career">{{ userProfile.userMateria }}</p>
+          <h3>{{ userName }}</h3>
+          <p class="user-role">Profesor • {{ userAccountNumber }}</p>
+          <p class="user-career">{{ userMateria }}</p>
         </div>
       </div>
     </div>
     <div class="header-right">
-      <button class="notification-btn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-        </svg>
-        <span class="badge" *ngIf="userProfile.notificationCount > 0">{{ userProfile.notificationCount }}</span>
-      </button>
+      <app-notifications></app-notifications>
       <button class="logout-btn" (click)="logout()">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -30,7 +24,10 @@
     </div>
   </header>
 
-  <div class="profile-card">
+  <main class="main-content">
+    <h1 class="page-title">Mi Perfil</h1>
+
+    <div class="profile-card">
     <div class="profile-main">
       <div class="avatar-large">
         {{ userProfile.avatar }}
@@ -43,6 +40,7 @@
       </div>
       <div class="profile-info">
         <h2>{{ userProfile.userName }}</h2>
+        
         <div class="profile-meta">
           <div class="meta-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -51,7 +49,24 @@
             </svg>
             <span>{{ userProfile.email }}</span>
           </div>
+
+          <div class="meta-item" *ngIf="userProfile.departamento">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            <span>{{ userProfile.departamento }}</span>
           </div>
+
+          <div class="meta-item" *ngIf="userProfile.officeHours && userProfile.officeHours !== 'No registrado'">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>Horario: {{ userProfile.officeHours }}</span>
+          </div>
+        </div>
+
         <span class="role-badge">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
@@ -63,216 +78,149 @@
     </div>
   </div>
 
-  <div class="tabs-container">
-    <button
-      class="tab-button"
-      [class.active]="activeTab === 'contact'"
-      (click)="setActiveTab('contact')">
-      Contacto
-    </button>
-    <button
-      class="tab-button"
-      [class.active]="activeTab === 'security'"
-      (click)="setActiveTab('security')">
-      Seguridad
-    </button>
-  </div>
-
-  <div class="tab-content" *ngIf="activeTab === 'contact'">
-    <div class="section-card">
-      <div class="section-header">
-        <h3>Datos de Contacto</h3>
-        <button
-          *ngIf="!isEditingContact"
-          class="btn-text"
-          (click)="startEditingContact()">
-          Editar
-        </button>
-        <button
-          *ngIf="isEditingContact"
-          class="btn-text"
-          (click)="cancelEditingContact()">
-          Cancelar
-        </button>
-      </div>
-
-      <div class="form-group">
-        <label>Nombre Completo</label>
-        <input
-          type="text"
-          class="form-input"
-          [disabled]="!isEditingContact"
-          [(ngModel)]="editedprofile.userName"
-        />
-      </div>
-
-      <div class="form-group">
-        <label>Email Principal</label>
-        <div class="input-with-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-            <polyline points="22,6 12,13 2,6"/>
-          </svg>
-          <input
-            type="email"
-            class="form-input"
-            [disabled]="!isEditingContact"
-            [(ngModel)]="editedprofile.email"
-          />
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Email Alternativo (Opcional)</label>
-        <div class="input-with-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-            <polyline points="22,6 12,13 2,6"/>
-          </svg>
-          <input
-            type="email"
-            class="form-input"
-            placeholder="email.alternativo@ejemplo.com"
-            [disabled]="!isEditingContact"
-            [(ngModel)]="editedprofile.alternativeEmail"
-          />
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Teléfono</label>
-        <div class="input-with-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-          </svg>
-          <input
-            type="tel"
-            class="form-input"
-            [disabled]="!isEditingContact"
-            [(ngModel)]="editedprofile.phone"
-          />
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Horario de Oficina</label>
-        <input
-          type="text"
-          class="form-input"
-          [disabled]="!isEditingContact"
-          [(ngModel)]="editedprofile.officeHours"
-        />
-        <p class="form-help-text">Los estudiantes podrán ver tu horario de disponibilidad</p>
-      </div>
-
-      <button
-        *ngIf="isEditingContact"
-        class="btn-save"
-        (click)="saveContactChanges()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-          <polyline points="17 21 17 13 7 13 7 21"/>
-          <polyline points="7 3 7 8 15 8"/>
-        </svg>
-        Guardar Cambios
+    <div class="profile-tabs">
+      <button 
+        class="profile-tab"
+        [class.active]="activeTab === 'contact'"
+        (click)="setActiveTab('contact')">
+        Contacto
+      </button>
+      <button 
+        class="profile-tab"
+        [class.active]="activeTab === 'security'"
+        (click)="setActiveTab('security')">
+        Seguridad
       </button>
     </div>
-  </div>
 
-  <div class="tab-content" *ngIf="activeTab === 'security'">
-    <div class="section-card">
-      <h3>Configuración de Seguridad</h3>
-
-      <div class="security-item">
-        <div class="security-info">
-          <h4>Contraseña</h4>
-          <p>Última actualización: {{ securityConfig.passwordLastUpdated }}</p>
+    <div class="tab-content" *ngIf="activeTab === 'contact'">
+      <div class="section-card">
+        <div class="section-header">
+          <h3>Datos de Contacto</h3>
+          <button class="btn-edit" *ngIf="!isEditingContact" (click)="startEditingContact()">Editar</button>
+          <button class="btn-cancel" *ngIf="isEditingContact" (click)="cancelEditingContact()">Cancelar</button>
         </div>
-        <button class="btn-action" (click)="openChangePasswordModal()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-          </svg>
-          Cambiar
-        </button>
-      </div>
 
-      <div class="security-item">
-        <div class="security-info">
-          <h4>Autenticación de dos factores</h4>
-          <p>{{ securityConfig.twoFactorEnabled ? 'Configurada' : 'No configurada' }}</p>
-        </div>
-        <button class="btn-action" (click)="configure2FA()">
-          Configurar
-        </button>
-      </div>
+        <div class="contact-fields">
+          <div class="contact-field">
+            <label>Nombre Completo</label>
+            <div class="field-value" *ngIf="!isEditingContact">
+              {{ editedprofile.userName }}
+            </div>
+            <input 
+              type="text" 
+              [(ngModel)]="editedprofile.userName" 
+              class="form-input"
+              *ngIf="isEditingContact">
+          </div>
 
-      <div class="security-item">
-        <div class="security-info">
-          <h4>Sesiones activas</h4>
-          <p>{{ securityConfig.activeSessions }} dispositivo</p>
+          <div class="contact-field">
+            <label>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              Email Principal
+            </label>
+            <div class="field-value" *ngIf="!isEditingContact">
+              {{ editedprofile.email }}
+            </div>
+            <input 
+              type="email" 
+              [(ngModel)]="editedprofile.email" 
+              class="form-input"
+              *ngIf="isEditingContact">
+          </div>
+
+          <div class="contact-field">
+            <label>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+              Teléfono
+            </label>
+            <div class="field-value" *ngIf="!isEditingContact">
+              {{ editedprofile.phone }}
+            </div>
+            <input 
+              type="tel" 
+              [(ngModel)]="editedprofile.phone" 
+              class="form-input"
+              *ngIf="isEditingContact">
+          </div>
+
+          <div class="contact-field">
+            <label>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              Horario de Oficina
+            </label>
+            <div class="field-value" *ngIf="!isEditingContact">
+              {{ editedprofile.officeHours || 'No definido' }}
+            </div>
+            <div *ngIf="isEditingContact">
+              <input 
+                type="text" 
+                [(ngModel)]="editedprofile.officeHours" 
+                class="form-input">
+              <p class="form-help-text">Los estudiantes podrán ver tu horario de disponibilidad</p>
+            </div>
+          </div>
         </div>
-        <button class="btn-action" (click)="viewActiveSessions()">
-          Ver detalles
-        </button>
+
+        <div class="section-actions" *ngIf="isEditingContact">
+          <button class="btn-save" (click)="saveContactChanges()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            Guardar Cambios
+          </button>
+        </div>
       </div>
     </div>
 
-    <div class="section-card">
-      <h3>Preferencias de Privacidad</h3>
+    <div class="tab-content" *ngIf="activeTab === 'security'">
+      <div class="section-card">
+        <h3>Configuración de Seguridad</h3>
 
-      <div class="privacy-item">
-        <div class="privacy-info">
-          <h4>Mostrar email a estudiantes</h4>
-          <p>Permitir que los estudiantes vean tu correo</p>
-        </div>
-        <label class="toggle-switch">
-          <input
-            type="checkbox"
-            [checked]="privacySettings.showEmailToStudents"
-            (change)="togglePrivacySetting('showEmailToStudents')"
-          />
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
+        <div class="security-items">
+          <div class="security-item">
+            <div class="security-info">
+              <h4>Contraseña</h4>
+              <p class="security-meta">Última actualización: {{ securityConfig.passwordLastUpdated }}</p>
+            </div>
+            <button class="btn-action" (click)="openChangePasswordModal()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              Cambiar
+            </button>
+          </div>
 
-      <div class="privacy-item">
-        <div class="privacy-info">
-          <h4>Mostrar teléfono a estudiantes</h4>
-          <p>Permitir que los estudiantes vean tu número</p>
+          <div class="security-item">
+            <div class="security-info">
+              <h4>Sesiones activas</h4>
+              <p class="security-meta">{{ securityConfig.activeSessions }} dispositivo</p>
+            </div>
+            <button class="btn-action" (click)="viewActiveSessions()">
+              Ver detalles
+            </button>
+          </div>
         </div>
-        <label class="toggle-switch">
-          <input
-            type="checkbox"
-            [checked]="privacySettings.showPhoneToStudents"
-            (change)="togglePrivacySetting('showPhoneToStudents')"
-          />
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-
-      <div class="privacy-item">
-        <div class="privacy-info">
-          <h4>Mostrar horario de oficina</h4>
-          <p>Los estudiantes verán tu disponibilidad</p>
-        </div>
-        <label class="toggle-switch">
-          <input
-            type="checkbox"
-            [checked]="privacySettings.showOfficeHours"
-            (change)="togglePrivacySetting('showOfficeHours')"
-          />
-          <span class="toggle-slider"></span>
-        </label>
       </div>
     </div>
-  </div>
+  </main>
 
   <div class="modal-overlay" *ngIf="showChangePasswordModal" (click)="closeChangePasswordModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>Cambiar Contraseña</h3>
-        <button class="modal-close" (click)="closeChangePasswordModal()">
+        <h2>Cambiar Contraseña</h2>
+        <button class="close-btn" (click)="closeChangePasswordModal()">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"/>
             <line x1="6" y1="6" x2="18" y2="18"/>
@@ -280,44 +228,93 @@
         </button>
       </div>
 
-      <p class="modal-description">Actualiza tu contraseña de acceso al sistema</p>
+      <div class="modal-body">
+        <p class="modal-subtitle">Actualiza tu contraseña de acceso al sistema</p>
 
-      <div class="form-group">
-        <label>Contraseña Actual</label>
-        <input
-          type="password"
-          class="form-input"
-          placeholder="••••••••"
-          [(ngModel)]="passwordForm.currentPassword"
-        />
-      </div>
+        <div class="form-group">
+          <label>Contraseña Actual</label>
+          <input
+            type="password"
+            class="form-input"
+            placeholder="••••••••"
+            [(ngModel)]="passwordForm.currentPassword"
+          />
+        </div>
 
-      <div class="form-group">
-        <label>Nueva Contraseña</label>
-        <input
-          type="password"
-          class="form-input"
-          placeholder="••••••••"
-          [(ngModel)]="passwordForm.newPassword"
-        />
-      </div>
+        <div class="form-group">
+          <label>Nueva Contraseña</label>
+          <input
+            type="password"
+            class="form-input"
+            placeholder="••••••••"
+            [(ngModel)]="passwordForm.newPassword"
+          />
+        </div>
 
-      <div class="form-group">
-        <label>Confirmar Nueva Contraseña</label>
-        <input
-          type="password"
-          class="form-input"
-          placeholder="••••••••"
-          [(ngModel)]="passwordForm.confirmPassword"
-        />
+        <div class="form-group">
+          <label>Confirmar Nueva Contraseña</label>
+          <input
+            type="password"
+            class="form-input"
+            placeholder="••••••••"
+            [(ngModel)]="passwordForm.confirmPassword"
+          />
+        </div>
       </div>
 
       <div class="modal-footer">
+        <button class="btn-modal-primary" (click)="changePassword()">
+          Cambiar Contraseña
+        </button>
         <button class="btn-modal-cancel" (click)="closeChangePasswordModal()">
           Cancelar
         </button>
-        <button class="btn-modal-primary" (click)="changePassword()">
-          Cambiar Contraseña
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showVerificationModal" (click)="closeVerificationModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Verificación de Correo</h2>
+        <button class="close-btn" (click)="closeVerificationModal()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="verification-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+        </div>
+
+        <p class="modal-subtitle centered">Hemos enviado un código de verificación a tu correo:</p>
+        <p class="email-highlight">{{ userProfile.email }}</p>
+
+        <div class="form-group">
+          <label>Código de Verificación</label>
+          <input
+            type="text"
+            class="form-input code-input"
+            placeholder="Ingresa el código de 6 dígitos"
+            maxlength="6"
+            [(ngModel)]="verificationCode"
+          />
+        </div>
+
+        <p class="help-text">Si no recibes el código en unos minutos, revisa tu carpeta de spam.</p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-modal-primary" (click)="verifyAndChangePassword()">
+          Verificar y Cambiar
+        </button>
+        <button class="btn-modal-cancel" (click)="closeVerificationModal()">
+          Cancelar
         </button>
       </div>
     </div>
@@ -330,7 +327,7 @@
       [class.active]="item.route === currentRoute"
       (click)="navigateTo(item.route)">
       <div class="nav-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path [attr.d]="getIcon(item.icon)"></path>
         </svg>
         <span class="nav-badge" *ngIf="item.badge && item.badge > 0">{{ item.badge }}</span>

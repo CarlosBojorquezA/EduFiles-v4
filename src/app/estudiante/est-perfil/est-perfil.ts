@@ -38,19 +38,23 @@ export class EstPerfilComponent implements OnInit {
     apellido_paterno: '',
     apellido_materno: '',
     email: '',
-    alternativeEmail: '',
     phone: '',
     userCareer: '',
     userGradeGroup: '',
     // Datos del tutor
     tutorFullName: '',
+    tutorNombres: '',
+    tutorApellidoPaterno: '',
+    tutorApellidoMaterno: '',
     tutorEmail: '',
     tutorPhone: ''
   };
 
   // Edit mode
   isEditingContact: boolean = false;
+  isEditingTutor: boolean = false;
   originalProfile: any = null;
+  originalTutor: any = null;
 
   // Security data
   lastPasswordUpdate: string = 'No registrado';
@@ -102,6 +106,11 @@ export class EstPerfilComponent implements OnInit {
           }
         }
 
+        // Construir nombre completo del tutor
+        const tutorNombreCompleto = detalles.tutor_nombres && detalles.tutor_apellido_paterno
+          ? `${detalles.tutor_nombres} ${detalles.tutor_apellido_paterno} ${detalles.tutor_apellido_materno || ''}`.trim()
+          : 'No registrado';
+
         // Mapear datos del backend al objeto del frontend
         this.userProfile = {
           fullName: nombreCompleto,
@@ -109,14 +118,16 @@ export class EstPerfilComponent implements OnInit {
           apellido_paterno: detalles.apellido_paterno,
           apellido_materno: detalles.apellido_materno || '',
           email: data.correo,
-          alternativeEmail: detalles.correo_alternativo || '',
           phone: detalles.telefono || '',
           userCareer: this.userCareer,
           userGradeGroup: this.userGradeGroup,
           // Datos del tutor
-          tutorFullName: detalles.tutor_nombre_completo || 'No registrado',
-          tutorEmail: detalles.tutor_correo || 'No registrado',
-          tutorPhone: detalles.tutor_telefono || 'No registrado'
+          tutorFullName: tutorNombreCompleto,
+          tutorNombres: detalles.tutor_nombres || '',
+          tutorApellidoPaterno: detalles.tutor_apellido_paterno || '',
+          tutorApellidoMaterno: detalles.tutor_apellido_materno || '',
+          tutorEmail: detalles.tutor_correo || '',
+          tutorPhone: detalles.tutor_telefono || ''
         };
       },
       error: (err) => {
@@ -175,41 +186,122 @@ export class EstPerfilComponent implements OnInit {
       nuevosNombres = partes.join(' ');
     }
     
-    // Actualizar el objeto local
-    this.userProfile.nombres = nuevosNombres;
-    this.userProfile.apellido_paterno = nuevoPaterno;
-    this.userProfile.apellido_materno = nuevoMaterno;
-
     const payload = {
       email: this.userProfile.email,
-      nombres: this.userProfile.nombres,
-      apellido_paterno: this.userProfile.apellido_paterno,
-      apellido_materno: this.userProfile.apellido_materno,
-      telefono: this.userProfile.phone,
-      correo_alternativo: this.userProfile.alternativeEmail
+      nombres: nuevosNombres,
+      apellido_paterno: nuevoPaterno,
+      apellido_materno: nuevoMaterno,
+      telefono: this.userProfile.phone
     };
 
     this.authService.actualizarPerfil(payload).subscribe({
       next: () => {
+        // Actualizar datos locales INMEDIATAMENTE
+        this.userProfile.nombres = nuevosNombres;
+        this.userProfile.apellido_paterno = nuevoPaterno;
+        this.userProfile.apellido_materno = nuevoMaterno;
         this.userName = this.userProfile.fullName;
         
         // Actualizar localStorage
         const currentUser = JSON.parse(localStorage.getItem('userData') || '{}');
         if (currentUser && currentUser.detalles) {
-          currentUser.detalles.nombres = this.userProfile.nombres;
-          currentUser.detalles.apellido_paterno = this.userProfile.apellido_paterno;
-          currentUser.detalles.apellido_materno = this.userProfile.apellido_materno;
+          currentUser.detalles.nombres = nuevosNombres;
+          currentUser.detalles.apellido_paterno = nuevoPaterno;
+          currentUser.detalles.apellido_materno = nuevoMaterno;
+          currentUser.detalles.telefono = this.userProfile.phone;
+          currentUser.correo = this.userProfile.email;
           localStorage.setItem('userData', JSON.stringify(currentUser));
         }
 
         alert('Perfil actualizado exitosamente');
         this.isEditingContact = false;
         this.originalProfile = null;
-        this.loadUserProfile();
       },
       error: (err) => {
         console.error('[EST-PERFIL] Error al actualizar:', err);
         alert('Error al guardar los cambios');
+      }
+    });
+  }
+
+  enableEditTutor(): void {
+    this.originalTutor = {
+      tutorFullName: this.userProfile.tutorFullName,
+      tutorNombres: this.userProfile.tutorNombres,
+      tutorApellidoPaterno: this.userProfile.tutorApellidoPaterno,
+      tutorApellidoMaterno: this.userProfile.tutorApellidoMaterno,
+      tutorEmail: this.userProfile.tutorEmail,
+      tutorPhone: this.userProfile.tutorPhone
+    };
+    this.isEditingTutor = true;
+  }
+
+  cancelEditTutor(): void {
+    if (this.originalTutor) {
+      this.userProfile.tutorFullName = this.originalTutor.tutorFullName;
+      this.userProfile.tutorNombres = this.originalTutor.tutorNombres;
+      this.userProfile.tutorApellidoPaterno = this.originalTutor.tutorApellidoPaterno;
+      this.userProfile.tutorApellidoMaterno = this.originalTutor.tutorApellidoMaterno;
+      this.userProfile.tutorEmail = this.originalTutor.tutorEmail;
+      this.userProfile.tutorPhone = this.originalTutor.tutorPhone;
+    }
+    this.isEditingTutor = false;
+    this.originalTutor = null;
+  }
+
+  saveTutorChanges(): void {
+    // Separar el nombre completo del tutor
+    const nombreCompleto = this.userProfile.tutorFullName.trim();
+    const partes = nombreCompleto.split(' ');
+    
+    let tutorNombres = '';
+    let tutorPaterno = '';
+    let tutorMaterno = '';
+
+    if (partes.length === 1) {
+      tutorNombres = partes[0];
+    } else if (partes.length === 2) {
+      tutorNombres = partes[0];
+      tutorPaterno = partes[1];
+    } else {
+      tutorMaterno = partes.pop() || '';
+      tutorPaterno = partes.pop() || '';
+      tutorNombres = partes.join(' ');
+    }
+    
+    const payload = {
+      tutor_nombres: tutorNombres,
+      tutor_apellido_paterno: tutorPaterno,
+      tutor_apellido_materno: tutorMaterno,
+      tutor_correo: this.userProfile.tutorEmail,
+      tutor_telefono: this.userProfile.tutorPhone
+    };
+
+    this.authService.actualizarPerfil(payload).subscribe({
+      next: () => {
+        // Actualizar datos locales
+        this.userProfile.tutorNombres = tutorNombres;
+        this.userProfile.tutorApellidoPaterno = tutorPaterno;
+        this.userProfile.tutorApellidoMaterno = tutorMaterno;
+        
+        // Actualizar localStorage
+        const currentUser = JSON.parse(localStorage.getItem('userData') || '{}');
+        if (currentUser && currentUser.detalles) {
+          currentUser.detalles.tutor_nombres = tutorNombres;
+          currentUser.detalles.tutor_apellido_paterno = tutorPaterno;
+          currentUser.detalles.tutor_apellido_materno = tutorMaterno;
+          currentUser.detalles.tutor_correo = this.userProfile.tutorEmail;
+          currentUser.detalles.tutor_telefono = this.userProfile.tutorPhone;
+          localStorage.setItem('userData', JSON.stringify(currentUser));
+        }
+
+        alert('Datos del tutor actualizados exitosamente');
+        this.isEditingTutor = false;
+        this.originalTutor = null;
+      },
+      error: (err) => {
+        console.error('[EST-PERFIL] Error al actualizar tutor:', err);
+        alert('Error al guardar los datos del tutor');
       }
     });
   }
