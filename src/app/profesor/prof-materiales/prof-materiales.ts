@@ -2,27 +2,21 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { AuthService } from '../../auth.service';
+import { NotificationsComponent } from '../../notificaciones/notificaciones';
 
 interface Material {
-  id: string;
-  title: string;
-  category: 'Material de Apoyo' | 'Guía' | 'Aviso Oficial' | 'Examen' | 'Tarea' | 'Otro';
-  description: string;
-  course: string;
-  semester: string;
-  fileName: string;
-  fileSize: string;
-  downloads: number;
-  uploadDate: string;
-}
-
-interface MaterialForm {
-  title: string;
-  description: string;
-  category: string;
-  course: string;
-  semester: string;
-  file: File | null;
+  id_material: number;
+  titulo: string;
+  categoria: string;
+  descripcion: string;
+  materia: string;
+  semestre: string;
+  nombre_archivo: string;
+  tamaño_legible: string;
+  descargas: number;
+  fecha_formateada: string;
 }
 
 interface NavItem {
@@ -35,11 +29,13 @@ interface NavItem {
 @Component({
   selector: 'app-prof-materiales',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NotificationsComponent],
   templateUrl: './prof-materiales.html',
   styleUrls: ['./prof-materiales.css']
 })
 export class ProfMaterialesComponent implements OnInit {
+  private apiUrl = 'http://localhost:5000/api';
+  
   searchText: string = '';
   selectedCategory: string = 'all';
   showUploadModal: boolean = false;
@@ -47,10 +43,10 @@ export class ProfMaterialesComponent implements OnInit {
   selectedMaterial: Material | null = null;
 
   userRole: 'Profesor' = 'Profesor';
-  userName: string = 'Jose Orozco';
-  userAccountNumber: string = '2024001234';
+  userName: string = '';
+  userAccountNumber: string = '';
   userMateria: string = 'Angular';
-  notificationCount: number = 3;
+  notificationCount: number = 0;
   currentRoute: string = '/prof-materiales';
 
   categories = [
@@ -63,13 +59,7 @@ export class ProfMaterialesComponent implements OnInit {
     { value: 'Otro', label: 'Otro' }
   ];
 
-  courses = [
-    'Matemáticas Avanzadas',
-    'Cálculo Diferencial',
-    'Álgebra Lineal',
-    'Estadística'
-  ];
-
+  courses: string[] = [];
   semesters = [
     '1° Semestre',
     '2° Semestre',
@@ -79,114 +69,150 @@ export class ProfMaterialesComponent implements OnInit {
     '6° Semestre'
   ];
 
-  materials: Material[] = [
-    {
-      id: '1',
-      title: 'Guía de Estudio - Unidad 1',
-      category: 'Guía',
-      description: 'Guía completa para el primer examen parcial',
-      course: 'Matemáticas Avanzadas',
-      semester: '3° Semestre',
-      fileName: 'guia_unidad_1.pdf',
-      fileSize: '2.3 MB',
-      downloads: 45,
-      uploadDate: '2024-03-01',
-    },
-    {
-      id: '2',
-      title: 'Material de Apoyo - Cálculo Diferencial',
-      category: 'Material de Apoyo',
-      description: 'Ejercicios resueltos y ejemplos prácticos',
-      course: 'Matemáticas Avanzadas',
-      semester: '3° Semestre',
-      fileName: 'calculo_diferencial.pdf',
-      fileSize: '5.1 MB',
-      downloads: 128,
-      uploadDate: '2024-02-28',
-    },
-    {
-      id: '3',
-      title: 'Aviso - Cambio de Fecha de Examen',
-      category: 'Aviso Oficial',
-      description: 'El examen del próximo viernes se pospondrá al lunes',
-      course: 'Matemáticas Avanzadas',
-      semester: '3° Semestre',
-      fileName: 'aviso_cambio_fecha.pdf',
-      fileSize: '156 KB',
-      downloads: 32,
-      uploadDate: '2024-03-03',
-    },
-    {
-      id: '4',
-      title: 'Tarea - Problemas de Integración',
-      category: 'Tarea',
-      description: 'Ejercicios para entregar el viernes',
-      course: 'Matemáticas Avanzadas',
-      semester: '3° Semestre',
-      fileName: 'tarea_integracion.pdf',
-      fileSize: '1.8 MB',
-      downloads: 48,
-      uploadDate: '2024-03-02',
-    }
-  ];
+  materials: Material[] = [];
+  filteredMaterials: Material[] = [];
+  
+  totalMaterials: number = 0;
+  totalDownloads: number = 0;
+  totalNotices: number = 0;
+  
+  selectedFileName: string = '';
+  editFileName: string = '';
+  selectedFile: File | null = null;
+  editFile: File | null = null;
 
-  uploadForm: MaterialForm = {
+  uploadForm = {
     title: '',
     description: '',
     category: 'Material de Apoyo',
-    course: 'Matemáticas Avanzadas',
-    semester: '3° Semestre',
-    file: null
+    course: '',
+    semester: '3° Semestre'
   };
 
-  editForm: MaterialForm = {
+  editForm = {
     title: '',
     description: '',
     category: '',
     course: '',
-    semester: '',
-    file: null
+    semester: ''
   };
 
-  filteredMaterials: Material[] = [];
-  totalMaterials: number = 0;
-  totalDownloads: number = 0;
-  totalNotices: number = 0;
-  selectedFileName: string = '';
-  editFileName: string = '';
+  navigationItems: NavItem[] = [];
+  loading: boolean = true;
+
+  constructor(
+    private router: Router,
+    private http: HttpClient,
+    private authService: AuthService
+  ) { }
 
   ngOnInit(): void {
-    this.calculateStats();
-    this.filterMaterials();
+    this.loadUserData();
+    this.loadMisCursos();
+    this.loadMateriales();
+    this.loadStats();
     this.loadNavigation();
     this.currentRoute = this.router.url;
   }
 
-  calculateStats(): void {
-    this.totalMaterials = this.materials.length;
-    this.totalDownloads = this.materials.reduce((sum, m) => sum + m.downloads, 0);
-    this.totalNotices = this.materials.filter(m => m.category === 'Aviso Oficial').length;
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
   }
 
-  filterMaterials(): void {
-    this.filteredMaterials = this.materials.filter(material => {
-      const matchesSearch = !this.searchText || 
-        material.title.toLowerCase().includes(this.searchText.toLowerCase()) ||
-        material.description.toLowerCase().includes(this.searchText.toLowerCase());
+  loadUserData(): void {
+    const userData = this.authService.getCurrentUser();
+    if (userData) {
+      const detalles = userData.detalles || {};
+      this.userName = `${detalles.nombres || ''} ${detalles.apellido_paterno || ''}`.trim() || 'Usuario';
+      this.userAccountNumber = userData.num_usuario || '';
+    }
+  }
 
-      const matchesCategory = this.selectedCategory === 'all' || 
-        material.category === this.selectedCategory;
+  loadMisCursos(): void {
+    this.http.get<string[]>(`${this.apiUrl}/prof-materiales/mis-cursos`, {
+      headers: this.getAuthHeaders()
+    }).subscribe({
+      next: (cursos) => {
+        console.log('[MATERIALES] Cursos cargados:', cursos);
+        this.courses = cursos;
+        if (cursos.length > 0) {
+          this.uploadForm.course = cursos[0];
+          this.userMateria = cursos[0];
+        } else {
+          // Si no hay cursos, agregar uno por defecto
+          this.courses = ['Sin asignación'];
+          this.uploadForm.course = 'Sin asignación';
+        }
+      },
+      error: (error) => {
+        console.error('Error cargando cursos:', error);
+        // En caso de error, usar valores por defecto
+        this.courses = ['Matemáticas', 'Español', 'Inglés', 'Ciencias'];
+        this.uploadForm.course = this.courses[0];
+      }
+    });
+  }
 
-      return matchesSearch && matchesCategory;
+  loadMateriales(): void {
+    this.loading = true;
+    
+    let url = `${this.apiUrl}/prof-materiales/mis-materiales?categoria=${this.selectedCategory}`;
+    if (this.searchText) {
+      url += `&search=${encodeURIComponent(this.searchText)}`;
+    }
+
+    console.log('[MATERIALES] Cargando desde:', url);
+
+    this.http.get<Material[]>(url, {
+      headers: this.getAuthHeaders()
+    }).subscribe({
+      next: (materiales) => {
+        console.log('[MATERIALES] Recibidos:', materiales);
+        this.materials = materiales;
+        this.filteredMaterials = materiales;
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('[MATERIALES] Error cargando materiales:', error);
+        console.error('[MATERIALES] Error completo:', error.error);
+        this.materials = [];
+        this.filteredMaterials = [];
+        this.loading = false;
+        
+        // Mostrar mensaje de error al usuario
+        if (error.status === 401) {
+          alert('Sesión expirada. Por favor inicia sesión nuevamente.');
+        } else if (error.status === 403) {
+          alert('No tienes permisos para ver estos materiales.');
+        } else {
+          alert('Error al cargar materiales. Verifica tu conexión.');
+        }
+      }
+    });
+  }
+
+  loadStats(): void {
+    this.http.get<any>(`${this.apiUrl}/prof-materiales/stats`, {
+      headers: this.getAuthHeaders()
+    }).subscribe({
+      next: (stats) => {
+        this.totalMaterials = stats.total_materiales || 0;
+        this.totalDownloads = stats.total_descargas || 0;
+        this.totalNotices = stats.avisos_activos || 0;
+      },
+      error: (error) => console.error('Error cargando stats:', error)
     });
   }
 
   onSearchChange(): void {
-    this.filterMaterials();
+    this.loadMateriales();
   }
 
   onCategoryChange(): void {
-    this.filterMaterials();
+    this.loadMateriales();
   }
 
   getCategoryClass(category: string): string {
@@ -199,144 +225,6 @@ export class ProfMaterialesComponent implements OnInit {
       'Otro': 'category-otro'
     };
     return classes[category] || 'category-otro';
-  }
-
-  // Modal de Subir Material
-  openUploadModal(): void {
-    this.showUploadModal = true;
-    this.resetUploadForm();
-  }
-
-  closeUploadModal(): void {
-    this.showUploadModal = false;
-    this.resetUploadForm();
-  }
-
-  resetUploadForm(): void {
-    this.uploadForm = {
-      title: '',
-      description: '',
-      category: 'Material de Apoyo',
-      course: 'Matemáticas Avanzadas',
-      semester: '3° Semestre',
-      file: null
-    };
-    this.selectedFileName = '';
-  }
-
-  onFileSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.uploadForm.file = file;
-      this.selectedFileName = file.name;
-    }
-  }
-
-  uploadMaterial(): void {
-    if (!this.uploadForm.title || !this.uploadForm.file) {
-      alert('Por favor completa los campos requeridos');
-      return;
-    }
-
-    const newMaterial: Material = {
-      id: Date.now().toString(),
-      title: this.uploadForm.title,
-      category: this.uploadForm.category as any,
-      description: this.uploadForm.description,
-      course: this.uploadForm.course,
-      semester: this.uploadForm.semester,
-      fileName: this.uploadForm.file.name,
-      fileSize: this.formatFileSize(this.uploadForm.file.size),
-      downloads: 0,
-      uploadDate: new Date().toISOString().split('T')[0]
-    };
-
-    this.materials.unshift(newMaterial);
-    this.calculateStats();
-    this.filterMaterials();
-    this.closeUploadModal();
-    
-    // Aquí implementarías la subida real del archivo
-    console.log('Material subido:', newMaterial);
-  }
-
-  // Modal de Editar Material
-  openEditModal(material: Material): void {
-    this.selectedMaterial = material;
-    this.editForm = {
-      title: material.title,
-      description: material.description,
-      category: material.category,
-      course: material.course,
-      semester: material.semester,
-      file: null
-    };
-    this.editFileName = '';
-    this.showEditModal = true;
-  }
-
-  closeEditModal(): void {
-    this.showEditModal = false;
-    this.selectedMaterial = null;
-    this.editFileName = '';
-  }
-
-  onEditFileSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.editForm.file = file;
-      this.editFileName = file.name;
-    }
-  }
-
-  updateMaterial(): void {
-    if (!this.selectedMaterial || !this.editForm.title) {
-      alert('Por favor completa los campos requeridos');
-      return;
-    }
-
-    const index = this.materials.findIndex(m => m.id === this.selectedMaterial!.id);
-    if (index !== -1) {
-      this.materials[index] = {
-        ...this.materials[index],
-        title: this.editForm.title,
-        description: this.editForm.description,
-        category: this.editForm.category as any,
-        course: this.editForm.course,
-        semester: this.editForm.semester,
-        fileName: this.editForm.file ? this.editForm.file.name : this.materials[index].fileName,
-        fileSize: this.editForm.file ? this.formatFileSize(this.editForm.file.size) : this.materials[index].fileSize
-      };
-
-      this.calculateStats();
-      this.filterMaterials();
-      this.closeEditModal();
-      
-      console.log('Material actualizado:', this.materials[index]);
-    }
-  }
-
-  // Eliminar material
-  deleteMaterial(material: Material): void {
-    if (confirm(`¿Estás seguro de eliminar "${material.title}"?`)) {
-      this.materials = this.materials.filter(m => m.id !== material.id);
-      this.calculateStats();
-      this.filterMaterials();
-      console.log('Material eliminado:', material);
-    }
-  }
-
-  // Ver material
-  viewMaterial(material: Material): void {
-    console.log('Ver material:', material);
-    // Aquí implementarías la visualización del PDF
-  }
-
-  // Utilidades
-  formatFileSize(bytes: number): string {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   }
 
   getIconForCategory(category: string): string {
@@ -363,19 +251,174 @@ export class ProfMaterialesComponent implements OnInit {
     return colors[category] || '#e5e7eb';
   }
 
-  formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', { 
-      year: 'numeric', 
-      month: '2-digit', 
-      day: '2-digit' 
+  // Modal de Subir Material
+  openUploadModal(): void {
+    this.showUploadModal = true;
+    this.resetUploadForm();
+  }
+
+  closeUploadModal(): void {
+    this.showUploadModal = false;
+    this.resetUploadForm();
+  }
+
+  resetUploadForm(): void {
+    this.uploadForm = {
+      title: '',
+      description: '',
+      category: 'Material de Apoyo',
+      course: this.courses[0] || '',
+      semester: '3° Semestre'
+    };
+    this.selectedFileName = '';
+    this.selectedFile = null;
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+      this.selectedFileName = file.name;
+    }
+  }
+
+  uploadMaterial(): void {
+    if (!this.uploadForm.title || !this.selectedFile) {
+      alert('Por favor completa los campos requeridos');
+      return;
+    }
+
+    console.log('[UPLOAD] Iniciando subida...');
+    console.log('[UPLOAD] Datos:', this.uploadForm);
+    console.log('[UPLOAD] Archivo:', this.selectedFile);
+
+    const formData = new FormData();
+    formData.append('archivo', this.selectedFile);
+    formData.append('titulo', this.uploadForm.title);
+    formData.append('descripcion', this.uploadForm.description);
+    formData.append('categoria', this.uploadForm.category);
+    formData.append('curso', this.uploadForm.course);
+    formData.append('semestre', this.uploadForm.semester);
+
+    // Headers sin Content-Type (se establece automáticamente para FormData)
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    });
+
+    this.http.post(`${this.apiUrl}/prof-materiales/subir`, formData, { headers }).subscribe({
+      next: (response) => {
+        console.log('[UPLOAD] Material subido:', response);
+        alert('Material subido exitosamente');
+        this.closeUploadModal();
+        this.loadMateriales();
+        this.loadStats();
+      },
+      error: (error) => {
+        console.error('[UPLOAD] Error subiendo material:', error);
+        console.error('[UPLOAD] Error completo:', error.error);
+        
+        if (error.error && error.error.error) {
+          alert(`Error: ${error.error.error}`);
+        } else {
+          alert('Error al subir el material. Verifica el tamaño y tipo de archivo.');
+        }
+      }
     });
   }
 
-  // Navegación
-  navigationItems: NavItem[] = [];
+  // Modal de Editar Material
+  openEditModal(material: Material): void {
+    this.selectedMaterial = material;
+    this.editForm = {
+      title: material.titulo,
+      description: material.descripcion,
+      category: material.categoria,
+      course: material.materia,
+      semester: material.semestre
+    };
+    this.editFileName = '';
+    this.editFile = null;
+    this.showEditModal = true;
+  }
 
-  constructor(private router: Router) { }
+  closeEditModal(): void {
+    this.showEditModal = false;
+    this.selectedMaterial = null;
+    this.editFileName = '';
+    this.editFile = null;
+  }
+
+  onEditFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.editFile = file;
+      this.editFileName = file.name;
+    }
+  }
+
+  updateMaterial(): void {
+    if (!this.selectedMaterial || !this.editForm.title) {
+      alert('Por favor completa los campos requeridos');
+      return;
+    }
+
+    console.log('[UPDATE] Actualizando material...');
+
+    const formData = new FormData();
+    if (this.editFile) {
+      formData.append('archivo', this.editFile);
+    }
+    formData.append('titulo', this.editForm.title);
+    formData.append('descripcion', this.editForm.description);
+    formData.append('categoria', this.editForm.category);
+    formData.append('curso', this.editForm.course);
+    formData.append('semestre', this.editForm.semester);
+
+    // Headers sin Content-Type (se establece automáticamente para FormData)
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    });
+
+    this.http.put(`${this.apiUrl}/prof-materiales/actualizar/${this.selectedMaterial.id_material}`, formData, { headers }).subscribe({
+      next: (response) => {
+        console.log('[UPDATE] Material actualizado:', response);
+        alert('Material actualizado exitosamente');
+        this.closeEditModal();
+        this.loadMateriales();
+      },
+      error: (error) => {
+        console.error('[UPDATE] Error actualizando material:', error);
+        alert('Error al actualizar el material');
+      }
+    });
+  }
+
+  deleteMaterial(material: Material): void {
+    if (confirm(`¿Estás seguro de eliminar "${material.titulo}"?`)) {
+      this.http.delete(`${this.apiUrl}/prof-materiales/eliminar/${material.id_material}`, {
+        headers: this.getAuthHeaders()
+      }).subscribe({
+        next: () => {
+          console.log('Material eliminado');
+          this.loadMateriales();
+          this.loadStats();
+        },
+        error: (error) => {
+          console.error('Error eliminando material:', error);
+          alert('Error al eliminar el material');
+        }
+      });
+    }
+  }
+
+  viewMaterial(material: Material): void {
+    const url = `${this.apiUrl}/prof-materiales/ver/${material.id_material}`;
+    window.open(url, '_blank');
+  }
+
+  formatDate(dateString: string): string {
+    return dateString || '';
+  }
 
   loadNavigation(): void {
     this.navigationItems = [
@@ -396,17 +439,13 @@ export class ProfMaterialesComponent implements OnInit {
       'home': 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
       'material': 'M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25',
       'file-text': 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8',
-      'users': 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
-      'user': 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
-      'alert-triangle': 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z M12 9v4 M12 17h.01',
-      'alert-circle': 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z M12 8v4 M12 16h.01',
-      'check-circle': 'M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4L12 14.01l-3-3',
-      'x-circle': 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z M15 9l-6 6 M9 9l6 6'
+      'user': 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'
     };
     return icons[iconName] || icons['file-text'];
   }
 
   logout(): void {
+    this.authService.logout();
     this.router.navigate(['']);
   }
 }
