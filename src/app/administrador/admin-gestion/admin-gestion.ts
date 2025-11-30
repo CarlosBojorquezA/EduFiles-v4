@@ -2,11 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { forkJoin, of } from 'rxjs';
+import { catchError, finalize } from 'rxjs/operators';
 import { NotificationsComponent } from '../../notificaciones/notificaciones';
+import { environment } from '../../../environments/environment.development';
 
-
-interface Student {
+export interface Student {
   id_estudiante: number;
   nombres: string;
   apellido_paterno: string;
@@ -19,7 +21,7 @@ interface Student {
   nombre_tutor: string;
   telefono_tutor: string;
   curp: string;
-  grado: number;
+  semestre: number;
   grupo_id?: number;
   grupo_turno?: string;
   tipo_estudiante: string;
@@ -32,7 +34,8 @@ interface Student {
   documentos_faltantes_lista?: any[];
 }
 
-interface Professor {
+export interface Professor {
+  departamento: any;
   id_profesor: number;
   nombres: string;
   apellido_paterno: string;
@@ -54,6 +57,31 @@ interface NavItem {
   badge?: number;
 }
 
+// --- Constantes Estáticas ---
+const AVAILABLE_SUBJECTS: string[] = [
+  'Matemáticas', 'Física', 'Química', 'Biología',
+  'Historia', 'Literatura', 'Filosofía', 'Psicología',
+  'Sociología', 'Economía', 'Inglés', 'Educación Física',
+  'Arte', 'Música', 'Computación', 'Geografía'
+];
+
+const AVAILABLE_DAYS = [
+  { value: 'lunes', label: 'Lunes' },
+  { value: 'martes', label: 'Martes' },
+  { value: 'miercoles', label: 'Miércoles' },
+  { value: 'jueves', label: 'Jueves' },
+  { value: 'viernes', label: 'Viernes' },
+  { value: 'sabado', label: 'Sábado' },
+  { value: 'domingo', label: 'Domingo' }
+];
+
+const ICONS_MAP: { [key: string]: string } = {
+  'home': 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
+  'file-text': 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8',
+  'folder': 'M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z',
+  'user': 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'
+};
+
 @Component({
   selector: 'app-admin-gestion',
   standalone: true,
@@ -62,7 +90,7 @@ interface NavItem {
   styleUrls: ['./admin-gestion.css']
 })
 export class AdminGestionComponent implements OnInit {
-  private apiUrl = 'http://localhost:5000/api';
+  private apiUrl = environment.apiUrl;
 
   userRole: string = 'administrador';
   userName: string = '';
@@ -79,15 +107,22 @@ export class AdminGestionComponent implements OnInit {
   showProfessorInfoModal: boolean = false;
   showEditProfessorModal: boolean = false;
   showBajaModal: boolean = false;
+  
+  // Selección
   selectedStudent: Student | null = null;
   selectedProfessor: Professor | null = null;
   
-  // Search and filters
+  // Filtros y Búsqueda
   searchQuery: string = '';
   selectedGrade: string = 'all';
   selectedGroup: string = 'all';
   selectedStatus: string = 'all';
   searchQueryProf: string = '';
+
+  // Filtros Profesores 
+  selectedProfDept: string = 'all';
+  selectedProfContract: string = 'all';
+  selectedProfStatus: string = 'all';
 
   // Stats
   totalStudents: number = 0;
@@ -95,76 +130,22 @@ export class AdminGestionComponent implements OnInit {
   pendingRegistrations: number = 0;
   activeUsers: number = 0;
 
-  // Data from API
+  // Data
   students: Student[] = [];
   professors: Professor[] = [];
   isLoading: boolean = true;
 
-  // Dar de baja
+  // Baja
   bajaNumUsuario: string = '';
   bajaConfirmacion: string = '';
 
-  // Materias disponibles para profesores
-  availableSubjects: string[] = [
-    'Matemáticas', 'Física', 'Química', 'Biología',
-    'Historia', 'Literatura', 'Filosofía', 'Psicología',
-    'Sociología', 'Economía', 'Inglés', 'Educación Física',
-    'Arte', 'Música', 'Computación', 'Geografía'
-  ];
+  // Datos Estáticos para la vista
+  availableSubjects = AVAILABLE_SUBJECTS;
+  availableDays = AVAILABLE_DAYS;
 
-  // Días disponibles
-  availableDays = [
-    { value: 'lunes', label: 'Lunes' },
-    { value: 'martes', label: 'Martes' },
-    { value: 'miercoles', label: 'Miércoles' },
-    { value: 'jueves', label: 'Jueves' },
-    { value: 'viernes', label: 'Viernes' },
-    { value: 'sabado', label: 'Sábado' },
-    { value: 'domingo', label: 'Domingo' }
-  ];
-
-  // Form data for new student
-  newStudent = {
-    nombres: '',
-    apellidoPaterno: '',
-    apellidoMaterno: '',
-    fechaNacimiento: '',
-    curp: '',
-    telefono: '',
-    grado: '',
-    grupoId: null as number | null,
-    tipoEstudiante: 'NUEVO_INGRESO',
-    nombreTutor: '',
-    correoTutor: '',
-    telefonoTutor: '',
-    estado: '',
-    municipio: '',
-    ciudad: '',
-    codigoPostal: null as number | null,
-    observaciones: ''
-  };
-
-  newProfessor = {
-    nombres: '',
-    apellidoPaterno: '',
-    apellidoMaterno: '',
-    correo: '',
-    telefono: '',
-    nivelEducativo: '',
-    especializacion: '',
-    departamento: '',
-    puesto: '',
-    tipoContrato: '',
-    fechaInicio: '',
-    salarioMensual: null as number | null,
-    subjects: [] as string[],
-    availableDays: [] as string[],
-    preferredSchedule: '',
-    maxHoursPerWeek: '',
-    yearsExperience: '',
-    certifications: '',
-    observaciones: ''
-  };
+  // Forms
+  newStudent = this.getInitialStudentForm();
+  newProfessor = this.getInitialProfessorForm();
 
   navigationItems: NavItem[] = [];
 
@@ -176,92 +157,113 @@ export class AdminGestionComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    if (!this.checkAuth()) return;
+    
+    this.currentRoute = this.router.url;
     this.loadUserData();
     this.loadNavigation();
-    this.currentRoute = this.router.url;
-    
+    this.loadDashboardData();
+  }
+
+  // --- Auth & User ---
+  private checkAuth(): boolean {
     const token = localStorage.getItem('token');
     if (!token) {
       alert('Sesión expirada');
       this.router.navigate(['']);
-      return;
+      return false;
     }
-    
-    this.loadDashboardData();
+    return true;
   }
 
   loadUserData(): void {
     const userData = localStorage.getItem('userData');
     if (userData) {
-      const user = JSON.parse(userData);
-      if (user.detalles && user.detalles.nombres) {
-        this.userName = `${user.detalles.nombres} ${user.detalles.apellido_paterno || ''}`.trim();
-      } else {
-        this.userName = user.correo || 'Usuario';
+      try {
+        const user = JSON.parse(userData);
+        this.userName = user.detalles?.nombres 
+          ? `${user.detalles.nombres} ${user.detalles.apellido_paterno || ''}`.trim() 
+          : (user.correo || 'Usuario');
+        this.userRole = (user.rol || 'ADMINISTRADOR').toLowerCase();
+      } catch (e) {
+        console.error('Error parsing user data', e);
       }
-      this.userRole = (user.rol || 'ADMINISTRADOR').toLowerCase();
     }
   }
 
+  // --- Carga de Datos Optimizada (ForkJoin) ---
   loadDashboardData(): void {
     this.isLoading = true;
 
-    this.http.get(`${this.apiUrl}/admin/stats`).subscribe({
-      next: (response: any) => {
-        this.totalStudents = response.total_estudiantes || 0;
-        this.totalProfessors = response.total_profesores || 0;
-        this.pendingRegistrations = response.pendientes || 0;
-        this.activeUsers = response.activos || 0;
-      },
-      error: (error) => {
-        console.error('Error cargando stats:', error);
+    // Ejecutamos todo en paralelo
+    forkJoin({
+      stats: this.http.get<any>(`${this.apiUrl}/admin/stats`).pipe(catchError(() => of({}))),
+      students: this.getStudentsObservable(),
+      professors: this.getProfessorsObservable(),
+      notifications: this.http.get<any>(`${this.apiUrl}/notificaciones/no-leidas/count`).pipe(catchError(() => of({ count: 0 })))
+    }).pipe(
+      finalize(() => this.isLoading = false)
+    ).subscribe({
+      next: (results) => {
+        // Stats
+        this.totalStudents = results.stats.total_estudiantes || 0;
+        this.totalProfessors = results.stats.total_profesores || 0;
+        this.pendingRegistrations = results.stats.pendientes || 0;
+        this.activeUsers = results.stats.activos || 0;
+
+        // Listas
+        this.students = results.students;
+        this.professors = results.professors;
+
+        // Notificaciones
+        this.notificationCount = results.notifications.count || 0;
       }
     });
+  }
 
-    this.loadStudents();
-    this.loadProfessors();
+  // --- Lógica de Estudiantes ---
+  private getStudentsObservable() {
+    let params = new HttpParams();
+    if (this.selectedGrade !== 'all') params = params.set('semestre', this.selectedGrade);
+    if (this.selectedGroup !== 'all') params = params.set('grupo_id', this.selectedGroup);
+    if (this.selectedStatus !== 'all') params = params.set('estado', this.selectedStatus);
+    if (this.searchQuery) params = params.set('search', this.searchQuery);
 
-    this.http.get(`${this.apiUrl}/notificaciones/no-leidas/count`).subscribe({
-      next: (response: any) => {
-        this.notificationCount = response.count || 0;
-      },
-      error: (error) => console.error('Error notificaciones:', error)
-    });
+    return this.http.get<Student[]>(`${this.apiUrl}/admin/estudiantes`, { params }).pipe(
+      catchError(err => {
+        console.error('Error loading students', err);
+        return of([]);
+      })
+    );
   }
 
   loadStudents(): void {
-    const params = new URLSearchParams();
-    if (this.selectedGrade !== 'all') params.append('grado', this.selectedGrade);
-    if (this.selectedGroup !== 'all') params.append('grupo_id', this.selectedGroup);
-    if (this.selectedStatus !== 'all') params.append('estado', this.selectedStatus);
-    if (this.searchQuery) params.append('search', this.searchQuery);
+    // Usado por los filtros para recargar solo estudiantes
+    this.isLoading = true;
+    this.getStudentsObservable().pipe(
+      finalize(() => this.isLoading = false)
+    ).subscribe(data => this.students = data);
+  }
 
-    this.http.get(`${this.apiUrl}/admin/estudiantes?${params.toString()}`).subscribe({
-      next: (response: any) => {
-        this.students = Array.isArray(response) ? response : [];
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error cargando estudiantes:', error);
-        this.students = [];
-        this.isLoading = false;
-      }
-    });
+  // --- Lógica de Profesores (Reutilizable) ---
+  private getProfessorsObservable() {
+    let params = new HttpParams();
+    if (this.searchQueryProf) params = params.set('search', this.searchQueryProf);
+    
+    if (this.selectedProfDept !== 'all') params = params.set('departamento', this.selectedProfDept);
+    if (this.selectedProfContract !== 'all') params = params.set('tipo_contrato', this.selectedProfContract);
+    if (this.selectedProfStatus !== 'all') params = params.set('activo', this.selectedProfStatus); 
+
+    return this.http.get<any[]>(`${this.apiUrl}/admin/profesores`, { params }).pipe(
+      catchError(err => {
+        console.error('Error loading professors', err);
+        return of([]);
+      })
+    );
   }
 
   loadProfessors(): void {
-    const params = new URLSearchParams();
-    if (this.searchQueryProf) params.append('search', this.searchQueryProf);
-
-    this.http.get(`${this.apiUrl}/admin/profesores?${params.toString()}`).subscribe({
-      next: (response: any) => {
-        this.professors = Array.isArray(response) ? response : [];
-      },
-      error: (error) => {
-        console.error('Error cargando profesores:', error);
-        this.professors = [];
-      }
-    });
+    this.getProfessorsObservable().subscribe(data => this.professors = data);
   }
 
   get filteredStudents(): Student[] {
@@ -280,30 +282,29 @@ export class AdminGestionComponent implements OnInit {
     this.loadProfessors();
   }
 
+  applyProfessorFilters(): void {
+    this.loadProfessors();
+  }
+
   setMainTab(tab: 'resumen' | 'estudiantes' | 'profesores' | 'registrar'): void {
     this.activeMainTab = tab;
-    
-    if (tab === 'estudiantes') {
-      this.loadStudents();
-    } else if (tab === 'profesores') {
-      this.loadProfessors();
-    }
+    if (tab === 'estudiantes' && this.students.length === 0) this.loadStudents();
+    if (tab === 'profesores' && this.professors.length === 0) this.loadProfessors();
   }
 
   setRegisterTab(tab: 'estudiante' | 'profesor'): void {
     this.activeRegisterTab = tab;
   }
-
+  
+  // Estudiantes
   openStudentInfo(student: Student): void {
-    this.http.get(`${this.apiUrl}/admin/estudiantes/${student.id_estudiante}`).subscribe({
-      next: (response: any) => {
-        this.selectedStudent = response;
+    this.http.get<Student>(`${this.apiUrl}/admin/estudiantes/${student.id_estudiante}`).subscribe({
+      next: (data) => {
+        this.selectedStudent = data;
         this.showStudentInfoModal = true;
+        this.showEditStudentModal = false;
       },
-      error: (error) => {
-        console.error('Error cargando detalles:', error);
-        alert('Error al cargar información del estudiante');
-      }
+      error: () => alert('Error al cargar información del estudiante')
     });
   }
 
@@ -312,10 +313,11 @@ export class AdminGestionComponent implements OnInit {
     this.selectedStudent = null;
   }
 
-  openEditStudent(student: Student): void {
-    this.selectedStudent = { ...student };
-    this.showEditStudentModal = true;
-    this.closeStudentInfo();
+  openEditStudent(student: any): void {
+    // Clonamos el objeto para editar sin afectar la vista de lista inmediatamente
+    this.selectedStudent = JSON.parse(JSON.stringify(student)); 
+    this.showStudentInfoModal = false; // Cerramos info
+    this.showEditStudentModal = true;  // Abrimos edit
   }
 
   closeEditStudent(): void {
@@ -326,32 +328,26 @@ export class AdminGestionComponent implements OnInit {
   saveStudentChanges(): void {
     if (!this.selectedStudent) return;
 
-    this.http.put(
-      `${this.apiUrl}/admin/estudiantes/${this.selectedStudent.id_estudiante}`,
-      this.selectedStudent
-    ).subscribe({
-      next: () => {
-        alert('Estudiante actualizado exitosamente');
-        this.closeEditStudent();
-        this.loadStudents();
-      },
-      error: (error) => {
-        console.error('Error actualizando:', error);
-        alert('Error al actualizar estudiante');
-      }
-    });
+    this.http.put(`${this.apiUrl}/admin/estudiantes/${this.selectedStudent.id_estudiante}`, this.selectedStudent)
+      .subscribe({
+        next: () => {
+          alert('Estudiante actualizado exitosamente');
+          this.closeEditStudent();
+          this.loadStudents();
+        },
+        error: (err) => alert('Error al actualizar: ' + (err.error?.error || err.message))
+      });
   }
 
+  // Profesores
   openProfessorInfo(professor: Professor): void {
-    this.http.get(`${this.apiUrl}/admin/profesores/${professor.id_profesor}`).subscribe({
-      next: (response: any) => {
-        this.selectedProfessor = response;
+    this.http.get<Professor>(`${this.apiUrl}/admin/profesores/${professor.id_profesor}`).subscribe({
+      next: (data) => {
+        this.selectedProfessor = data;
         this.showProfessorInfoModal = true;
+        this.showEditProfessorModal = false;
       },
-      error: (error) => {
-        console.error('Error cargando profesor:', error);
-        alert('Error al cargar información');
-      }
+      error: () => alert('Error al cargar información')
     });
   }
 
@@ -374,22 +370,18 @@ export class AdminGestionComponent implements OnInit {
   saveProfessorChanges(): void {
     if (!this.selectedProfessor) return;
 
-    this.http.put(
-      `${this.apiUrl}/admin/profesores/${this.selectedProfessor.id_profesor}`,
-      this.selectedProfessor
-    ).subscribe({
-      next: () => {
-        alert('Profesor actualizado exitosamente');
-        this.closeEditProfessor();
-        this.loadProfessors();
-      },
-      error: (error) => {
-        console.error('Error actualizando:', error);
-        alert('Error al actualizar profesor');
-      }
-    });
+    this.http.put(`${this.apiUrl}/admin/profesores/${this.selectedProfessor.id_profesor}`, this.selectedProfessor)
+      .subscribe({
+        next: () => {
+          alert('Profesor actualizado exitosamente');
+          this.closeEditProfessor();
+          this.loadProfessors();
+        },
+        error: () => alert('Error al actualizar profesor')
+      });
   }
 
+  // Baja de Usuarios
   openBajaModal(): void {
     this.bajaNumUsuario = '';
     this.bajaConfirmacion = '';
@@ -398,131 +390,123 @@ export class AdminGestionComponent implements OnInit {
 
   closeBajaModal(): void {
     this.showBajaModal = false;
-    this.bajaNumUsuario = '';
-    this.bajaConfirmacion = '';
   }
 
   confirmarBaja(): void {
-    if (!this.bajaNumUsuario) {
-      alert('Ingresa el número de usuario');
+    if (!this.bajaNumUsuario || this.bajaConfirmacion.toLowerCase() !== 'confirmar') {
+      alert('Datos incorrectos');
       return;
     }
 
-    if (this.bajaConfirmacion.toLowerCase() !== 'confirmar') {
-      alert('Debes escribir "CONFIRMAR" para proceder');
-      return;
-    }
-
-    this.http.post(`${this.apiUrl}/admin/dar-baja`, {
-      num_usuario: this.bajaNumUsuario
-    }).subscribe({
-      next: (response: any) => {
-        alert(`Usuario dado de baja. Se eliminará el ${response.fecha_eliminacion}\nSe ha notificado a: ${response.email_notificacion}`);
-        this.closeBajaModal();
-        this.loadDashboardData();
-      },
-      error: (error) => {
-        console.error('Error dando de baja:', error);
-        alert(error.error?.error || 'Error al dar de baja');
-      }
-    });
+    this.http.post<any>(`${this.apiUrl}/admin/dar-baja`, { num_usuario: this.bajaNumUsuario })
+      .subscribe({
+        next: (res) => {
+          alert(`Usuario dado de baja. Se eliminará el ${res.fecha_eliminacion}\nNotificado a: ${res.email_notificacion}`);
+          this.closeBajaModal();
+          this.loadDashboardData();
+        },
+        error: (err) => alert(err.error?.error || 'Error al dar de baja')
+      });
   }
 
+  // --- Registro (Create) ---
   registerNewStudent(): void {
-    if (!this.newStudent.nombres || !this.newStudent.apellidoPaterno || 
-        !this.newStudent.curp || !this.newStudent.grado) {
+    if (!this.isStudentFormValid()) {
       alert('Por favor completa todos los campos obligatorios');
       return;
     }
 
-    this.http.post(`${this.apiUrl}/admin/registro-estudiante`, this.newStudent).subscribe({
-      next: (response: any) => {
-        alert(`Estudiante registrado exitosamente\n\nUsuario: ${response.num_usuario}\nContraseña temporal: ${response.password_temporal}\n\nSe han enviado las credenciales a:\n- ${this.newStudent.correoTutor} (Tutor)\n- Se generará correo institucional para el estudiante`);
+    this.http.post<any>(`${this.apiUrl}/admin/registro-estudiante`, this.newStudent).subscribe({
+      next: (res) => {
+        alert(`Estudiante registrado.\nUsuario: ${res.num_usuario}\nPass: ${res.password_temporal}`);
         this.clearForm();
         this.loadStudents();
         this.setMainTab('estudiantes');
       },
-      error: (error) => {
-        console.error('Error registrando:', error);
-        alert(error.error?.error || 'Error al registrar');
-      }
+      error: (err) => alert(err.error?.error || 'Error al registrar')
     });
   }
 
   registerNewProfessor(): void {
-    if (!this.newProfessor.nombres || !this.newProfessor.apellidoPaterno )
-      {
+    if (!this.isProfessorFormValid()) {
       alert('Por favor completa todos los campos obligatorios');
       return;
     }
 
-    this.http.post(`${this.apiUrl}/admin/registro-profesor`, this.newProfessor).subscribe({
-      next: (response: any) => {
-        alert(`Profesor registrado exitosamente\n\nUsuario: ${response.num_usuario}\nContraseña temporal: ${response.password_temporal}\n\nSe han enviado las credenciales a: ${this.newProfessor.correo}`);
+    this.http.post<any>(`${this.apiUrl}/admin/registro-profesor`, this.newProfessor).subscribe({
+      next: (res) => {
+        alert(`Profesor registrado.\nUsuario: ${res.num_usuario}\nPass: ${res.password_temporal}`);
         this.clearForm();
         this.loadProfessors();
         this.setMainTab('profesores');
       },
-      error: (error) => {
-        console.error('Error registrando:', error);
-        alert(error.error?.error || 'Error al registrar');
-      }
+      error: (err) => alert(err.error?.error || 'Error al registrar')
     });
+  }
+
+  // --- Helpers de Formulario ---
+  private getInitialStudentForm() {
+    return {
+      nombres: '', apellidoPaterno: '', apellidoMaterno: '',
+      fechaNacimiento: '', curp: '', telefono: '', semestre: '',
+      grupoId: null as number | null, tipoEstudiante: 'NUEVO_INGRESO',
+      nombreTutor: '', correoTutor: '', telefonoTutor: '',
+      estado: '', municipio: '', ciudad: '', codigoPostal: null as number | null,
+      observaciones: ''
+    };
+  }
+
+  private getInitialProfessorForm() {
+    return {
+      nombres: '', apellidoPaterno: '', apellidoMaterno: '',
+      correo: '', telefono: '',
+      nivelEducativo: '', especializacion: '', departamento: '',
+      puesto: '', tipoContrato: '', fechaInicio: '', salarioMensual: null as number | null,
+      subjects: [] as string[], availableDays: [] as string[], preferredSchedule: '',
+      maxHoursPerWeek: '', yearsExperience: '', certifications: '',
+      observaciones: ''
+    };
   }
 
   clearForm(): void {
     if (this.activeRegisterTab === 'estudiante') {
-      this.newStudent = {
-        nombres: '', apellidoPaterno: '', apellidoMaterno: '',
-        fechaNacimiento: '', curp: '', telefono: '', grado: '',
-        grupoId: null, tipoEstudiante: 'NUEVO_INGRESO',
-        nombreTutor: '', correoTutor: '', telefonoTutor: '',
-        estado: '', municipio: '', ciudad: '', codigoPostal: null,
-        observaciones: ''
-      };
+      this.newStudent = this.getInitialStudentForm();
     } else {
-      this.newProfessor = {
-        nombres: '', apellidoPaterno: '', apellidoMaterno: '',
-        correo: '', telefono: '',
-        nivelEducativo: '', especializacion: '', departamento: '',
-        puesto: '', tipoContrato: '', fechaInicio: '', salarioMensual: null,
-        subjects: [], availableDays: [], preferredSchedule: '',
-        maxHoursPerWeek: '', yearsExperience: '', certifications: '',
-        observaciones: ''
-      };
+      this.newProfessor = this.getInitialProfessorForm();
     }
   }
 
-  // Funciones para materias
+  private isStudentFormValid(): boolean {
+    const s = this.newStudent;
+    return !!(s.nombres && s.apellidoPaterno && s.curp && s.semestre && s.nombreTutor && s.correoTutor);
+  }
+
+  private isProfessorFormValid(): boolean {
+    const p = this.newProfessor;
+    return !!(p.nombres && p.apellidoPaterno && p.correo);
+  }
+
+  // --- Helpers UI ---
   isSubjectSelected(subject: string): boolean {
     return this.newProfessor.subjects.includes(subject);
   }
 
   toggleSubject(subject: string): void {
-    const index = this.newProfessor.subjects.indexOf(subject);
-    if (index > -1) {
-      this.newProfessor.subjects.splice(index, 1);
-    } else {
-      this.newProfessor.subjects.push(subject);
-    }
+    const idx = this.newProfessor.subjects.indexOf(subject);
+    idx > -1 ? this.newProfessor.subjects.splice(idx, 1) : this.newProfessor.subjects.push(subject);
   }
 
-  // Funciones para días
   isDaySelected(day: string): boolean {
     return this.newProfessor.availableDays.includes(day);
   }
 
   toggleDay(day: string): void {
-    const index = this.newProfessor.availableDays.indexOf(day);
-    if (index > -1) {
-      this.newProfessor.availableDays.splice(index, 1);
-    } else {
-      this.newProfessor.availableDays.push(day);
-    }
+    const idx = this.newProfessor.availableDays.indexOf(day);
+    idx > -1 ? this.newProfessor.availableDays.splice(idx, 1) : this.newProfessor.availableDays.push(day);
   }
 
   getDocumentProgressPercentage(student: Student): number {
-    if (student.documentos_requeridos === 0) return 0;
+    if (!student.documentos_requeridos) return 0;
     return (student.documentos_aprobados / student.documentos_requeridos) * 100;
   }
 
@@ -534,10 +518,9 @@ export class AdminGestionComponent implements OnInit {
   }
 
   getInitials(name: string): string {
+    if (!name) return '';
     const parts = name.split(' ');
-    return parts.length >= 2 ? 
-      (parts[0][0] + parts[1][0]).toUpperCase() : 
-      name.substring(0, 2).toUpperCase();
+    return parts.length >= 2 ? (parts[0][0] + parts[1][0]).toUpperCase() : name.substring(0, 2).toUpperCase();
   }
 
   loadNavigation(): void {
@@ -555,18 +538,12 @@ export class AdminGestionComponent implements OnInit {
   }
 
   getIcon(iconName: string): string {
-    const icons: { [key: string]: string } = {
-      'home': 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
-      'file-text': 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8',
-      'folder': 'M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z',
-      'user': 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'
-    };
-    return icons[iconName] || icons['file-text'];
+    return ICONS_MAP[iconName] || ICONS_MAP['file-text'];
   }
 
   logout(): void {
-    localStorage.clear();
+    localStorage.removeItem('token');
+    localStorage.removeItem('userData');
     this.router.navigate(['']);
   }
 }
-

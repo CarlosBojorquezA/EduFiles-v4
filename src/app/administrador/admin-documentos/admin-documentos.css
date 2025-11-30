@@ -6,6 +6,34 @@
   font-family: Vegur, 'PT Sans', Verdana, sans-serif;
 }
 
+/* Loading State */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 16px;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #1a1a1a;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-container p {
+  color: #6b7280;
+  font-size: 14px;
+}
+
 /* Header */
 .header {
   background-color: #000000;
@@ -748,6 +776,300 @@
 .btn-primary:hover {
   background-color: #1a1a1a;
   transform: translateY(-1px);
+}
+
+.btn-ia {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+}
+
+.btn-ia:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-ia:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Modal IA - Fondo del overlay más transparente */
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.6) !important; /* Menos opaco */
+}
+
+/* Modal IA */
+.modal-ia {
+  background: white;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 2001;
+}
+
+.modal-ia-header {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  padding: 32px 24px;
+  text-align: center;
+  color: white;
+  border-radius: 20px 20px 0 0;
+  border-bottom: 3px solid #404040;
+}
+
+.ia-icon {
+  width: 64px;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal-ia-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+}
+
+.modal-ia-body {
+  padding: 24px;
+}
+
+/* Sugerencia Principal */
+.ia-sugerencia {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: 2px solid;
+}
+
+.sugerencia-aprobar {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border-color: #10b981;
+}
+
+.sugerencia-rechazar {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border-color: #ef4444;
+}
+
+.sugerencia-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.sugerencia-aprobar .sugerencia-badge {
+  color: #047857;
+}
+
+.sugerencia-rechazar .sugerencia-badge {
+  color: #dc2626;
+}
+
+.confianza-badge {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-alta {
+  background: #10b981;
+  color: white;
+}
+
+.badge-media {
+  background: #f59e0b;
+  color: white;
+}
+
+.badge-baja {
+  background: #ef4444;
+  color: white;
+}
+
+/* Secciones */
+.ia-section {
+  margin-bottom: 24px;
+}
+
+.ia-section h3 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.info-item {
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.info-label {
+  display: block;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.info-value {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+/* Lista de Razones */
+.razones-list {
+  margin: 0;
+  padding-left: 24px;
+  list-style: none;
+}
+
+.razones-list li {
+  position: relative;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #1a1a1a;
+  line-height: 1.6;
+}
+
+.razones-list li::before {
+  content: "✓";
+  position: absolute;
+  left: -24px;
+  color: #10b981;
+  font-weight: bold;
+}
+
+/* Comentario Sugerido */
+.comentario-box {
+  padding: 16px;
+  background: #f8f9fa;
+  border-left: 4px solid #667eea;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1a1a1a;
+  line-height: 1.6;
+}
+
+/* Advertencia */
+.ia-warning {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  color: #9a3412;
+  font-size: 13px;
+}
+
+.ia-warning svg {
+  flex-shrink: 0;
+  color: #f59e0b;
+}
+
+/* Footer con Acciones - Tema Oscuro */
+.modal-ia-footer {
+  display: flex;
+  gap: 12px;
+  padding: 20px 24px;
+  background: #1a1a1a;
+  border-radius: 0 0 20px 20px;
+  border-top: 3px solid #404040;
+}
+
+.btn-ia-aprobar,
+.btn-ia-rechazar,
+.btn-ia-cancelar {
+  flex: 1;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-ia-aprobar {
+  background: #10b981;
+  color: white;
+}
+
+.btn-ia-aprobar:hover {
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-ia-rechazar {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-ia-rechazar:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-ia-cancelar {
+  background: #404040;
+  color: white;
+  border: 1px solid #555555;
+}
+
+.btn-ia-cancelar:hover {
+  background: #555555;
+  transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-ia-footer {
+    flex-direction: column;
+  }
+  
+  .ia-sugerencia {
+    flex-direction: column;
+    gap: 12px;
+  }
 }
 
 /* Bottom Navigation */

@@ -1,5 +1,4 @@
 <div class="gestion-container">
-  <!-- Header -->
   <header class="header">
     <div class="header-left">
       <div class="user-info">
@@ -8,7 +7,15 @@
         </div>
         <div class="user-details" id="user-details">
           <h3>{{ userName }}</h3>
-          <p>{{ userRole === 'administrador' ? 'Administrador' : userRole === 'estudiante' ? 'Estudiante' : 'Profesor' }}</p>
+          <p>
+            @if (userRole === 'administrador') {
+              Administrador
+            } @else if (userRole === 'estudiante') {
+              Estudiante
+            } @else {
+              Profesor
+            }
+          </p>
         </div>
       </div>
     </div>
@@ -24,11 +31,15 @@
     </div>
   </header>
 
-  <!-- Main Content -->
+  @if (isLoading) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Cargando datos...</p>
+    </div>
+  }
   <main class="main-content">
     <h1 class="page-title">Centro de Gestión</h1>
 
-    <!-- Main Tabs -->
     <div class="main-tabs">
       <button 
         class="main-tab"
@@ -56,1303 +67,1342 @@
       </button>
     </div>
 
-    <!-- RESUMEN TAB -->
-    <div *ngIf="activeMainTab === 'resumen'" class="tab-content">
-      <!-- Stats Grid -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <svg class="stat-icon" style="color: #3b82f6;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"></path>
-          </svg>
-          <div class="stat-info">
-            <h2>{{ totalStudents }}</h2>
-            <p>Estudiantes</p>
-            <span class="stat-label">Total registrados</span>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <svg class="stat-icon" style="color: #10b981;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
-          </svg>
-          <div class="stat-info">
-            <h2>{{ totalProfessors }}</h2>
-            <p>Profesores</p>
-            <span class="stat-label">Personal docente</span>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <svg class="stat-icon" style="color: #f59e0b;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-          <div class="stat-info">
-            <h2>{{ pendingRegistrations }}</h2>
-            <p>Pendientes</p>
-            <span class="stat-label">Registros pendientes</span>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <svg class="stat-icon" style="color: #8b5cf6;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-          </svg>
-          <div class="stat-info">
-            <h2>{{ activeUsers }}</h2>
-            <p>Activos</p>
-            <span class="stat-label">Usuarios activos</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick Actions -->
-      <div class="quick-actions-section">
-        <h3>Acciones Rápidas</h3>
-        <div class="quick-actions-list">
-          <button class="quick-action-btn" (click)="setMainTab('registrar'); setRegisterTab('estudiante')">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="8.5" cy="7" r="4"></circle>
-              <line x1="20" y1="8" x2="20" y2="14"></line>
-              <line x1="23" y1="11" x2="17" y2="11"></line>
+    @if (activeMainTab === 'resumen') {
+      <div class="tab-content">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <svg class="stat-icon" style="color: #3b82f6;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"></path>
             </svg>
-            <span>Registrar Nuevo Estudiante</span>
-          </button>
+            <div class="stat-info">
+              <h2>{{ totalStudents }}</h2>
+              <p>Estudiantes</p>
+              <span class="stat-label">Total registrados</span>
+            </div>
+          </div>
 
-          <button class="quick-action-btn" (click)="setMainTab('registrar'); setRegisterTab('profesor')">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <div class="stat-card">
+            <svg class="stat-icon" style="color: #10b981;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
               <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
             </svg>
-            <span>Registrar Nuevo Profesor</span>
-          </button>
-
-          <button class="quick-action-btn" (click)="setMainTab('estudiantes')">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.35-4.35"></path>
-            </svg>
-            <span>Buscar Estudiantes</span>
-          </button>
-
-          <button class="quick-action-btn" (click)="openBajaModal()" style="background: #fee; border-color: #fcc;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e11" stroke-width="2">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
-            <span style="color: #e11;">Dar de Baja Usuario</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-<!-- ESTUDIANTES TAB -->
-    <div *ngIf="activeMainTab === 'estudiantes'" class="tab-content">
-
-      <!-- Search Input -->
-      <div class="search-input-wrapper">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"></circle>
-          <path d="m21 21-4.35-4.35"></path>
-        </svg>
-        <input 
-          type="text" 
-          [(ngModel)]="searchQuery"
-          (ngModelChange)="applyFilters()"
-          placeholder="Buscar por nombre, email o número de cuenta..."
-          class="search-input">
-      </div>
-
-      <!-- Filters -->
-      <div class="filters-grid">
-        <div class="filter-group">
-          <label>Grado</label>
-          <select [(ngModel)]="selectedGrade" (ngModelChange)="applyFilters()" class="filter-select">
-            <option value="all">Todos los grados</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <label>Grupo</label>
-          <select [(ngModel)]="selectedGroup" (ngModelChange)="applyFilters()" class="filter-select">
-            <option value="all">Todos los grupos</option>
-            <option value="A">A</option>
-            <option value="B">B</option>
-            <option value="C">C</option>
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <label>Estado</label>
-          <select [(ngModel)]="selectedStatus" (ngModelChange)="applyFilters()" class="filter-select">
-            <option value="all">Todos los estados</option>
-            <option value="active">Activo</option>
-            <option value="inactive">Inactivo</option>
-            <option value="reentry">Reingreso</option>
-            <option value="new">Nuevo Ingreso</option>
-          </select>
-        </div>
-      </div>
-
-      <p class="results-count">Mostrando {{ filteredStudents.length }} de {{ students.length }} estudiantes</p>
-
-      <!-- Loading State -->
-      <div *ngIf="isLoading" style="text-align: center; padding: 40px;">
-        <p>Cargando estudiantes...</p>
-      </div>
-
-      <!-- Students List -->
-      <div class="users-list" *ngIf="!isLoading">
-        <div class="user-card" *ngFor="let student of filteredStudents" (click)="openStudentInfo(student)">
-          <div class="user-header">
-            <div class="user-main-info">
-              <div class="user-avatar">
-                <span>{{ getInitials(student.nombre_completo) }}</span>
-              </div>
-              <div class="user-details">
-                <h3>{{ student.nombre_completo }}</h3>
-                <p class="user-account">{{ student.num_usuario }}</p>
-                <p class="user-career">{{ student.grado }}° Grado<span *ngIf="student.grupo_id"> • Grupo {{ student.grupo_id }}</span></p>
-                <span class="user-email">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                    <polyline points="22,6 12,13 2,6"></polyline>
-                  </svg>
-                  {{ student.correo }}
-                </span>
-              </div>
+            <div class="stat-info">
+              <h2>{{ totalProfessors }}</h2>
+              <p>Profesores</p>
+              <span class="stat-label">Personal docente</span>
             </div>
-            <span class="status-badge" 
-              [class.active]="student.activo === 1" 
-              [class.reentry]="student.tipo_estudiante === 'REINGRESO'"
-              [class.new]="student.tipo_estudiante === 'NUEVO_INGRESO'">
-              {{ getStatusLabel(student) }}
-            </span>
           </div>
 
-          <!-- Documents Progress -->
-          <div class="documents-progress">
-            <div class="progress-header">
-              <span class="progress-label">Documentos:</span>
-              <span class="progress-fraction">{{ student.documentos_aprobados }}/{{ student.documentos_requeridos }}</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="getDocumentProgressPercentage(student)"></div>
+          <div class="stat-card">
+            <svg class="stat-icon" style="color: #8b5cf6;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+            <div class="stat-info">
+              <h2>{{ activeUsers }}</h2>
+              <p>Activos</p>
+              <span class="stat-label">Usuarios activos</span>
             </div>
           </div>
         </div>
 
-        <!-- Empty State -->
-        <div *ngIf="filteredStudents.length === 0" style="text-align: center; padding: 40px; color: #666;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin: 0 auto 16px; opacity: 0.3;">
+        <div class="quick-actions-section">
+          <h3>Acciones Rápidas</h3>
+          <div class="quick-actions-list">
+            <button class="quick-action-btn" (click)="setMainTab('registrar'); setRegisterTab('estudiante')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <line x1="20" y1="8" x2="20" y2="14"></line>
+                <line x1="23" y1="11" x2="17" y2="11"></line>
+              </svg>
+              <span>Registrar Nuevo Estudiante</span>
+            </button>
+
+            <button class="quick-action-btn" (click)="setMainTab('registrar'); setRegisterTab('profesor')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+              </svg>
+              <span>Registrar Nuevo Profesor</span>
+            </button>
+
+            <button class="quick-action-btn" (click)="setMainTab('estudiantes')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+              <span>Buscar Estudiantes</span>
+            </button>
+
+            <button class="quick-action-btn" (click)="openBajaModal()" style="background: #fee; border-color: #fcc;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e11" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span style="color: #e11;">Dar de Baja Usuario</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  
+    @if (activeMainTab === 'estudiantes') {
+      <div class="tab-content">
+        <h3 class="section-subtitle">Gestión de Estudiantes</h3>
+        <p class="section-description">Lista completa de los estudiantes</p>
+
+        <div class="search-input-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"></circle>
             <path d="m21 21-4.35-4.35"></path>
           </svg>
-          <p>No se encontraron estudiantes con los filtros seleccionados</p>
+          <input 
+            type="text" 
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="applyFilters()"
+            placeholder="Buscar por nombre, email o número de cuenta..."
+            class="search-input">
         </div>
-      </div>
-    </div>
 
-<!-- PROFESORES TAB -->
-    <div *ngIf="activeMainTab === 'profesores'" class="tab-content">
-      <h3 class="section-subtitle">Gestión de Profesores</h3>
-      <p class="section-description">Lista completa del personal docente</p>
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label>Semestres</label>
+            <select [(ngModel)]="selectedGrade" (ngModelChange)="applyFilters()" class="filter-select">
+              <option value="all">Todos los semestres</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+            </select>
+          </div>
 
-      <!-- Search Input for Professors -->
-      <div class="search-input-wrapper">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"></circle>
-          <path d="m21 21-4.35-4.35"></path>
-        </svg>
-        <input 
-          type="text" 
-          [(ngModel)]="searchQueryProf"
-          (ngModelChange)="applyProfessorSearch()"
-          placeholder="Buscar por nombre, email o número de usuario..."
-          class="search-input">
-      </div>
+          <div class="filter-group">
+            <label>Grupo</label>
+            <select [(ngModel)]="selectedGroup" (ngModelChange)="applyFilters()" class="filter-select">
+              <option value="all">Todos los grupos</option>
+              <option value="1">Grupo 01</option>
+              <option value="2">Grupo 02</option>
+              <option value="3">Grupo 03</option>
+              <option value="4">Grupo 04</option>
+            </select>
+          </div>
 
-      <p class="results-count">Mostrando {{ filteredProfessors.length }} profesores</p>
+          <div class="filter-group">
+            <label>Estado</label>
+            <select [(ngModel)]="selectedStatus" (ngModelChange)="applyFilters()" class="filter-select">
+              <option value="all">Todos los estados</option>
+              <option value="reentry">Reingreso</option>
+              <option value="new">Nuevo Ingreso</option>
+            </select>
+          </div>
+        </div>
 
-      <!-- Loading State -->
-      <div *ngIf="isLoading" style="text-align: center; padding: 40px;">
-        <p>Cargando profesores...</p>
-      </div>
+        <p class="results-count">Mostrando {{ filteredStudents.length }} de {{ students.length }} estudiantes</p>
 
-      <!-- Professors List -->
-      <div class="professors-list" *ngIf="!isLoading">
-        <div class="professor-card" *ngFor="let professor of filteredProfessors">
-          <div class="professor-header">
-            <div class="professor-info">
-              <div class="user-avatar" style="display: inline-block; margin-right: 12px;">
-                <span>{{ getInitials(professor.nombre_completo) }}</span>
+        @if (isLoading) {
+          <div style="text-align: center; padding: 40px;">
+            <p>Cargando estudiantes...</p>
+          </div>
+        } @else {
+          <div class="users-list">
+            @for (student of filteredStudents; track student.num_usuario) {
+              <div class="user-card" (click)="openStudentInfo(student)">
+                <div class="user-header">
+                  <div class="user-main-info">
+                    <div class="user-avatar">
+                      <span>{{ getInitials(student.nombre_completo) }}</span>
+                    </div>
+                    <div class="user-details">
+                      <h3>{{ student.nombre_completo }}</h3>
+                      <p class="user-account">{{ student.num_usuario }}</p>
+                      <p class="user-career">{{ student.semestre }}° Semestre
+                        @if (student.grupo_id) {
+                          <span> • Grupo {{ student.grupo_id }}</span>
+                        }
+                      </p>
+                      <span class="user-email">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                          <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        {{ student.correo }}
+                      </span>
+                    </div>
+                  </div>
+                  <span class="status-badge" 
+                    [class.active]="student.activo === 1" 
+                    [class.reentry]="student.tipo_estudiante === 'REINGRESO'"
+                    [class.new]="student.tipo_estudiante === 'NUEVO_INGRESO'">
+                    {{ getStatusLabel(student) }}
+                  </span>
+                </div>
+
+                <div class="documents-progress">
+                  <div class="progress-header">
+                    <span class="progress-label">Documentos:</span>
+                    <span class="progress-fraction">{{ student.documentos_aprobados }}/{{ student.documentos_requeridos }}</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill" [style.width.%]="getDocumentProgressPercentage(student)"></div>
+                  </div>
+                </div>
               </div>
-              <div style="display: inline-block; vertical-align: top;">
-                <h3>{{ professor.nombre_completo }}</h3>
-                <p class="professor-title">{{ professor.num_usuario }}</p>
-                <p class="professor-department" *ngIf="professor.licenciatura">{{ professor.licenciatura }}</p>
+            } @empty {
+              <div style="text-align: center; padding: 40px; color: #666;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin: 0 auto 16px; opacity: 0.3;">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <p>No se encontraron estudiantes con los filtros seleccionados</p>
               </div>
-            </div>
-            <span class="status-badge" [class.active]="professor.activo === 1">
-              {{ professor.activo === 1 ? 'Activo' : 'Inactivo' }}
-            </span>
+            }
           </div>
-          <div class="professor-details">
-            <p class="professor-email">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                <polyline points="22,6 12,13 2,6"></polyline>
-              </svg>
-              {{ professor.correo }}
-            </p>
-            <p *ngIf="professor.telefono" class="professor-phone">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-              </svg>
-              {{ professor.telefono }}
-            </p>
-            <p *ngIf="professor.materias_asignadas && professor.materias_asignadas.length > 0" class="professor-subjects">
-              <strong>Materias:</strong> {{ professor.materias_asignadas.join(', ') }}
-            </p>
-            <p *ngIf="professor.grupos_asignados && professor.grupos_asignados.length > 0" class="professor-groups">
-              <strong>Grupos:</strong> {{ professor.grupos_asignados.length }} grupos asignados
-            </p>
-          </div>
-          <div class="professor-actions">
-            <button class="btn-secondary" (click)="openProfessorInfo(professor)">Ver Detalles</button>
-            <button class="btn-primary" (click)="openEditProfessor(professor)">Editar</button>
-          </div>
-        </div>
-
-        <!-- Empty State -->
-        <div *ngIf="filteredProfessors.length === 0" style="text-align: center; padding: 40px; color: #666;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin: 0 auto 16px; opacity: 0.3;">
-            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
-          </svg>
-          <p>No se encontraron profesores</p>
-        </div>
+        }
       </div>
-    </div>
+    }
 
-   <!-- REGISTRAR TAB -->
-    <div *ngIf="activeMainTab === 'registrar'" class="tab-content">
-      <!-- Register Tabs -->
-      <div class="register-tabs">
-        <button 
-          class="register-tab"
-          [class.active]="activeRegisterTab === 'estudiante'"
-          (click)="setRegisterTab('estudiante')">
-          Registrar Estudiante
-        </button>
-        <button 
-          class="register-tab"
-          [class.active]="activeRegisterTab === 'profesor'"
-          (click)="setRegisterTab('profesor')">
-          Registrar Profesor
-        </button>
-      </div>
+    @if (activeMainTab === 'profesores') {
+      <div class="tab-content">
+        <h3 class="section-subtitle">Gestión de Profesores</h3>
+        <p class="section-description">Lista completa del personal docente</p>
 
-      <!-- Register Student Form -->
-      <div *ngIf="activeRegisterTab === 'estudiante'" class="register-form">
-        <h3 class="form-section-title">
+        <div class="search-input-wrapper">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="8.5" cy="7" r="4"></circle>
-            <line x1="20" y1="8" x2="20" y2="14"></line>
-            <line x1="23" y1="11" x2="17" y2="11"></line>
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
           </svg>
-          Registro de Nuevo Estudiante
-        </h3>
+          <input 
+            type="text" 
+            [(ngModel)]="searchQueryProf"
+            (ngModelChange)="applyProfessorSearch()"
+            placeholder="Buscar por nombre, email o número de usuario..."
+            class="search-input">
+        </div>
 
-        <!-- Datos Personales -->
-        <div class="form-section">
-          <h4>Datos Personales</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Nombre(s) *</label>
-              <input type="text" [(ngModel)]="newStudent.nombres" placeholder="Ej: María Elena" class="form-input">
-            </div>
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label>Departamento</label>
+            <select [(ngModel)]="selectedProfDept" (ngModelChange)="applyProfessorFilters()" class="filter-select">
+              <option value="all">Todos</option>
+              <option value="Ciencias Exactas">Ciencias Exactas</option>
+              <option value="ingenieria">Ingeniería</option>
+              <option value="Humanidades">Humanidades</option>
+              <option value="Ciencias Sociales">Ciencias Sociales</option>
+              <option value="Ciencias Naturales">Ciencias Naturales</option>
+              <option value="Idiomas">Idiomas</option>
+              <option value="Tecnología">Tecnología</option>
+            </select>
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Apellido Paterno *</label>
-              <input type="text" [(ngModel)]="newStudent.apellidoPaterno" placeholder="Ej: García" class="form-input">
-            </div>
+
+          <div class="filter-group">
+            <label>Contrato</label>
+            <select [(ngModel)]="selectedProfContract" (ngModelChange)="applyProfessorFilters()" class="filter-select">
+              <option value="all">Todos</option>
+              <option value="tiempo-completo">Tiempo Completo</option>
+              <option value="medio-tiempo">Medio Tiempo</option>
+              <option value="por-horas">Por Horas</option>
+            </select>
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Apellido Materno *</label>
-              <input type="text" [(ngModel)]="newStudent.apellidoMaterno" placeholder="Ej: López" class="form-input">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Fecha de Nacimiento *</label>
-              <input type="text" [(ngModel)]="newStudent.fechaNacimiento" placeholder="dd/mm/aaaa" class="form-input">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>CURP *</label>
-              <input type="text" [(ngModel)]="newStudent.curp" placeholder="GAML850925HDFRPR01" class="form-input">
-            </div>
+
+          <div class="filter-group">
+            <label>Estado</label>
+            <select [(ngModel)]="selectedProfStatus" (ngModelChange)="applyProfessorFilters()" class="filter-select">
+              <option value="all">Todos</option>
+              <option value="1">Activo</option>
+              <option value="0">Inactivo</option>
+            </select>
           </div>
         </div>
 
-        <!-- Datos de Contacto -->
-        <div class="form-section">
-          <h4>Datos de Contacto</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Teléfono</label>
-              <input type="tel" [(ngModel)]="newStudent.telefono" placeholder="+52 555 123 4567" class="form-input">
-            </div>
-          </div>
-          <div class="form-row two-cols">
-            <div class="form-group">
-              <label>Ciudad</label>
-              <input type="text" [(ngModel)]="newStudent.ciudad" placeholder="Ej: Ciudad de México" class="form-input">
-            </div>
-            <div class="form-group">
-              <label>Código Postal</label>
-              <input type="number" [(ngModel)]="newStudent.codigoPostal" placeholder="12345" class="form-input">
-            </div>
-          </div>
-          <div class="form-row two-cols">
-            <div class="form-group">
-              <label>Estado</label>
-              <input type="text" [(ngModel)]="newStudent.estado" placeholder="Ej: CDMX" class="form-input">
-            </div>
-            <div class="form-group">
-              <label>Municipio</label>
-              <input type="text" [(ngModel)]="newStudent.municipio" placeholder="Ej: Benito Juárez" class="form-input">
-            </div>
-          </div>
-        </div>
+        <p class="results-count">Mostrando {{ filteredProfessors.length }} profesores</p>
 
-        <!-- Datos Académicos -->
-        <div class="form-section">
-          <h4>Datos Académicos</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Tipo de Estudiante *</label>
-              <div class="radio-group">
-                <label class="radio-label">
-                  <input type="radio" [(ngModel)]="newStudent.tipoEstudiante" value="NUEVO_INGRESO" name="studentType">
-                  <span>Nuevo Ingreso</span>
-                </label>
-                <label class="radio-label">
-                  <input type="radio" [(ngModel)]="newStudent.tipoEstudiante" value="REINGRESO" name="studentType">
-                  <span>Reingreso</span>
-                </label>
+        @if (isLoading) {
+          <div style="text-align: center; padding: 40px;">
+            <p>Cargando profesores...</p>
+          </div>
+        } @else {
+          <div class="professors-list">
+            @for (professor of filteredProfessors; track professor.num_usuario) {
+              <div class="professor-card">
+                <div class="professor-header">
+                  <div class="professor-info">
+                    <div class="user-avatar" style="display: inline-block; margin-right: 12px;">
+                      <span>{{ getInitials(professor.nombre_completo) }}</span>
+                    </div>
+                    <div style="display: inline-block; vertical-align: top;">
+                      <h3>{{ professor.nombre_completo }}</h3>
+                      <p class="professor-title">{{ professor.num_usuario }}</p>
+                      @if (professor.licenciatura) {
+                        <p class="professor-department">{{ professor.licenciatura }}</p>
+                      }
+                    </div>
+                  </div>
+                  <span class="status-badge" [class.active]="professor.activo === 1">
+                    {{ professor.activo === 1 ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </div>
+                <div class="professor-details">
+                  <p class="professor-email">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                      <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                    {{ professor.correo }}
+                  </p>
+                  @if (professor.telefono) {
+                    <p class="professor-phone">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                      </svg>
+                      {{ professor.telefono }}
+                    </p>
+                  }
+                  @if (professor.materias_asignadas && professor.materias_asignadas.length > 0) {
+                    <p class="professor-subjects">
+                      <strong>Materias:</strong> {{ professor.materias_asignadas.join(', ') }}
+                    </p>
+                  }
+                  @if (professor.grupos_asignados && professor.grupos_asignados.length > 0) {
+                    <p class="professor-groups">
+                      <strong>Grupos:</strong> {{ professor.grupos_asignados.length }} grupos asignados
+                    </p>
+                  }
+                </div>
+                <div class="professor-actions">
+                  <button class="btn-secondary" (click)="openProfessorInfo(professor)">Ver Detalles</button>
+                  <button class="btn-primary" (click)="openEditProfessor(professor)">Editar</button>
+                </div>
               </div>
-            </div>
+            } @empty {
+              <div style="text-align: center; padding: 40px; color: #666;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin: 0 auto 16px; opacity: 0.3;">
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                  <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                </svg>
+                <p>No se encontraron profesores</p>
+              </div>
+            }
           </div>
-          <div class="form-row two-cols">
-            <div class="form-group">
-              <label>Semestre *</label>
-              <select [(ngModel)]="newStudent.grado" class="form-input">
-                <option value="">Semestre</option>
-                <option value="1">1° Semestre</option>
-                <option value="2">2° Semestre</option>
-                <option value="3">3° Semestre</option>
-                <option value="4">4° Semestre</option>
-                <option value="5">5° Semestre</option>
-                <option value="6">6° Semestre</option>
-                <option value="7">7° Semestre</option>
-                <option value="8">8° Semestre</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Grupo</label>
-              <select [(ngModel)]="newStudent.grupoId" class="form-input">
-                <option [ngValue]="null">Sin Grupo</option>
-                <option [ngValue]="1">Grupo A</option>
-                <option [ngValue]="2">Grupo B</option>
-                <option [ngValue]="3">Grupo C</option>
-              </select>
-            </div>
-          </div>
-        </div>
+        }
+      </div>
+    }
 
-        <!-- Datos del Tutor/Responsable -->
-        <div class="form-section">
-          <h4>Datos del Tutor/Responsable</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Nombre Completo del Tutor *</label>
-              <input type="text" [(ngModel)]="newStudent.nombreTutor" placeholder="Nombre completo del responsable" class="form-input">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Email del Tutor *</label>
-              <input type="email" [(ngModel)]="newStudent.correoTutor" placeholder="tutor@email.com" class="form-input">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Teléfono del Tutor *</label>
-              <input type="tel" [(ngModel)]="newStudent.telefonoTutor" placeholder="+52 555 123 4567" class="form-input">
-            </div>
-          </div>
-        </div>
-
-        <!-- Observaciones -->
-        <div class="form-section">
-          <h4>Observaciones</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Observaciones Adicionales</label>
-              <textarea 
-                [(ngModel)]="newStudent.observaciones" 
-                placeholder="Cualquier información adicional relevante sobre el estudiante (condiciones médicas, necesidades especiales, situación familiar, etc.)"
-                rows="4" 
-                class="form-input"
-                style="resize: vertical; min-height: 80px;"></textarea>
-              <small style="color: #666;">Este campo es opcional pero puede contener información importante para el seguimiento del estudiante</small>
-            </div>
-          </div>
-        </div>
-
-        <!-- Form Actions -->
-        <div class="form-actions">
-          <button class="btn-primary-large" (click)="registerNewStudent()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-              <polyline points="17 21 17 13 7 13 7 21"></polyline>
-              <polyline points="7 3 7 8 15 8"></polyline>
-            </svg>
+    @if (activeMainTab === 'registrar') {
+      <div class="tab-content">
+        <div class="register-tabs">
+          <button 
+            class="register-tab"
+            [class.active]="activeRegisterTab === 'estudiante'"
+            (click)="setRegisterTab('estudiante')">
             Registrar Estudiante
           </button>
-          <button class="btn-secondary-large" (click)="clearForm()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="1 4 1 10 7 10"></polyline>
-              <polyline points="23 20 23 14 17 14"></polyline>
-              <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
-            </svg>
-            Limpiar
-          </button>
-        </div>
-
-        <div class="info-box" style="margin-top: 16px; padding: 12px; background: #e8f4fd; border-left: 4px solid #2196f3; border-radius: 4px;">
-          <p style="margin: 0; color: #1565c0; font-size: 14px;">
-            📧 <strong>Nota:</strong> Al registrar al estudiante, se enviarán automáticamente las credenciales de acceso al correo del tutor y se generará un correo institucional para el estudiante.
-          </p>
-        </div>
-      </div>
-
-      <!-- Register Professor Form - COMPLETO -->
-      <div *ngIf="activeRegisterTab === 'profesor'" class="register-form">
-        <h3 class="form-section-title">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
-          </svg>
-          Registro de Nuevo Profesor
-        </h3>
-
-        <!-- Datos Personales -->
-        <div class="form-section">
-          <h4>Datos Personales</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Nombre(s) *</label>
-              <input type="text" [(ngModel)]="newProfessor.nombres" placeholder="Ej: Ana Elena" class="form-input">
-            </div>
-          </div>
-          <div class="form-row two-cols">
-            <div class="form-group">
-              <label>Apellido Paterno *</label>
-              <input type="text" [(ngModel)]="newProfessor.apellidoPaterno" placeholder="Ej: López" class="form-input">
-            </div>
-            <div class="form-group">
-              <label>Apellido Materno *</label>
-              <input type="text" [(ngModel)]="newProfessor.apellidoMaterno" placeholder="Ej: Mendoza" class="form-input">
-            </div>
-          </div>
-        </div>
-
-        <!-- Datos de Contacto -->
-        <div class="form-section">
-          <h4>Datos de Contacto</h4>
-          <div class="form-row">
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Email Personal</label>
-              <input type="email" [(ngModel)]="newProfessor.correo" placeholder="personal@email.com" class="form-input">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Teléfono</label>
-              <input type="tel" [(ngModel)]="newProfessor.telefono" placeholder="+52 555 123 4567" class="form-input">
-            </div>
-          </div>
-        </div>
-
-        <!-- Datos Profesionales -->
-        <div class="form-section">
-          <h4>Datos Profesionales</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Departamento</label>
-              <select [(ngModel)]="newProfessor.departamento" class="form-input">
-                <option value="">Selecciona un departamento</option>
-                <option value="ciencias-exactas">Ciencias Exactas</option>
-                <option value="ingenieria">Ingeniería</option>
-                <option value="humanidades">Humanidades</option>
-                <option value="ciencias-sociales">Ciencias Sociales</option>
-                <option value="artes">Artes</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Puesto</label>
-              <select [(ngModel)]="newProfessor.puesto" class="form-input">
-                <option value="">Selecciona un puesto</option>
-                <option value="profesor-titular">Profesor Titular</option>
-                <option value="profesor-asociado">Profesor Asociado</option>
-                <option value="profesor-auxiliar">Profesor Auxiliar</option>
-                <option value="profesor-invitado">Profesor Invitado</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Tipo de Contrato</label>
-              <select [(ngModel)]="newProfessor.tipoContrato" class="form-input">
-                <option value="">Selecciona tipo de contrato</option>
-                <option value="tiempo-completo">Tiempo Completo</option>
-                <option value="medio-tiempo">Medio Tiempo</option>
-                <option value="por-horas">Por Horas</option>
-                <option value="temporal">Temporal</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row two-cols">
-            <div class="form-group">
-              <label>Fecha de Inicio</label>
-              <input type="date" [(ngModel)]="newProfessor.fechaInicio" class="form-input">
-            </div>
-            <div class="form-group">
-              <label>Salario Mensual</label>
-              <input type="number" [(ngModel)]="newProfessor.salarioMensual" placeholder="25000" class="form-input">
-            </div>
-          </div>
-        </div>
-
-        <!-- Datos Académicos -->
-        <div class="form-section">
-          <h4>Datos Académicos</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Nivel Educativo</label>
-              <select [(ngModel)]="newProfessor.nivelEducativo" class="form-input">
-                <option value="">Selecciona nivel educativo</option>
-                <option value="licenciatura">Licenciatura</option>
-                <option value="maestria">Maestría</option>
-                <option value="doctorado">Doctorado</option>
-                <option value="posdoctorado">Posdoctorado</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Especialización/Área de Estudios</label>
-              <input type="text" [(ngModel)]="newProfessor.especializacion" placeholder="Ej: Matemáticas Aplicadas; Literatura Contemporánea..." class="form-input">
-            </div>
-          </div>
-
-          <!-- Materias que puede impartir -->
-          <div class="form-row">
-            <div class="form-group">
-              <label>Materias que puede impartir *</label>
-              <div class="checkbox-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin-top: 8px;">
-                <label class="checkbox-label" *ngFor="let subject of availableSubjects" style="display: flex; align-items: center; padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer; transition: all 0.2s;" [style.background]="isSubjectSelected(subject) ? '#eff6ff' : '#fff'" [style.border-color]="isSubjectSelected(subject) ? '#3b82f6' : '#e5e7eb'">
-                  <input type="checkbox" 
-                    [checked]="isSubjectSelected(subject)"
-                    (change)="toggleSubject(subject)"
-                    style="margin-right: 8px;">
-                  <span style="font-size: 14px;">{{ subject }}</span>
-                </label>
-              </div>
-              <p class="selected-count" style="margin-top: 12px; color: #3b82f6; font-size: 14px; font-weight: 500;">
-                ✓ Materias seleccionadas: {{ newProfessor.subjects.length }}
-              </p>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Años de Experiencia</label>
-              <input type="number" [(ngModel)]="newProfessor.yearsExperience" placeholder="Ej: 5" class="form-input" min="0">
-            </div>
-          </div>
-        </div>
-
-        <!-- Certificaciones y Logros -->
-        <div class="form-section">
-          <h4>Certificaciones y Logros</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Certificaciones, Publicaciones y Reconocimientos</label>
-              <textarea 
-                [(ngModel)]="newProfessor.certifications" 
-                placeholder="Ejemplo:&#10;- Certificación en Pedagogía Moderna (2020)&#10;- Publicación: 'Metodologías activas en el aula' - Revista Educación (2021)&#10;- Reconocimiento al Mejor Docente (2022)"
-                rows="5" 
-                class="form-input"
-                style="resize: vertical; min-height: 100px;"></textarea>
-              <small style="color: #666;">Lista certificaciones, cursos, publicaciones, reconocimientos académicos, etc.</small>
-            </div>
-          </div>
-        </div>
-
-        <!-- Horarios y Disponibilidad -->
-        <div class="form-section">
-          <h4>Horarios y Disponibilidad</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Horario Preferido</label>
-              <select [(ngModel)]="newProfessor.preferredSchedule" class="form-input">
-                <option value="">Selecciona horario preferido</option>
-                <option value="matutino">Matutino (7:00 - 13:00)</option>
-                <option value="vespertino">Vespertino (13:00 - 19:00)</option>
-                <option value="nocturno">Nocturno (19:00 - 22:00)</option>
-                <option value="mixto">Mixto</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Días disponibles -->
-          <div class="form-row">
-            <div class="form-group">
-              <label>Días disponibles</label>
-              <div class="checkbox-grid days-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-top: 8px;">
-                <label class="checkbox-label" *ngFor="let day of availableDays" style="display: flex; align-items: center; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer; transition: all 0.2s;" [style.background]="isDaySelected(day.value) ? '#dcfce7' : '#fff'" [style.border-color]="isDaySelected(day.value) ? '#10b981' : '#e5e7eb'">
-                  <input type="checkbox" 
-                    [checked]="isDaySelected(day.value)"
-                    (change)="toggleDay(day.value)"
-                    style="margin-right: 8px;">
-                  <span style="font-size: 14px; font-weight: 500;">{{ day.label }}</span>
-                </label>
-              </div>
-              <p class="selected-count" style="margin-top: 12px; color: #10b981; font-size: 14px; font-weight: 500;">
-                ✓ Días seleccionados: {{ newProfessor.availableDays.length }}
-              </p>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Máximo de Horas por Semana</label>
-              <input type="number" [(ngModel)]="newProfessor.maxHoursPerWeek" placeholder="Ej: 40" class="form-input" min="1" max="60">
-              <small style="color: #666;">Número máximo de horas que puede impartir clases por semana</small>
-            </div>
-          </div>
-        </div>
-
-        <!-- Observaciones -->
-        <div class="form-section">
-          <h4>Observaciones</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Observaciones Adicionales</label>
-              <textarea 
-                [(ngModel)]="newProfessor.observaciones" 
-                placeholder="Cualquier información adicional relevante sobre el profesor (intereses especiales, metodologías preferidas, disponibilidad para actividades extracurriculares, etc.)"
-                rows="4" 
-                class="form-input"
-                style="resize: vertical; min-height: 80px;"></textarea>
-              <small style="color: #666;">Este campo es opcional pero puede contener información importante para la asignación de materias y grupos</small>
-            </div>
-          </div>
-        </div>
-
-        <!-- Form Actions -->
-        <div class="form-actions">
-          <button class="btn-primary-large" (click)="registerNewProfessor()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-              <polyline points="17 21 17 13 7 13 7 21"></polyline>
-              <polyline points="7 3 7 8 15 8"></polyline>
-            </svg>
+          <button 
+            class="register-tab"
+            [class.active]="activeRegisterTab === 'profesor'"
+            (click)="setRegisterTab('profesor')">
             Registrar Profesor
           </button>
-          <button class="btn-secondary-large" (click)="clearForm()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="1 4 1 10 7 10"></polyline>
-              <polyline points="23 20 23 14 17 14"></polyline>
-              <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+        </div>
+
+        @if (activeRegisterTab === 'estudiante') {
+          <div class="register-form">
+            <h3 class="form-section-title">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <line x1="20" y1="8" x2="20" y2="14"></line>
+                <line x1="23" y1="11" x2="17" y2="11"></line>
+              </svg>
+              Registro de Nuevo Estudiante
+            </h3>
+
+            <div class="form-section">
+              <h4>Datos Personales</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Nombre(s) *</label>
+                  <input type="text" [(ngModel)]="newStudent.nombres" placeholder="Ej: María Elena" class="form-input">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Apellido Paterno *</label>
+                  <input type="text" [(ngModel)]="newStudent.apellidoPaterno" placeholder="Ej: García" class="form-input">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Apellido Materno *</label>
+                  <input type="text" [(ngModel)]="newStudent.apellidoMaterno" placeholder="Ej: López" class="form-input">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Fecha de Nacimiento *</label>
+                  <input type="text" [(ngModel)]="newStudent.fechaNacimiento" placeholder="dd/mm/aaaa" class="form-input">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>CURP *</label>
+                  <input type="text" [(ngModel)]="newStudent.curp" placeholder="GAML850925HDFRPR01" class="form-input">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h4>Datos de Contacto</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Teléfono</label>
+                  <input type="tel" [(ngModel)]="newStudent.telefono" placeholder="+52 555 123 4567" class="form-input">
+                </div>
+              </div>
+              <div class="form-row two-cols">
+                <div class="form-group">
+                  <label>Ciudad</label>
+                  <input type="text" [(ngModel)]="newStudent.ciudad" placeholder="Ej: Ciudad de México" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label>Código Postal</label>
+                  <input type="number" [(ngModel)]="newStudent.codigoPostal" placeholder="12345" class="form-input">
+                </div>
+              </div>
+              <div class="form-row two-cols">
+                <div class="form-group">
+                  <label>Estado</label>
+                  <input type="text" [(ngModel)]="newStudent.estado" placeholder="Ej: CDMX" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label>Municipio</label>
+                  <input type="text" [(ngModel)]="newStudent.municipio" placeholder="Ej: Benito Juárez" class="form-input">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h4>Datos Académicos</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Tipo de Estudiante *</label>
+                  <div class="radio-group">
+                    <label class="radio-label">
+                      <input type="radio" [(ngModel)]="newStudent.tipoEstudiante" value="NUEVO_INGRESO" name="studentType">
+                      <span>Nuevo Ingreso</span>
+                    </label>
+                    <label class="radio-label">
+                      <input type="radio" [(ngModel)]="newStudent.tipoEstudiante" value="REINGRESO" name="studentType">
+                      <span>Reingreso</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-row two-cols">
+                <div class="form-group">
+                  <label>Semestre *</label>
+                  <select [(ngModel)]="newStudent.semestre" class="form-input">
+                    <option value="">Semestre</option>
+                    <option value="1">1° Semestre</option>
+                    <option value="2">2° Semestre</option>
+                    <option value="3">3° Semestre</option>
+                    <option value="4">4° Semestre</option>
+                    <option value="5">5° Semestre</option>
+                    <option value="6">6° Semestre</option>
+                    <option value="7">7° Semestre</option>
+                    <option value="8">8° Semestre</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Grupo</label>
+                  <select [(ngModel)]="newStudent.grupoId" class="form-input">
+                    <option [ngValue]="null">Sin Grupo</option>
+                    <option [ngValue]="1">Grupo A</option>
+                    <option [ngValue]="2">Grupo B</option>
+                    <option [ngValue]="3">Grupo C</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h4>Datos del Tutor/Responsable</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Nombre Completo del Tutor *</label>
+                  <input type="text" [(ngModel)]="newStudent.nombreTutor" placeholder="Nombre completo del responsable" class="form-input">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Email del Tutor *</label>
+                  <input type="email" [(ngModel)]="newStudent.correoTutor" placeholder="tutor@email.com" class="form-input">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Teléfono del Tutor *</label>
+                  <input type="tel" [(ngModel)]="newStudent.telefonoTutor" placeholder="+52 555 123 4567" class="form-input">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h4>Observaciones</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Observaciones Adicionales</label>
+                  <textarea 
+                    [(ngModel)]="newStudent.observaciones" 
+                    placeholder="Cualquier información adicional relevante sobre el estudiante (condiciones médicas, necesidades especiales, situación familiar, etc.)"
+                    rows="4" 
+                    class="form-input"
+                    style="resize: vertical; min-height: 80px;"></textarea>
+                  <small style="color: #666;">Este campo es opcional pero puede contener información importante para el seguimiento del estudiante</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn-primary-large" (click)="registerNewStudent()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                  <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                Registrar Estudiante
+              </button>
+              <button class="btn-secondary-large" (click)="clearForm()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="1 4 1 10 7 10"></polyline>
+                  <polyline points="23 20 23 14 17 14"></polyline>
+                  <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+                </svg>
+                Limpiar
+              </button>
+            </div>
+
+            <div class="info-box" style="margin-top: 16px; padding: 12px; background: #e8f4fd; border-left: 4px solid #2196f3; border-radius: 4px;">
+              <p style="margin: 0; color: #1565c0; font-size: 14px;">
+                📧 <strong>Nota:</strong> Al registrar al estudiante, se enviarán automáticamente las credenciales de acceso al correo del tutor y se generará un correo institucional para el estudiante.
+              </p>
+            </div>
+          </div>
+        }
+
+        @if (activeRegisterTab === 'profesor') {
+          <div class="register-form">
+            <h3 class="form-section-title">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+              </svg>
+              Registro de Nuevo Profesor
+            </h3>
+
+            <div class="form-section">
+              <h4>Datos Personales</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Nombre(s) *</label>
+                  <input type="text" [(ngModel)]="newProfessor.nombres" placeholder="Ej: Ana Elena" class="form-input">
+                </div>
+              </div>
+              <div class="form-row two-cols">
+                <div class="form-group">
+                  <label>Apellido Paterno *</label>
+                  <input type="text" [(ngModel)]="newProfessor.apellidoPaterno" placeholder="Ej: López" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label>Apellido Materno *</label>
+                  <input type="text" [(ngModel)]="newProfessor.apellidoMaterno" placeholder="Ej: Mendoza" class="form-input">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h4>Datos de Contacto</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Email Personal</label>
+                  <input type="email" [(ngModel)]="newProfessor.correo" placeholder="personal@email.com" class="form-input">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Teléfono</label>
+                  <input type="tel" [(ngModel)]="newProfessor.telefono" placeholder="+52 555 123 4567" class="form-input">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h4>Datos Profesionales</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Departamento</label>
+                  <select [(ngModel)]="newProfessor.departamento" class="form-input">
+                    <option value="">Selecciona un departamento</option>
+                    <option value="ciencias-exactas">Ciencias Exactas</option>
+                    <option value="ingenieria">Ingeniería</option>
+                    <option value="humanidades">Humanidades</option>
+                    <option value="ciencias-sociales">Ciencias Sociales</option>
+                    <option value="artes">Artes</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Puesto</label>
+                  <select [(ngModel)]="newProfessor.puesto" class="form-input">
+                    <option value="">Selecciona un puesto</option>
+                    <option value="profesor-titular">Profesor Titular</option>
+                    <option value="profesor-asociado">Profesor Asociado</option>
+                    <option value="profesor-auxiliar">Profesor Auxiliar</option>
+                    <option value="profesor-invitado">Profesor Invitado</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Tipo de Contrato</label>
+                  <select [(ngModel)]="newProfessor.tipoContrato" class="form-input">
+                    <option value="">Selecciona tipo de contrato</option>
+                    <option value="tiempo-completo">Tiempo Completo</option>
+                    <option value="medio-tiempo">Medio Tiempo</option>
+                    <option value="por-horas">Por Horas</option>
+                    <option value="temporal">Temporal</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row two-cols">
+                <div class="form-group">
+                  <label>Fecha de Inicio</label>
+                  <input type="date" [(ngModel)]="newProfessor.fechaInicio" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label>Salario Mensual</label>
+                  <input type="number" [(ngModel)]="newProfessor.salarioMensual" placeholder="25000" class="form-input">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h4>Datos Académicos</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Nivel Educativo</label>
+                  <select [(ngModel)]="newProfessor.nivelEducativo" class="form-input">
+                    <option value="">Selecciona nivel educativo</option>
+                    <option value="licenciatura">Licenciatura</option>
+                    <option value="maestria">Maestría</option>
+                    <option value="doctorado">Doctorado</option>
+                    <option value="posdoctorado">Posdoctorado</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Especialización/Área de Estudios</label>
+                  <input type="text" [(ngModel)]="newProfessor.especializacion" placeholder="Ej: Matemáticas Aplicadas; Literatura Contemporánea..." class="form-input">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Materias que puede impartir *</label>
+                  <div class="checkbox-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin-top: 8px;">
+                    @for (subject of availableSubjects; track subject) {
+                      <label class="checkbox-label" style="display: flex; align-items: center; padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer; transition: all 0.2s;" [style.background]="isSubjectSelected(subject) ? '#eff6ff' : '#fff'" [style.border-color]="isSubjectSelected(subject) ? '#3b82f6' : '#e5e7eb'">
+                        <input type="checkbox" 
+                          [checked]="isSubjectSelected(subject)"
+                          (change)="toggleSubject(subject)"
+                          style="margin-right: 8px;">
+                        <span style="font-size: 14px;">{{ subject }}</span>
+                      </label>
+                    }
+                  </div>
+                  <p class="selected-count" style="margin-top: 12px; color: #3b82f6; font-size: 14px; font-weight: 500;">
+                    ✓ Materias seleccionadas: {{ newProfessor.subjects.length }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Años de Experiencia</label>
+                  <input type="number" [(ngModel)]="newProfessor.yearsExperience" placeholder="Ej: 5" class="form-input" min="0">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h4>Certificaciones y Logros</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Certificaciones, Publicaciones y Reconocimientos</label>
+                  <textarea 
+                    [(ngModel)]="newProfessor.certifications" 
+                    placeholder="Ejemplo:&#10;- Certificación en Pedagogía Moderna (2020)&#10;- Publicación: 'Metodologías activas en el aula' - Revista Educación (2021)&#10;- Reconocimiento al Mejor Docente (2022)"
+                    rows="5" 
+                    class="form-input"
+                    style="resize: vertical; min-height: 100px;"></textarea>
+                  <small style="color: #666;">Lista certificaciones, cursos, publicaciones, reconocimientos académicos, etc.</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h4>Horarios y Disponibilidad</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Horario Preferido</label>
+                  <select [(ngModel)]="newProfessor.preferredSchedule" class="form-input">
+                    <option value="">Selecciona horario preferido</option>
+                    <option value="matutino">Matutino (7:00 - 13:00)</option>
+                    <option value="vespertino">Vespertino (13:00 - 19:00)</option>
+                    <option value="nocturno">Nocturno (19:00 - 22:00)</option>
+                    <option value="mixto">Mixto</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Días disponibles</label>
+                  <div class="checkbox-grid days-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-top: 8px;">
+                    @for (day of availableDays; track day.value) {
+                      <label class="checkbox-label" style="display: flex; align-items: center; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer; transition: all 0.2s;" [style.background]="isDaySelected(day.value) ? '#dcfce7' : '#fff'" [style.border-color]="isDaySelected(day.value) ? '#10b981' : '#e5e7eb'">
+                        <input type="checkbox" 
+                          [checked]="isDaySelected(day.value)"
+                          (change)="toggleDay(day.value)"
+                          style="margin-right: 8px;">
+                        <span style="font-size: 14px; font-weight: 500;">{{ day.label }}</span>
+                      </label>
+                    }
+                  </div>
+                  <p class="selected-count" style="margin-top: 12px; color: #10b981; font-size: 14px; font-weight: 500;">
+                    ✓ Días seleccionados: {{ newProfessor.availableDays.length }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Máximo de Horas por Semana</label>
+                  <input type="number" [(ngModel)]="newProfessor.maxHoursPerWeek" placeholder="Ej: 40" class="form-input" min="1" max="60">
+                  <small style="color: #666;">Número máximo de horas que puede impartir clases por semana</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h4>Observaciones</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Observaciones Adicionales</label>
+                  <textarea 
+                    [(ngModel)]="newProfessor.observaciones" 
+                    placeholder="Cualquier información adicional relevante sobre el profesor (intereses especiales, metodologías preferidas, disponibilidad para actividades extracurriculares, etc.)"
+                    rows="4" 
+                    class="form-input"
+                    style="resize: vertical; min-height: 80px;"></textarea>
+                  <small style="color: #666;">Este campo es opcional pero puede contener información importante para la asignación de materias y grupos</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn-primary-large" (click)="registerNewProfessor()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                  <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                Registrar Profesor
+              </button>
+              <button class="btn-secondary-large" (click)="clearForm()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="1 4 1 10 7 10"></polyline>
+                  <polyline points="23 20 23 14 17 14"></polyline>
+                  <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+                </svg>
+                Limpiar
+              </button>
+            </div>
+
+            <div class="info-box" style="margin-top: 16px; padding: 12px; background: #e8f4fd; border-left: 4px solid #2196f3; border-radius: 4px;">
+              <p style="margin: 0; color: #1565c0; font-size: 14px;">
+                📧 <strong>Nota:</strong> Al registrar al profesor, se enviarán automáticamente las credenciales de acceso al correo proporcionado.
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </main>
+
+  @if (showStudentInfoModal) {
+    <div class="modal-overlay" (click)="closeStudentInfo()">
+      <div class="modal modal-large" (click)="$event.stopPropagation()" style="max-width: 800px;">
+        <div class="modal-header">
+          <h2>Información del Estudiante</h2>
+          <button class="close-btn" (click)="closeStudentInfo()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
-            Limpiar
           </button>
         </div>
 
-        <div class="info-box" style="margin-top: 16px; padding: 12px; background: #e8f4fd; border-left: 4px solid #2196f3; border-radius: 4px;">
-          <p style="margin: 0; color: #1565c0; font-size: 14px;">
-            📧 <strong>Nota:</strong> Al registrar al profesor, se enviarán automáticamente las credenciales de acceso al correo proporcionado.
-          </p>
+        @if (selectedStudent) {
+          <div class="modal-body">
+            <div class="student-modal-header">
+              <div class="student-modal-avatar">
+                <span>{{ getInitials(selectedStudent.nombre_completo) }}</span>
+              </div>
+              <div class="student-modal-info">
+                <h3>{{ selectedStudent.nombre_completo }}</h3>
+                <p>{{ selectedStudent.num_usuario }}</p>
+                <div class="status-badges">
+                  <span class="badge-item" [class.new]="selectedStudent.tipo_estudiante === 'NUEVO_INGRESO'" 
+                    [class.reentry]="selectedStudent.tipo_estudiante === 'REINGRESO'">
+                    {{ selectedStudent.tipo_estudiante === 'NUEVO_INGRESO' ? 'Nuevo Ingreso' : 'Reingreso' }}
+                  </span>
+                  <span class="badge-item" [class.active]="selectedStudent.activo === 1">
+                    {{ selectedStudent.activo === 1 ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-sections">
+              <div class="info-section">
+                <h4>Datos Académicos</h4>
+                <p><strong>Semestre:</strong> {{ selectedStudent.semestre }}°</p>
+                @if (selectedStudent.grupo_id) {
+                  <p><strong>Grupo:</strong> {{ selectedStudent.grupo_id }} - {{ selectedStudent.grupo_turno }}</p>
+                }
+                <p><strong>CURP:</strong> {{ selectedStudent.curp }}</p>
+                <p><strong>Fecha de registro:</strong> {{ selectedStudent.fecha_creacion | date: 'dd/MM/yyyy' }}</p>
+              </div>
+
+              <div class="info-section">
+                <h4>Datos de Contacto</h4>
+                <p><strong>Email:</strong> {{ selectedStudent.correo }}</p>
+                @if (selectedStudent.telefono) {
+                  <p><strong>Teléfono:</strong> {{ selectedStudent.telefono }}</p>
+                }
+              </div>
+
+              <div class="info-section">
+                <h4>Datos del Tutor</h4>
+                <p><strong>Nombre:</strong> {{ selectedStudent.nombre_tutor }}</p>
+                <p><strong>Email:</strong> {{ selectedStudent.correo_tutor }}</p>
+                <p><strong>Teléfono:</strong> {{ selectedStudent.telefono_tutor }}</p>
+              </div>
+
+              <div class="info-section">
+                <h4>Documentos</h4>
+                <div class="documents-progress">
+                  <div class="progress-header">
+                    <span class="progress-label">Completado:</span>
+                    <span class="progress-fraction">
+                      {{ selectedStudent.documentos_aprobados }}/{{ selectedStudent.documentos_requeridos }}
+                    </span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill" [style.width.%]="getDocumentProgressPercentage(selectedStudent)"></div>
+                  </div>
+                </div>
+              </div>
+
+              @if (selectedStudent.documentos_subidos_lista && selectedStudent.documentos_subidos_lista.length > 0) {
+                <div class="info-section">
+                  <h4>Documentos Subidos ({{ selectedStudent.documentos_subidos_lista.length }})</h4>
+                  <div class="documents-list">
+                    @for (doc of selectedStudent.documentos_subidos_lista; track $index) {
+                      <div class="document-item">
+                        <div class="doc-icon">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                          </svg>
+                        </div>
+                        <div class="doc-info">
+                          <p class="doc-name">{{ doc.plantilla_nombre }}</p>
+                          <p class="doc-meta">
+                            <span class="doc-status" [class.aprobado]="doc.estado === 'APROBADO'" 
+                              [class.rechazado]="doc.estado === 'RECHAZADO'"
+                              [class.pendiente]="doc.estado === 'PENDIENTE'">
+                              {{ doc.estado }}
+                            </span>
+                            <span class="doc-date">{{ doc.fecha_subida | date: 'dd/MM/yyyy' }}</span>
+                          </p>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              @if (selectedStudent.documentos_faltantes_lista && selectedStudent.documentos_faltantes_lista.length > 0) {
+                <div class="info-section alert-section">
+                  <h4>⚠️ Documentos Faltantes ({{ selectedStudent.documentos_faltantes_lista.length }})</h4>
+                  <div class="missing-documents-list">
+                    @for (doc of selectedStudent.documentos_faltantes_lista; track $index) {
+                      <div class="missing-doc-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="12" y1="8" x2="12" y2="12"></line>
+                          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <span>{{ doc.nombre }}</span>
+                        @if (doc.obligatorio === 1) {
+                          <span class="badge-required">Requerido</span>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="modal-footer">
+          <button class="btn-modal-primary" (click)="openEditStudent(selectedStudent!)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Editar
+          </button>
+          <button class="btn-modal-cancel" (click)="closeStudentInfo()">Cerrar</button>
         </div>
       </div>
     </div>
-  </main>
+  }
 
-  <!-- Modal de Información del Estudiante -->
-  <div class="modal-overlay" *ngIf="showStudentInfoModal" (click)="closeStudentInfo()">
-    <div class="modal modal-large" (click)="$event.stopPropagation()" style="max-width: 800px;">
-      <div class="modal-header">
-        <h2>Información del Estudiante</h2>
-        <button class="close-btn" (click)="closeStudentInfo()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-
-      <div class="modal-body" *ngIf="selectedStudent">
-        <!-- Header con Avatar y Datos Principales -->
-        <div class="student-modal-header">
-          <div class="student-modal-avatar">
-            <span>{{ getInitials(selectedStudent.nombre_completo) }}</span>
-          </div>
-          <div class="student-modal-info">
-            <h3>{{ selectedStudent.nombre_completo }}</h3>
-            <p>{{ selectedStudent.num_usuario }}</p>
-            <div class="status-badges">
-              <span class="badge-item" [class.new]="selectedStudent.tipo_estudiante === 'NUEVO_INGRESO'" 
-                    [class.reentry]="selectedStudent.tipo_estudiante === 'REINGRESO'">
-                {{ selectedStudent.tipo_estudiante === 'NUEVO_INGRESO' ? 'Nuevo Ingreso' : 'Reingreso' }}
-              </span>
-              <span class="badge-item" [class.active]="selectedStudent.activo === 1">
-                {{ selectedStudent.activo === 1 ? 'Activo' : 'Inactivo' }}
-              </span>
-            </div>
-          </div>
+  @if (showEditStudentModal) {
+    <div class="modal-overlay" (click)="closeEditStudent()">
+      <div class="modal-edit" (click)="$event.stopPropagation()">
+        <div class="modal-edit-header">
+          <h2>Editar Estudiante: {{ selectedStudent?.nombre_completo }}</h2>
+          <button class="close-btn" (click)="closeEditStudent()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
 
-        <!-- Información en Secciones -->
-        <div class="info-sections">
-          <!-- Datos Académicos -->
-          <div class="info-section">
-            <h4>Datos Académicos</h4>
-            <p><strong>Grado:</strong> {{ selectedStudent.grado }}°</p>
-            <p *ngIf="selectedStudent.grupo_id"><strong>Grupo:</strong> {{ selectedStudent.grupo_id }} - {{ selectedStudent.grupo_turno }}</p>
-            <p><strong>CURP:</strong> {{ selectedStudent.curp }}</p>
-            <p><strong>Fecha de registro:</strong> {{ selectedStudent.fecha_creacion | date: 'dd/MM/yyyy' }}</p>
-          </div>
+        <p class="modal-subtitle">Modifica los datos del estudiante</p>
 
-          <!-- Datos de Contacto -->
-          <div class="info-section">
-            <h4>Datos de Contacto</h4>
-            <p><strong>Email:</strong> {{ selectedStudent.correo }}</p>
-            <p *ngIf="selectedStudent.telefono"><strong>Teléfono:</strong> {{ selectedStudent.telefono }}</p>
-          </div>
+        @if (selectedStudent) {
+          <div class="modal-edit-body">
+            
+            <div class="form-field">
+              <label>Nombre Completo</label>
+              <input 
+                type="text" 
+                [value]="selectedStudent.nombres + ' ' + selectedStudent.apellido_paterno + ' ' + (selectedStudent.apellido_materno || '')"
+                disabled
+                class="form-control">
+            </div>
 
-          <!-- Datos del Tutor -->
-          <div class="info-section">
-            <h4>Datos del Tutor</h4>
-            <p><strong>Nombre:</strong> {{ selectedStudent.nombre_tutor }}</p>
-            <p><strong>Email:</strong> {{ selectedStudent.correo_tutor }}</p>
-            <p><strong>Teléfono:</strong> {{ selectedStudent.telefono_tutor }}</p>
-          </div>
+            <div class="form-field">
+              <label>Email</label>
+              <input 
+                type="email" 
+                [(ngModel)]="selectedStudent.correo" 
+                class="form-control"
+                placeholder="correo@ejemplo.com">
+            </div>
 
-          <!-- Progreso de Documentos -->
-          <div class="info-section">
-            <h4>Documentos</h4>
-            <div class="documents-progress">
-              <div class="progress-header">
-                <span class="progress-label">Completado:</span>
+            <div class="form-field">
+              <label>Teléfono</label>
+              <input 
+                type="tel" 
+                [(ngModel)]="selectedStudent.telefono" 
+                class="form-control"
+                placeholder="+52 555 1234">
+            </div>
+
+            <div class="form-field">
+              <label>Programa</label>
+              <input 
+                type="text" 
+                [value]="'Grado ' + selectedStudent.semestre + '°'"
+                disabled
+                class="form-control">
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-field">
+                <label>Semestre</label>
+                <select [(ngModel)]="selectedStudent.semestre" class="form-control">
+                  <option [ngValue]="1">1° Semestre</option>
+                  <option [ngValue]="2">2° Semestre</option>
+                  <option [ngValue]="3">3° Semestre</option>
+                  <option [ngValue]="4">4° Semestre</option>
+                  <option [ngValue]="5">5° Semestre</option>
+                  <option [ngValue]="6">6° Semestre</option>
+                  <option [ngValue]="7">7° Semestre</option>
+                  <option [ngValue]="8">8° Semestre</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label>Grupo</label>
+                <select [(ngModel)]="selectedStudent.grupo_id" class="form-control">
+                  <option [ngValue]="null">Sin Grupo</option>
+                  <option [ngValue]="1">Grupo A</option>
+                  <option [ngValue]="2">Grupo B</option>
+                  <option [ngValue]="3">Grupo C</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label>Estado</label>
+              <select [(ngModel)]="selectedStudent.activo" class="form-control">
+                <option [ngValue]="1">Activo</option>
+                <option [ngValue]="0">Inactivo</option>
+              </select>
+            </div>
+
+            <div class="documents-section">
+              <h4>Documentos</h4>
+              <div class="progress-info">
+                <span>Completado:</span>
                 <span class="progress-fraction">
                   {{ selectedStudent.documentos_aprobados }}/{{ selectedStudent.documentos_requeridos }}
                 </span>
               </div>
-              <div class="progress-bar">
-                <div class="progress-fill" [style.width.%]="getDocumentProgressPercentage(selectedStudent)"></div>
+              <div class="progress-bar-edit">
+                <div 
+                  class="progress-bar-fill" 
+                  [style.width.%]="getDocumentProgressPercentage(selectedStudent)"></div>
               </div>
+              <p class="progress-note">
+                La barra se actualiza automáticamente cuando se aprueban documentos
+              </p>
             </div>
           </div>
+        }
 
-          <!-- Documentos Subidos -->
-          <div class="info-section" *ngIf="selectedStudent.documentos_subidos_lista && selectedStudent.documentos_subidos_lista.length > 0">
-            <h4>Documentos Subidos ({{ selectedStudent.documentos_subidos_lista.length }})</h4>
-            <div class="documents-list">
-              <div class="document-item" *ngFor="let doc of selectedStudent.documentos_subidos_lista">
-                <div class="doc-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                  </svg>
-                </div>
-                <div class="doc-info">
-                  <p class="doc-name">{{ doc.plantilla_nombre }}</p>
-                  <p class="doc-meta">
-                    <span class="doc-status" [class.aprobado]="doc.estado === 'APROBADO'" 
-                          [class.rechazado]="doc.estado === 'RECHAZADO'"
-                          [class.pendiente]="doc.estado === 'PENDIENTE'">
-                      {{ doc.estado }}
-                    </span>
-                    <span class="doc-date">{{ doc.fecha_subida | date: 'dd/MM/yyyy' }}</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Documentos Faltantes -->
-          <div class="info-section alert-section" *ngIf="selectedStudent.documentos_faltantes_lista && selectedStudent.documentos_faltantes_lista.length > 0">
-            <h4>⚠️ Documentos Faltantes ({{ selectedStudent.documentos_faltantes_lista.length }})</h4>
-            <div class="missing-documents-list">
-              <div class="missing-doc-item" *ngFor="let doc of selectedStudent.documentos_faltantes_lista">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="8" x2="12" y2="12"></line>
-                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-                <span>{{ doc.nombre }}</span>
-                <span class="badge-required" *ngIf="doc.obligatorio === 1">Requerido</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn-modal-primary" (click)="openEditStudent(selectedStudent!)">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-          </svg>
-          Editar
-        </button>
-        <button class="btn-modal-cancel" (click)="closeStudentInfo()">Cerrar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Editar Estudiante -->
-<div class="modal-overlay" *ngIf="showEditStudentModal" (click)="closeEditStudent()">
-  <div class="modal-edit" (click)="$event.stopPropagation()">
-    <!-- Header -->
-    <div class="modal-edit-header">
-      <h2>Editar Estudiante: {{ selectedStudent?.nombre_completo }}</h2>
-      <button class="close-btn" (click)="closeEditStudent()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
-    </div>
-
-    <p class="modal-subtitle">Modifica los datos del estudiante</p>
-
-    <!-- Body con scroll -->
-    <div class="modal-edit-body" *ngIf="selectedStudent">
-      
-      <!-- Nombre Completo -->
-      <div class="form-field">
-        <label>Nombre Completo</label>
-        <input 
-          type="text" 
-          [value]="selectedStudent.nombres + ' ' + selectedStudent.apellido_paterno + ' ' + (selectedStudent.apellido_materno || '')"
-          disabled
-          class="form-control">
-      </div>
-
-      <!-- Email -->
-      <div class="form-field">
-        <label>Email</label>
-        <input 
-          type="email" 
-          [(ngModel)]="selectedStudent.correo" 
-          class="form-control"
-          placeholder="correo@ejemplo.com">
-      </div>
-
-      <!-- Teléfono -->
-      <div class="form-field">
-        <label>Teléfono</label>
-        <input 
-          type="tel" 
-          [(ngModel)]="selectedStudent.telefono" 
-          class="form-control"
-          placeholder="+52 555 1234">
-      </div>
-
-      <!-- Programa (disabled) -->
-      <div class="form-field">
-        <label>Programa</label>
-        <input 
-          type="text" 
-          [value]="'Grado ' + selectedStudent.grado + '°'"
-          disabled
-          class="form-control">
-      </div>
-
-      <!-- Grado y Grupo en 2 columnas -->
-      <div class="form-row-2">
-        <div class="form-field">
-          <label>Grado</label>
-          <select [(ngModel)]="selectedStudent.grado" class="form-control">
-            <option [ngValue]="1">1° Grado</option>
-            <option [ngValue]="2">2° Grado</option>
-            <option [ngValue]="3">3° Grado</option>
-            <option [ngValue]="4">4° Grado</option>
-            <option [ngValue]="5">5° Grado</option>
-            <option [ngValue]="6">6° Grado</option>
-            <option [ngValue]="7">7° Grado</option>
-            <option [ngValue]="8">8° Grado</option>
-          </select>
-        </div>
-
-        <div class="form-field">
-          <label>Grupo</label>
-          <select [(ngModel)]="selectedStudent.grupo_id" class="form-control">
-            <option [ngValue]="null">Sin Grupo</option>
-            <option [ngValue]="1">Grupo A</option>
-            <option [ngValue]="2">Grupo B</option>
-            <option [ngValue]="3">Grupo C</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Estado -->
-      <div class="form-field">
-        <label>Estado</label>
-        <select [(ngModel)]="selectedStudent.activo" class="form-control">
-          <option [ngValue]="1">Activo</option>
-          <option [ngValue]="0">Inactivo</option>
-        </select>
-      </div>
-
-      <!-- Documentos - Barra de progreso DINÁMICA -->
-      <div class="documents-section">
-        <h4>Documentos</h4>
-        <div class="progress-info">
-          <span>Completado:</span>
-          <span class="progress-fraction">
-            {{ selectedStudent.documentos_aprobados }}/{{ selectedStudent.documentos_requeridos }}
-          </span>
-        </div>
-        <div class="progress-bar-edit">
-          <div 
-            class="progress-bar-fill" 
-            [style.width.%]="getDocumentProgressPercentage(selectedStudent)"></div>
-        </div>
-        <p class="progress-note">
-          La barra se actualiza automáticamente cuando se aprueban documentos
-        </p>
-      </div>
-    </div>
-
-    <!-- Footer con botones -->
-    <div class="modal-edit-footer">
-      <button class="btn-save" (click)="saveStudentChanges()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-          <polyline points="17 21 17 13 7 13 7 21"></polyline>
-          <polyline points="7 3 7 8 15 8"></polyline>
-        </svg>
-        Guardar Cambios
-      </button>
-      <button class="btn-cancel" (click)="closeEditStudent()">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-  <!-- Modal Editar Profesor -->
-<div class="modal-overlay" *ngIf="showEditProfessorModal" (click)="closeEditProfessor()">
-  <div class="modal-edit" (click)="$event.stopPropagation()">
-    <!-- Header -->
-    <div class="modal-edit-header">
-      <h2>Editar Profesor: {{ selectedProfessor?.nombre_completo }}</h2>
-      <button class="close-btn" (click)="closeEditProfessor()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
-    </div>
-
-    <p class="modal-subtitle">Modifica los datos del profesor</p>
-
-    <!-- Body con scroll -->
-    <div class="modal-edit-body" *ngIf="selectedProfessor">
-      
-      <!-- Nombre Completo -->
-      <div class="form-field">
-        <label>Nombre Completo</label>
-        <input 
-          type="text" 
-          [value]="selectedProfessor.nombres + ' ' + selectedProfessor.apellido_paterno + ' ' + (selectedProfessor.apellido_materno || '')"
-          disabled
-          class="form-control">
-      </div>
-
-      <!-- Email Institucional -->
-      <div class="form-field">
-        <label>Email Institucional</label>
-        <input 
-          type="email" 
-          [(ngModel)]="selectedProfessor.correo" 
-          class="form-control"
-          placeholder="profesor@universidad.edu">
-      </div>
-
-      <!-- Teléfono -->
-      <div class="form-field">
-        <label>Teléfono</label>
-        <input 
-          type="tel" 
-          [(ngModel)]="selectedProfessor.telefono" 
-          class="form-control"
-          placeholder="+52 555 1234">
-      </div>
-
-      <!-- Licenciatura/Especialización -->
-      <div class="form-field">
-        <label>Licenciatura/Especialización</label>
-        <input 
-          type="text" 
-          [(ngModel)]="selectedProfessor.licenciatura" 
-          class="form-control"
-          placeholder="Ej: Licenciado en Matemáticas">
-      </div>
-
-      <!-- Estado -->
-      <div class="form-field">
-        <label>Estado</label>
-        <select [(ngModel)]="selectedProfessor.activo" class="form-control">
-          <option [ngValue]="1">Activo</option>
-          <option [ngValue]="0">Inactivo</option>
-        </select>
-      </div>
-
-      <!-- Materias Asignadas -->
-      <div class="info-section" *ngIf="selectedProfessor.materias_asignadas && selectedProfessor.materias_asignadas.length > 0">
-        <h4>Materias Asignadas ({{ selectedProfessor.materias_asignadas.length }})</h4>
-        <div class="tags-container">
-          <span class="tag" *ngFor="let materia of selectedProfessor.materias_asignadas">
-            {{ materia }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Grupos Asignados -->
-      <div class="info-section" *ngIf="selectedProfessor.grupos_asignados && selectedProfessor.grupos_asignados.length > 0">
-        <h4>Grupos Asignados ({{ selectedProfessor.grupos_asignados.length }})</h4>
-        <div class="groups-list">
-          <div class="group-item" *ngFor="let grupo of selectedProfessor.grupos_asignados">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        <div class="modal-edit-footer">
+          <button class="btn-save" (click)="saveStudentChanges()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
             </svg>
-            <span>Grupo {{ grupo.grupo_id }} - {{ grupo.turno }}</span>
+            Guardar Cambios
+          </button>
+          <button class="btn-cancel" (click)="closeEditStudent()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showEditProfessorModal) {
+    <div class="modal-overlay" (click)="closeEditProfessor()">
+      <div class="modal-edit" (click)="$event.stopPropagation()">
+        <div class="modal-edit-header">
+          <h2>Editar Profesor: {{ selectedProfessor?.nombre_completo }}</h2>
+          <button class="close-btn" (click)="closeEditProfessor()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <p class="modal-subtitle">Modifica los datos del profesor</p>
+
+        @if (selectedProfessor) {
+          <div class="modal-edit-body">
+            
+            <div class="form-field">
+              <label>Nombre Completo</label>
+              <input 
+                type="text" 
+                [value]="selectedProfessor.nombres + ' ' + selectedProfessor.apellido_paterno + ' ' + (selectedProfessor.apellido_materno || '')"
+                disabled
+                class="form-control">
+            </div>
+
+            <div class="form-field">
+              <label>Email Institucional</label>
+              <input 
+                type="email" 
+                [(ngModel)]="selectedProfessor.correo" 
+                class="form-control"
+                placeholder="profesor@universidad.edu">
+            </div>
+
+            <div class="form-field">
+              <label>Teléfono</label>
+              <input 
+                type="tel" 
+                [(ngModel)]="selectedProfessor.telefono" 
+                class="form-control"
+                placeholder="+52 555 1234">
+            </div>
+
+            <div class="form-field">
+              <label>Licenciatura/Especialización</label>
+              <input 
+                type="text" 
+                [(ngModel)]="selectedProfessor.licenciatura" 
+                class="form-control"
+                placeholder="Ej: Licenciado en Matemáticas">
+            </div>
+
+            <div class="form-field">
+              <label>Estado</label>
+              <select [(ngModel)]="selectedProfessor.activo" class="form-control">
+                <option [ngValue]="1">Activo</option>
+                <option [ngValue]="0">Inactivo</option>
+              </select>
+            </div>
+
+            @if (selectedProfessor.materias_asignadas && selectedProfessor.materias_asignadas.length > 0) {
+              <div class="info-section">
+                <h4>Materias Asignadas ({{ selectedProfessor.materias_asignadas.length }})</h4>
+                <div class="tags-container">
+                  @for (materia of selectedProfessor.materias_asignadas; track $index) {
+                    <span class="tag">
+                      {{ materia }}
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+
+            @if (selectedProfessor.grupos_asignados && selectedProfessor.grupos_asignados.length > 0) {
+              <div class="info-section">
+                <h4>Grupos Asignados ({{ selectedProfessor.grupos_asignados.length }})</h4>
+                <div class="groups-list">
+                  @for (grupo of selectedProfessor.grupos_asignados; track $index) {
+                    <div class="group-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                      </svg>
+                      <span>Grupo {{ grupo.grupo_id }} - {{ grupo.turno }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <p class="info-note">
+              * Las materias y grupos se gestionan desde la sección de asignaciones
+            </p>
+          </div>
+        }
+
+        <div class="modal-edit-footer">
+          <button class="btn-save" (click)="saveProfessorChanges()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            Guardar Cambios
+          </button>
+          <button class="btn-cancel" (click)="closeEditProfessor()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showBajaModal) {
+    <div class="modal-overlay" (click)="closeBajaModal()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>⚠️ Dar de Baja Usuario</h2>
+          <button class="close-btn" (click)="closeBajaModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="warning-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <h3>ADVERTENCIA IMPORTANTE</h3>
+            <p>Esta acción desactivará la cuenta del usuario de forma permanente.</p>
+          </div>
+
+          <div class="info-box-baja">
+            <h4>📋 Proceso de baja:</h4>
+            <ol>
+              <li>La cuenta será desactivada inmediatamente</li>
+              <li>El usuario NO podrá iniciar sesión</li>
+              <li>Se enviará notificación por correo electrónico</li>
+              <li>La cuenta será eliminada permanentemente en <strong>7 días</strong></li>
+              <li>Si es estudiante, se notificará también al tutor</li>
+            </ol>
+          </div>
+
+          <div class="form-group">
+            <label for="bajaNumUsuario">Número de Usuario *</label>
+            <input 
+              type="text" 
+              id="bajaNumUsuario"
+              [(ngModel)]="bajaNumUsuario"
+              placeholder="Ej: 00000005"
+              class="form-input"
+              maxlength="8">
+            <small>Ingresa el número de usuario de 8 dígitos</small>
+          </div>
+
+          <div class="form-group">
+            <label for="bajaConfirmacion">Escribe "CONFIRMAR" para continuar *</label>
+            <input 
+              type="text" 
+              id="bajaConfirmacion"
+              [(ngModel)]="bajaConfirmacion"
+              placeholder="CONFIRMAR"
+              class="form-input"
+              style="text-align: center; font-weight: 600;">
+          </div>
+
+          <div class="danger-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span>Esta acción no se puede deshacer fácilmente. El usuario y el tutor serán notificados.</span>
           </div>
         </div>
-      </div>
 
-      <p class="info-note">
-        * Las materias y grupos se gestionan desde la sección de asignaciones
-      </p>
-    </div>
-
-    <!-- Footer con botones -->
-    <div class="modal-edit-footer">
-      <button class="btn-save" (click)="saveProfessorChanges()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-          <polyline points="17 21 17 13 7 13 7 21"></polyline>
-          <polyline points="7 3 7 8 15 8"></polyline>
-        </svg>
-        Guardar Cambios
-      </button>
-      <button class="btn-cancel" (click)="closeEditProfessor()">Cancelar</button>
-    </div>
-  </div>
-</div>
-
- <!-- Modal Dar de Baja a Usuario -->
-  <div class="modal-overlay" *ngIf="showBajaModal" (click)="closeBajaModal()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>⚠️ Dar de Baja Usuario</h2>
-        <button class="close-btn" (click)="closeBajaModal()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <!-- Advertencia -->
-        <div class="warning-box">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-            <line x1="12" y1="9" x2="12" y2="13"></line>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-          <h3>ADVERTENCIA IMPORTANTE</h3>
-          <p>Esta acción desactivará la cuenta del usuario de forma permanente.</p>
+        <div class="modal-footer">
+          <button class="btn-modal-cancel" (click)="closeBajaModal()">Cancelar</button>
+          <button 
+            class="btn-modal-danger" 
+            (click)="confirmarBaja()"
+            [disabled]="!bajaNumUsuario || bajaConfirmacion.toLowerCase() !== 'confirmar'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+            Dar de Baja
+          </button>
         </div>
-
-        <!-- Información del proceso -->
-        <div class="info-box-baja">
-          <h4>📋 Proceso de baja:</h4>
-          <ol>
-            <li>La cuenta será desactivada inmediatamente</li>
-            <li>El usuario NO podrá iniciar sesión</li>
-            <li>Se enviará notificación por correo electrónico</li>
-            <li>La cuenta será eliminada permanentemente en <strong>7 días</strong></li>
-            <li>Si es estudiante, se notificará también al tutor</li>
-          </ol>
-        </div>
-
-        <!-- Formulario -->
-        <div class="form-group">
-          <label for="bajaNumUsuario">Número de Usuario *</label>
-          <input 
-            type="text" 
-            id="bajaNumUsuario"
-            [(ngModel)]="bajaNumUsuario"
-            placeholder="Ej: 00000005"
-            class="form-input"
-            maxlength="8">
-          <small>Ingresa el número de usuario de 8 dígitos</small>
-        </div>
-
-        <div class="form-group">
-          <label for="bajaConfirmacion">Escribe "CONFIRMAR" para continuar *</label>
-          <input 
-            type="text" 
-            id="bajaConfirmacion"
-            [(ngModel)]="bajaConfirmacion"
-            placeholder="CONFIRMAR"
-            class="form-input"
-            style="text-align: center; font-weight: 600;">
-        </div>
-
-        <!-- Advertencia final -->
-        <div class="danger-box">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-          <span>Esta acción no se puede deshacer fácilmente. El usuario y el tutor serán notificados.</span>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn-modal-cancel" (click)="closeBajaModal()">Cancelar</button>
-        <button 
-          class="btn-modal-danger" 
-          (click)="confirmarBaja()"
-          [disabled]="!bajaNumUsuario || bajaConfirmacion.toLowerCase() !== 'confirmar'">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            <line x1="10" y1="11" x2="10" y2="17"></line>
-            <line x1="14" y1="11" x2="14" y2="17"></line>
-          </svg>
-          Dar de Baja
-        </button>
       </div>
     </div>
-  </div>
+  }
 
-  <!-- Modal de Información del Profesor -->
-  <div class="modal-overlay" *ngIf="showProfessorInfoModal" (click)="closeProfessorInfo()">
-    <div class="modal modal-large" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>Información del Profesor</h2>
-        <button class="close-btn" (click)="closeProfessorInfo()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
+  @if (showProfessorInfoModal) {
+    <div class="modal-overlay" (click)="closeProfessorInfo()">
+      <div class="modal modal-large" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Información del Profesor</h2>
+          <button class="close-btn" (click)="closeProfessorInfo()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
 
-      <div class="modal-body" *ngIf="selectedProfessor">
-        <div class="student-modal-header">
-          <div class="student-modal-avatar">
-            <span>{{ getInitials(selectedProfessor.nombre_completo) }}</span>
-          </div>
-          <div class="student-modal-info">
-            <h3>{{ selectedProfessor.nombre_completo }}</h3>
-            <p>{{ selectedProfessor.num_usuario }}</p>
-            <div class="status-badges">
-              <span class="badge-item" [class.active]="selectedProfessor.activo === 1">
-                {{ selectedProfessor.activo === 1 ? 'Activo' : 'Inactivo' }}
-              </span>
+        @if (selectedProfessor) {
+          <div class="modal-body">
+            <div class="student-modal-header">
+              <div class="student-modal-avatar">
+                <span>{{ getInitials(selectedProfessor.nombre_completo) }}</span>
+              </div>
+              <div class="student-modal-info">
+                <h3>{{ selectedProfessor.nombre_completo }}</h3>
+                <p>{{ selectedProfessor.num_usuario }}</p>
+                <div class="status-badges">
+                  <span class="badge-item" [class.active]="selectedProfessor.activo === 1">
+                    {{ selectedProfessor.activo === 1 ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-sections">
+              <div class="info-section">
+                <h4>Datos de Contacto</h4>
+                <p><strong>Email:</strong> {{ selectedProfessor.correo }}</p>
+                @if (selectedProfessor.telefono) {
+                  <p><strong>Teléfono:</strong> {{ selectedProfessor.telefono }}</p>
+                }
+                @if (selectedProfessor.licenciatura) {
+                  <p><strong>Licenciatura:</strong> {{ selectedProfessor.licenciatura }}</p>
+                }
+              </div>
+
+              @if (selectedProfessor.materias_asignadas && selectedProfessor.materias_asignadas.length > 0) {
+                <div class="info-section">
+                  <h4>Materias Asignadas ({{ selectedProfessor.materias_asignadas.length }})</h4>
+                  <ul>
+                    @for (materia of selectedProfessor.materias_asignadas; track $index) {
+                      <li>{{ materia }}</li>
+                    }
+                  </ul>
+                </div>
+              }
+
+              @if (selectedProfessor.grupos_asignados && selectedProfessor.grupos_asignados.length > 0) {
+                <div class="info-section">
+                  <h4>Grupos Asignados ({{ selectedProfessor.grupos_asignados.length }})</h4>
+                  <ul>
+                    @for (grupo of selectedProfessor.grupos_asignados; track $index) {
+                      <li>
+                        Grupo {{ grupo.grupo_id }} - {{ grupo.turno }}
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
             </div>
           </div>
+        }
+        <div class="modal-footer">
+          <button class="btn-modal-cancel" (click)="closeProfessorInfo()">Cerrar</button>
         </div>
-
-        <div class="info-sections">
-          <div class="info-section">
-            <h4>Datos de Contacto</h4>
-            <p><strong>Email:</strong> {{ selectedProfessor.correo }}</p>
-            <p *ngIf="selectedProfessor.telefono"><strong>Teléfono:</strong> {{ selectedProfessor.telefono }}</p>
-            <p *ngIf="selectedProfessor.licenciatura"><strong>Licenciatura:</strong> {{ selectedProfessor.licenciatura }}</p>
-          </div>
-
-          <div class="info-section" *ngIf="selectedProfessor.materias_asignadas && selectedProfessor.materias_asignadas.length > 0">
-            <h4>Materias Asignadas ({{ selectedProfessor.materias_asignadas.length }})</h4>
-            <ul>
-              <li *ngFor="let materia of selectedProfessor.materias_asignadas">{{ materia }}</li>
-            </ul>
-          </div>
-
-          <div class="info-section" *ngIf="selectedProfessor.grupos_asignados && selectedProfessor.grupos_asignados.length > 0">
-            <h4>Grupos Asignados ({{ selectedProfessor.grupos_asignados.length }})</h4>
-            <ul>
-              <li *ngFor="let grupo of selectedProfessor.grupos_asignados">
-                Grupo {{ grupo.grupo_id }} - {{ grupo.turno }}
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn-modal-cancel" (click)="closeProfessorInfo()">Cerrar</button>
       </div>
     </div>
-  </div>
+  }
 
-  <!-- Bottom Navigation -->
   <nav class="bottom-nav">
-    <button 
-      *ngFor="let item of navigationItems" 
-      class="nav-item"
-      [class.active]="item.route === currentRoute"
-      (click)="navigateTo(item.route)">
-      <div class="nav-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path [attr.d]="getIcon(item.icon)"></path>
-        </svg>
-        <span class="nav-badge" *ngIf="item.badge && item.badge > 0">{{ item.badge }}</span>
-      </div>
-      <span class="nav-label">{{ item.label }}</span>
-    </button>
+    @for (item of navigationItems; track item.route) {
+      <button 
+        class="nav-item"
+        [class.active]="item.route === currentRoute"
+        (click)="navigateTo(item.route)">
+        <div class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path [attr.d]="getIcon(item.icon)"></path>
+          </svg>
+          @if (item.badge && item.badge > 0) {
+            <span class="nav-badge">{{ item.badge }}</span>
+          }
+        </div>
+        <span class="nav-label">{{ item.label }}</span>
+      </button>
+    }
   </nav>
 </div>

@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { DocumentosService, DocumentoDetalle, Plantilla } from '../../services/documentos.service';
+import { HttpClient } from '@angular/common/http'; 
+import { DocumentosService, DocumentoDetalle} from '../../services/documentos.service';
 import { AuthService } from '../../auth.service';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { NotificationsComponent } from '../../notificaciones/notificaciones';
@@ -36,14 +36,29 @@ interface DocumentoUI {
   periodicity?: string;
 }
 
+interface UploadMultipleResponse {
+  message: string;
+  documentos: Array<{
+  id_documento: number;
+  nombre_archivo: string;
+  tipo_clasificado: string;
+  confianza: string;
+  razon: string;
+  }>;
+}
+
+
 @Component({
   selector: 'app-est-documentos',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, NotificationsComponent],
+  imports: [RouterModule, FormsModule, NotificationsComponent],
   templateUrl: './est-documentos.html',
   styleUrls: ['./est-documentos.css']
 })
 export class EstDocumentosComponent implements OnInit {
+  selectedFiles: File[] = [];
+  isUploadingMultiple: boolean = false;
+
   userRole: 'estudiante' = 'estudiante';
   userName: string = '';
   userAccountNumber: string = '';
@@ -99,7 +114,8 @@ export class EstDocumentosComponent implements OnInit {
     private route: ActivatedRoute,
     private documentosService: DocumentosService,
     private authService: AuthService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private http: HttpClient
   ) {
     this.isMobile = this.detectMobile();
   }
@@ -123,7 +139,7 @@ export class EstDocumentosComponent implements OnInit {
   }
 
   detectMobile(): boolean {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    return /Android|webOS|iPhone|iPad|IEMobile|Opera Mini/i.test(navigator.userAgent);
   }
 
   loadUserData(): void {

@@ -1,5 +1,4 @@
 <div class="admin-documentos-container">
-  <!-- Header -->
   <header class="header">
     <div class="header-left">
       <div class="user-info">
@@ -24,360 +23,502 @@
     </div>
   </header>
 
-  <!-- Loading State -->
-  <div *ngIf="isLoading" class="loading-container">
-    <div class="spinner"></div>
-    <p>Cargando documentos...</p>
-  </div>
-
-  <!-- Main Content -->
-  <div *ngIf="!isLoading">
-    <!-- Title -->
-    <div class="page-title">
-      <h1>Documentos</h1>
+  @if (isLoading) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Cargando datos...</p>
     </div>
+  } @else {
+    <div>
+      <div class="page-title">
+        <h1>Documentos</h1>
+      </div>
 
-    <!-- Tabs -->
-    <div class="tabs-container">
-      <button 
-        class="tab-button"
-        [class.active]="activeTab === 'requeridos'"
-        (click)="activeTab = 'requeridos'">
-        Documentos Requeridos ({{ documentosRequeridos.length }})
-      </button>
-      <button 
-        class="tab-button"
-        [class.active]="activeTab === 'pendientes'"
-        (click)="activeTab = 'pendientes'">
-        Pendientes de Revisión ({{ documentosPendientes.length }})
-      </button>
-    </div>
-
-    <!-- Documentos Requeridos Tab -->
-    <div class="main-content" *ngIf="activeTab === 'requeridos'">
-      <div class="section-header">
-        <div class="section-info">
-          <h2>Gestión de Documentos Requeridos</h2>
-          <p>Crea y gestiona los documentos que los estudiantes deben subir</p>
-        </div>
-        <button class="btn-nuevo" (click)="openNuevoDocumento()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          Nuevo Documento
+      <div class="tabs-container">
+        <button 
+          class="tab-button"
+          [class.active]="activeTab === 'requeridos'"
+          (click)="activeTab = 'requeridos'">
+          Documentos Requeridos ({{ documentosRequeridos.length }})
+        </button>
+        <button 
+          class="tab-button"
+          [class.active]="activeTab === 'pendientes'"
+          (click)="activeTab = 'pendientes'">
+          Pendientes de Revisión ({{ documentosPendientes.length }})
         </button>
       </div>
 
-      <!-- Search and Filter -->
-      <div class="search-filter-container">
-        <div class="search-box">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <path d="m21 21-4.35-4.35"></path>
-          </svg>
-          <input 
-            type="text" 
-            placeholder="Buscar documentos..."
-            [(ngModel)]="searchTerm">
-        </div>
-        <select class="filter-select" [(ngModel)]="selectedCategory">
-          <option value="">Todas las categorías</option>
-          <option value="fijo">Fijo</option>
-          <option value="periodico">Periódico</option>
-        </select>
-      </div>
-
-      <!-- Documentos List -->
-      <div class="documentos-list" *ngIf="filteredDocumentos.length > 0">
-        <div class="documento-card" *ngFor="let doc of filteredDocumentos">
-          <div class="documento-header">
-            <div class="documento-icon">
+      @if (activeTab === 'requeridos') {
+        <div class="main-content">
+          <div class="section-header">
+            <div class="section-info">
+              <h2>Gestión de Documentos Requeridos</h2>
+              <p>Crea y gestiona los documentos que los estudiantes deben subir</p>
+            </div>
+            <button class="btn-nuevo" (click)="openNuevoDocumento()">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Nuevo Documento
+            </button>
+          </div>
+
+          <div class="search-filter-container">
+            <div class="search-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+              <input 
+                type="text" 
+                placeholder="Buscar documentos..."
+                [(ngModel)]="searchTerm">
+            </div>
+            <select class="filter-select" [(ngModel)]="selectedCategory">
+              <option value="">Todas las categorías</option>
+              <option value="fijo">Fijo</option>
+              <option value="periodico">Periódico</option>
+            </select>
+          </div>
+
+          @if (filteredDocumentos.length > 0) {
+            <div class="documentos-list">
+              @for (doc of filteredDocumentos; track doc) {
+                <div class="documento-card">
+                  <div class="documento-header">
+                    <div class="documento-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                      </svg>
+                    </div>
+                    <h3>{{ doc.nombre }}</h3>
+                  </div>
+                  <p class="documento-descripcion">{{ doc.descripcion || 'Sin descripción' }}</p>
+                  
+                  <div class="documento-tags">
+                    <span class="tag tag-tipo" [class.tag-fijo]="doc.es_fijo === 1" [class.tag-periodico]="doc.requiere_actualizacion === 1">
+                      {{ getTipoLabel(doc) }}
+                    </span>
+                    @if (doc.obligatorio === 1) {
+                      <span class="tag tag-status">Requerido</span>
+                    }
+                    @if (doc.dias_vigencia) {
+                      <span class="tag tag-vencimiento">
+                        Vence en {{ getVencimientoText(doc.dias_vigencia) }}
+                      </span>
+                    }
+                    @if (doc.tipo_estudiante) {
+                      <span class="tag tag-estudiantes">
+                        {{ doc.tipo_estudiante === 'NUEVO_INGRESO' ? 'Nuevo Ingreso' : 'Reingreso' }}
+                      </span>
+                    }
+                  </div>
+
+                  <div class="documento-footer">
+                    <span class="fecha-creado">Creado: {{ doc.fecha_creacion | date: 'dd/MM/yyyy' }}</span>
+                    <div class="documento-actions">
+                      <button class="btn-action btn-editar" (click)="editarDocumento(doc)">
+                        Editar
+                      </button>
+                      <button class="btn-action btn-eliminar" (click)="eliminarDocumento(doc)">
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="empty-state">
+              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                 <polyline points="14 2 14 8 20 8"></polyline>
               </svg>
+              <p>No se encontraron documentos</p>
             </div>
-            <h3>{{ doc.nombre }}</h3>
-          </div>
-          <p class="documento-descripcion">{{ doc.descripcion || 'Sin descripción' }}</p>
-          
-          <div class="documento-tags">
-            <span class="tag tag-tipo" [class.tag-fijo]="doc.es_fijo === 1" [class.tag-periodico]="doc.requiere_actualizacion === 1">
-              {{ getTipoLabel(doc) }}
-            </span>
-            <span class="tag tag-status" *ngIf="doc.obligatorio === 1">Requerido</span>
-            <span class="tag tag-vencimiento" *ngIf="doc.dias_vigencia">
-              Vence en {{ getVencimientoText(doc.dias_vigencia) }}
-            </span>
-            <span class="tag tag-estudiantes" *ngIf="doc.tipo_estudiante">
-              {{ doc.tipo_estudiante === 'NUEVO_INGRESO' ? 'Nuevo Ingreso' : 'Reingreso' }}
-            </span>
-          </div>
-
-          <div class="documento-footer">
-            <span class="fecha-creado">Creado: {{ doc.fecha_creacion | date: 'dd/MM/yyyy' }}</span>
-            <div class="documento-actions">
-              <button class="btn-action btn-editar" (click)="editarDocumento(doc)">
-                Editar
-              </button>
-              <button class="btn-action btn-eliminar" (click)="eliminarDocumento(doc)">
-                Eliminar
-              </button>
-            </div>
-          </div>
+          }
         </div>
-      </div>
+      }
 
-      <!-- Empty State -->
-      <div class="empty-state" *ngIf="filteredDocumentos.length === 0">
-        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-        </svg>
-        <p>No se encontraron documentos</p>
-      </div>
-    </div>
-
-    <!-- Pendientes de Revisión Tab -->
-    <div class="main-content" *ngIf="activeTab === 'pendientes'">
-      <div class="section-header">
-        <div class="section-info">
-          <h2>Documentos Pendientes de Revisión</h2>
-          <p>{{ documentosPendientes.length }} documentos esperando tu revisión</p>
-        </div>
-      </div>
-
-      <!-- Search Box -->
-      <div class="search-box-full">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <path d="m21 21-4.35-4.35"></path>
-        </svg>
-        <input 
-          type="text" 
-          placeholder="Buscar por estudiante, email, número de usuario o tipo de documento..."
-          [(ngModel)]="searchTermPendientes">
-      </div>
-
-      <!-- Pendientes List -->
-      <div class="pendientes-list" *ngIf="filteredPendientes.length > 0">
-        <div class="pendiente-card" *ngFor="let pendiente of filteredPendientes">
-          <div class="pendiente-header">
-            <div class="estudiante-info">
-              <div class="avatar-small">
-                <span>{{ pendiente.estudiante_nombre.charAt(0).toUpperCase() }}</span>
-              </div>
-              <div class="estudiante-details">
-                <h3>{{ pendiente.estudiante_nombre }}</h3>
-                <p>{{ pendiente.estudiante_email }}</p>
-              </div>
-            </div>
-            <span class="badge-vencido" *ngIf="pendiente.vencido">Vencido</span>
-          </div>
-
-          <div class="pendiente-info">
-            <div class="info-item">
-              <span class="info-label">Número de Usuario:</span>
-              <span class="info-value">{{ pendiente.num_usuario }}</span>
-            </div>
-            <div class="info-item">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-              </svg>
-              <span>{{ pendiente.plantilla_nombre }}</span>
-            </div>
-            <div class="info-item">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <span>Subido: {{ pendiente.fecha_subida | date: 'dd/MM/yyyy HH:mm' }}</span>
+      @if (activeTab === 'pendientes') {
+        <div class="main-content">
+          <div class="section-header">
+            <div class="section-info">
+              <h2>Documentos Pendientes de Revisión</h2>
+              <p>{{ documentosPendientes.length }} documentos esperando tu revisión</p>
             </div>
           </div>
 
-          <p class="pendiente-descripcion">{{ pendiente.descripcion || 'Sin descripción' }}</p>
-          <p class="pendiente-archivo">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
-              <polyline points="13 2 13 9 20 9"></polyline>
+          <div class="search-box-full">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
             </svg>
-            {{ pendiente.nombre_archivo }}
-          </p>
-
-          <div class="pendiente-actions">
-            <button class="btn-action btn-ver" (click)="verDocumento(pendiente)">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-              Ver
-            </button>
-            <button class="btn-action btn-descargar" (click)="descargarDocumento(pendiente)">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
-              Descargar
-            </button>
-            <button class="btn-action btn-aprobar" (click)="aprobarDocumento(pendiente)">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-              Aprobar
-            </button>
-            <button class="btn-action btn-rechazar" (click)="rechazarDocumento(pendiente)">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-              Rechazar
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Empty State -->
-      <div class="empty-state" *ngIf="filteredPendientes.length === 0">
-        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="20 6 9 17 4 12"></polyline>
-        </svg>
-        <p>No hay documentos pendientes de revisión</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Nuevo/Editar Documento -->
-  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>{{ isEditMode ? 'Editar Documento Requerido' : 'Crear Nuevo Documento Requerido' }}</h2>
-        <button class="btn-close" (click)="closeModal()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <p class="modal-subtitle">Define un nuevo documento que los estudiantes deberán subir</p>
-
-        <!-- Información Básica -->
-        <div class="form-section">
-          <h3>Información Básica</h3>
-          
-          <div class="form-group">
-            <label for="nombreDocumento">Nombre del Documento <span class="required">*</span></label>
             <input 
               type="text" 
-              id="nombreDocumento"
-              class="form-input"
-              placeholder="Ej: Certificado de Nacimiento"
-              [(ngModel)]="formData.nombre">
+              placeholder="Buscar por estudiante, email, número de usuario o tipo de documento..."
+              [(ngModel)]="searchTermPendientes">
           </div>
 
-          <div class="form-group">
-            <label for="descripcionBreve">Descripción Breve</label>
-            <textarea 
-              id="descripcionBreve"
-              class="form-textarea"
-              placeholder="Describe brevemente el documento..."
-              rows="3"
-              [(ngModel)]="formData.descripcion"></textarea>
-          </div>
+          @if (filteredPendientes.length > 0) {
+            <div class="pendientes-list">
+              @for (pendiente of filteredPendientes; track pendiente) {
+                <div class="pendiente-card">
+                  <div class="pendiente-header">
+                    <div class="estudiante-info">
+                      <div class="avatar-small">
+                        <span>{{ pendiente.estudiante_nombre.charAt(0).toUpperCase() }}</span>
+                      </div>
+                      <div class="estudiante-details">
+                        <h3>{{ pendiente.estudiante_nombre }}</h3>
+                        <p>{{ pendiente.estudiante_email }}</p>
+                      </div>
+                    </div>
+                    @if (pendiente.vencido) {
+                      <span class="badge-vencido">Vencido</span>
+                    }
+                  </div>
+
+                  <div class="pendiente-info">
+                    <div class="info-item">
+                      <span class="info-label">Número de Usuario:</span>
+                      <span class="info-value">{{ pendiente.num_usuario }}</span>
+                    </div>
+                    <div class="info-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                      </svg>
+                      <span>{{ pendiente.plantilla_nombre }}</span>
+                    </div>
+                    <div class="info-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                      <span>Subido: {{ pendiente.fecha_subida | date: 'dd/MM/yyyy HH:mm' }}</span>
+                    </div>
+                  </div>
+
+                  <p class="pendiente-descripcion">{{ pendiente.descripcion || 'Sin descripción' }}</p>
+                  <p class="pendiente-archivo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                      <polyline points="13 2 13 9 20 9"></polyline>
+                    </svg>
+                    {{ pendiente.nombre_archivo }}
+                  </p>
+
+                  <div class="pendiente-actions">
+                    <button class="btn-action btn-ver" (click)="verDocumento(pendiente)">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                      Ver
+                    </button>
+                    <button class="btn-action btn-descargar" (click)="descargarDocumento(pendiente)">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                      Descargar
+                    </button>
+                    <button class="btn-action btn-aprobar" (click)="aprobarDocumento(pendiente)">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      Aprobar
+                    </button>
+                    <button class="btn-action btn-rechazar" (click)="rechazarDocumento(pendiente)">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                      Rechazar
+                    </button>
+
+                    <button class="btn-action btn-ia" (click)="analizarConIA(pendiente)" [disabled]="analizandoConIA">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"></path>
+                        <path d="M12 6v6l4 2"></path>
+                      </svg>
+                      {{ analizandoConIA ? '⏳ Analizando...' : '🤖 Analizar con IA' }}
+                    </button>
+                  </div>
+
+                  @if (showModalIA) {
+                    <div class="modal-overlay" (click)="cerrarModalIA()">
+                      <div class="modal-ia" (click)="$event.stopPropagation()">
+                        <button class="close-btn" (click)="cerrarModalIA()">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                        </button>
+
+                        <div class="modal-ia-header">
+                          <div class="ia-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <path d="M12 6v6l4 2"></path>
+                            </svg>
+                          </div>
+                          <h2>🤖 Análisis de IA Completado</h2>
+                        </div>
+
+                        @if (resultadoIA) {
+                          <div class="modal-ia-body">
+                            <div class="ia-sugerencia" 
+                              [class.sugerencia-aprobar]="resultadoIA.analisis_ia.sugerencia === 'APROBAR'"
+                              [class.sugerencia-rechazar]="resultadoIA.analisis_ia.sugerencia === 'RECHAZAR'">
+                              <div class="sugerencia-badge">
+                                @if (resultadoIA.analisis_ia.sugerencia === 'APROBAR') {
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                  </svg>
+                                }
+                                @if (resultadoIA.analisis_ia.sugerencia === 'RECHAZAR') {
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                  </svg>
+                                }
+                                <span>{{ resultadoIA.analisis_ia.sugerencia }}</span>
+                              </div>
+                              
+                              <div class="confianza-badge" [ngClass]="getConfianzaBadgeClass(resultadoIA.analisis_ia.confianza)">
+                                Confianza: {{ resultadoIA.analisis_ia.confianza }}
+                              </div>
+                            </div>
+
+                            <div class="ia-section">
+                              <h3>📄 Documento Analizado</h3>
+                              <div class="info-grid">
+                                <div class="info-item">
+                                  <span class="info-label">Tipo esperado:</span>
+                                  <span class="info-value">{{ resultadoIA.documento.tipo_esperado }}</span>
+                                </div>
+                                <div class="info-item">
+                                  <span class="info-label">Archivo:</span>
+                                  <span class="info-value">{{ resultadoIA.documento.nombre_archivo }}</span>
+                                </div>
+                                <div class="info-item">
+                                  <span class="info-label">Estudiante:</span>
+                                  <span class="info-value">{{ resultadoIA.estudiante.nombre }}</span>
+                                </div>
+                                <div class="info-item">
+                                  <span class="info-label">No. Usuario:</span>
+                                  <span class="info-value">{{ resultadoIA.estudiante.num_usuario }}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div class="ia-section">
+                              <h3>🔍 Análisis Detallado</h3>
+                              <ul class="razones-list">
+                                @for (razon of resultadoIA.analisis_ia.razones; track $index) {
+                                  <li>{{ razon }}</li>
+                                }
+                              </ul>
+                            </div>
+
+                            @if (resultadoIA.analisis_ia.sugerencia === 'RECHAZAR' && resultadoIA.analisis_ia.comentario_sugerido) {
+                              <div class="ia-section">
+                                <h3>💬 Comentario Sugerido para el Estudiante</h3>
+                                <div class="comentario-box">
+                                  {{ resultadoIA.analisis_ia.comentario_sugerido }}
+                                </div>
+                              </div>
+                            }
+
+                            <div class="ia-warning">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                              </svg>
+                              <span>Esta es una sugerencia de IA. La decisión final es tuya como administrador.</span>
+                            </div>
+                          </div>
+                        }
+
+                        <div class="modal-ia-footer">
+                          <button class="btn-ia-rechazar" (click)="aplicarSugerenciaIA('RECHAZAR')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                            Rechazar Documento
+                          </button>
+                          
+                          <button class="btn-ia-aprobar" (click)="aplicarSugerenciaIA('APROBAR')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            Aprobar Documento
+                          </button>
+                          
+                          <button class="btn-ia-cancelar" (click)="cerrarModalIA()">
+                            Revisar Manualmente
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="empty-state">
+              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <p>No hay documentos pendientes de revisión</p>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  @if (showModal) {
+    <div class="modal-overlay" (click)="closeModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>{{ isEditMode ? 'Editar Documento Requerido' : 'Crear Nuevo Documento Requerido' }}</h2>
+          <button class="btn-close" (click)="closeModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
 
-        <!-- Configuración -->
-        <div class="form-section">
-          <h3>Configuración</h3>
-          
-          <div class="form-row">
+        <div class="modal-body">
+          <p class="modal-subtitle">Define un nuevo documento que los estudiantes deberán subir</p>
+
+          <div class="form-section">
+            <h3>Información Básica</h3>
+            
             <div class="form-group">
-              <label for="categoria">Categoría <span class="required">*</span></label>
-              <select id="categoria" class="form-select" [(ngModel)]="formData.tipo">
-                <option value="fijo">Fijo - Se sube una vez</option>
-                <option value="periodico">Periódico - Debe actualizarse</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="aplicaA">Aplica a <span class="required">*</span></label>
-              <select id="aplicaA" class="form-select" [(ngModel)]="formData.aplicaA">
-                <option value="todos">Todos los estudiantes</option>
-                <option value="NUEVO_INGRESO">Solo nuevos ingresos</option>
-                <option value="REINGRESO">Solo reingresos</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group" *ngIf="formData.tipo === 'periodico'">
-            <label for="diasVigencia">Días de vigencia</label>
-            <input 
-              type="number" 
-              id="diasVigencia"
-              class="form-input"
-              placeholder="Ej: 180 (6 meses)"
-              [(ngModel)]="formData.dias_vigencia"
-              min="1">
-            <small>Número de días antes de que el documento venza</small>
-          </div>
-
-          <div class="form-group">
-            <label class="checkbox-label">
+              <label for="nombreDocumento">Nombre del Documento <span class="required">*</span></label>
               <input 
-                type="checkbox" 
-                class="form-checkbox"
-                [(ngModel)]="formData.obligatorio">
-              <span>Documento obligatorio</span>
-            </label>
+                type="text" 
+                id="nombreDocumento"
+                class="form-input"
+                placeholder="Ej: Certificado de Nacimiento"
+                [(ngModel)]="formData.nombre">
+            </div>
+
+            <div class="form-group">
+              <label for="descripcionBreve">Descripción Breve</label>
+              <textarea 
+                id="descripcionBreve"
+                class="form-textarea"
+                placeholder="Describe brevemente el documento..."
+                rows="3"
+                [(ngModel)]="formData.descripcion"></textarea>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Configuración</h3>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="categoria">Categoría <span class="required">*</span></label>
+                <select id="categoria" class="form-select" [(ngModel)]="formData.tipo">
+                  <option value="fijo">Fijo - Se sube una vez</option>
+                  <option value="periodico">Periódico - Debe actualizarse</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="aplicaA">Aplica a <span class="required">*</span></label>
+                <select id="aplicaA" class="form-select" [(ngModel)]="formData.aplicaA">
+                  <option value="todos">Todos los estudiantes</option>
+                  <option value="NUEVO_INGRESO">Solo nuevos ingresos</option>
+                  <option value="REINGRESO">Solo reingresos</option>
+                </select>
+              </div>
+            </div>
+
+            @if (formData.tipo === 'periodico') {
+              <div class="form-group">
+                <label for="diasVigencia">Días de vigencia</label>
+                <input 
+                  type="number" 
+                  id="diasVigencia"
+                  class="form-input"
+                  placeholder="Ej: 180 (6 meses)"
+                  [(ngModel)]="formData.dias_vigencia"
+                  min="1">
+                <small>Número de días antes de que el documento venza</small>
+              </div>
+            }
+
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  class="form-checkbox"
+                  [(ngModel)]="formData.obligatorio">
+                <span>Documento obligatorio</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-section resumen-section">
+            <h3>Resumen:</h3>
+            <ul class="resumen-list">
+              <li>Tipo: {{ formData.tipo === 'fijo' ? 'Fijo (se sube una vez)' : 'Periódico (debe actualizarse)' }}</li>
+              <li>{{ formData.obligatorio ? 'Obligatorio' : 'Opcional' }}</li>
+              <li>Aplica a: {{ formData.aplicaA === 'todos' ? 'Todos los estudiantes' : formData.aplicaA === 'NUEVO_INGRESO' ? 'Solo nuevos ingresos' : 'Solo reingresos' }}</li>
+              @if (formData.tipo === 'periodico' && formData.dias_vigencia) {
+                <li>Vigencia: {{ formData.dias_vigencia }} días</li>
+              }
+            </ul>
           </div>
         </div>
 
-        <!-- Resumen -->
-        <div class="form-section resumen-section">
-          <h3>Resumen:</h3>
-          <ul class="resumen-list">
-            <li>Tipo: {{ formData.tipo === 'fijo' ? 'Fijo (se sube una vez)' : 'Periódico (debe actualizarse)' }}</li>
-            <li>{{ formData.obligatorio ? 'Obligatorio' : 'Opcional' }}</li>
-            <li>Aplica a: {{ formData.aplicaA === 'todos' ? 'Todos los estudiantes' : formData.aplicaA === 'NUEVO_INGRESO' ? 'Solo nuevos ingresos' : 'Solo reingresos' }}</li>
-            <li *ngIf="formData.tipo === 'periodico' && formData.dias_vigencia">Vigencia: {{ formData.dias_vigencia }} días</li>
-          </ul>
+        <div class="modal-footer">
+          <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+          <button class="btn-primary" (click)="guardarDocumento()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            {{ isEditMode ? 'Guardar Cambios' : 'Crear Documento' }}
+          </button>
         </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
-        <button class="btn-primary" (click)="guardarDocumento()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-            <polyline points="7 3 7 8 15 8"></polyline>
-          </svg>
-          {{ isEditMode ? 'Guardar Cambios' : 'Crear Documento' }}
-        </button>
       </div>
     </div>
-  </div>
+  }
 
-  <!-- Bottom Navigation -->
   <nav class="bottom-nav">
-    <button 
-      *ngFor="let item of navigationItems" 
-      class="nav-item"
-      [class.active]="item.route === currentRoute"
-      (click)="navigateTo(item.route)">
-      <div class="nav-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path [attr.d]="getIcon(item.icon)"></path>
-        </svg>
-        <span class="nav-badge" *ngIf="item.badge && item.badge > 0">{{ item.badge }}</span>
-      </div>
-      <span class="nav-label">{{ item.label }}</span>
-    </button>
+    @for (item of navigationItems; track item.route) {
+      <button 
+        class="nav-item"
+        [class.active]="item.route === currentRoute"
+        (click)="navigateTo(item.route)">
+        <div class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path [attr.d]="getIcon(item.icon)"></path>
+          </svg>
+          @if (item.badge && item.badge > 0) {
+            <span class="nav-badge">{{ item.badge }}</span>
+          }
+        </div>
+        <span class="nav-label">{{ item.label }}</span>
+      </button>
+    }
   </nav>
 </div>

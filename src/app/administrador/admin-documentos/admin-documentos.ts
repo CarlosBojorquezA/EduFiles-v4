@@ -1,12 +1,15 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { forkJoin, of } from 'rxjs';
+import { catchError, finalize } from 'rxjs/operators';
+import { environment } from '../../../environments/environment.development';
 import { NotificationsComponent } from '../../notificaciones/notificaciones';
 
-interface DocumentoRequerido {
+// --- Interfaces ---
+export interface DocumentoRequerido {
   id_plantilla: number;
   nombre: string;
   descripcion: string;
@@ -18,7 +21,7 @@ interface DocumentoRequerido {
   fecha_creacion: string;
 }
 
-interface DocumentoPendiente {
+export interface DocumentoPendiente {
   id_documento: number;
   id_estudiante: number;
   estudiante_nombre: string;
@@ -34,6 +37,7 @@ interface DocumentoPendiente {
   nombres?: string;
   apellido_paterno?: string;
   apellido_materno?: string;
+  fecha_vencimiento?: string;
 }
 
 interface FormData {
@@ -45,6 +49,32 @@ interface FormData {
   dias_vigencia: number | null;
 }
 
+interface AnalisisIA {
+  sugerencia: 'APROBAR' | 'RECHAZAR';
+  confianza: 'ALTA' | 'MEDIA' | 'BAJA';
+  razones: string[];
+  comentario_sugerido: string;
+  timestamp: string;
+}
+
+interface ResultadoAnalisisIA {
+  documento: {
+    id: number;
+    nombre_archivo: string;
+    tipo_esperado: string;
+    descripcion: string;
+    estado_actual: string;
+  };
+  estudiante: {
+    id: number;
+    nombre: string;
+    num_usuario: string;
+    email: string;
+    curp: string;
+  };
+  analisis_ia: AnalisisIA;
+}
+
 interface NavItem {
   icon: string;
   label: string;
@@ -52,153 +82,139 @@ interface NavItem {
   badge?: number;
 }
 
+// --- Constantes ---
+const ICONS_MAP: { [key: string]: string } = {
+  'home': 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
+  'file-text': 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8',
+  'search': 'M11 2a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM21 21l-4.35-4.35',
+  'folder': 'M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z',
+  'user': 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+  'upload': 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12',
+};
+
 @Component({
   selector: 'app-admin-documentos',
+  standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, NotificationsComponent],
   templateUrl: './admin-documentos.html',
   styleUrls: ['./admin-documentos.css']
 })
 export class AdminDocumentosComponent implements OnInit {
-  private apiUrl = 'http://localhost:5000/api';
+  private apiUrl = environment.apiUrl;
+
+  // Estados
+  analizandoConIA: boolean = false;
+  resultadoIA: ResultadoAnalisisIA | null = null;
+  showModalIA: boolean = false;
+  showModal: boolean = false;
+  isEditMode: boolean = false;
+  isLoading: boolean = true;
   
+  // Datos Usuario
   userName: string = '';
   userRole: string = 'administrador';
   notificationCount: number = 0;
   currentRoute: string = '/admin-documentos';
 
+  // Datos Documentos
   activeTab: 'requeridos' | 'pendientes' = 'requeridos';
-  
   documentosRequeridos: DocumentoRequerido[] = [];
   documentosPendientes: DocumentoPendiente[] = [];
+  editingDocumento: DocumentoRequerido | null = null;
   
+  // Filtros
   searchTerm: string = '';
   searchTermPendientes: string = '';
   selectedCategory: string = '';
 
-  showModal: boolean = false;
-  isEditMode: boolean = false;
-  editingDocumento: DocumentoRequerido | null = null;
-  isLoading: boolean = true;
-
-  formData: FormData = {
-    nombre: '',
-    descripcion: '',
-    tipo: 'fijo',
-    aplicaA: 'todos',
-    obligatorio: true,
-    dias_vigencia: null
-  };
-
+  // Forms
+  formData: FormData = this.getInitialFormData();
   navigationItems: NavItem[] = [];
 
   constructor(
     private router: Router,
     private http: HttpClient
-  ) {
-    console.log('[ADMIN-DOCS] Componente inicializado');
-  }
+  ) {}
 
   ngOnInit(): void {
-    console.log('[ADMIN-DOCS] ngOnInit llamado');
+    if (!this.checkAuth()) return;
+    
+    this.currentRoute = this.router.url;
     this.loadUserData();
     this.loadNavigation();
-    this.currentRoute = this.router.url;
     
-    // Verificar token
+    // Si viene desde dashboard con tab específico
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    if (tab === 'pendientes' || tab === 'requeridos') {
+      this.activeTab = tab;
+    }
+
+    this.loadDocumentos();
+  }
+
+  // --- Auth & User Data ---
+  private checkAuth(): boolean {
     const token = localStorage.getItem('token');
     if (!token) {
-      console.error('[ADMIN-DOCS] No hay token, redirigiendo a login');
       alert('Sesión expirada. Por favor inicia sesión nuevamente.');
       this.router.navigate(['']);
-      return;
+      return false;
     }
-    
-    console.log('[ADMIN-DOCS] Token verificado, cargando documentos...');
-    
-    // Cargar documentos
-    setTimeout(() => {
-      this.loadDocumentos();
-    }, 200);
+    return true;
   }
 
   loadUserData(): void {
-    const userData = localStorage.getItem('userData');
-    if (userData) {
-      const user = JSON.parse(userData);
-      if (user.detalles && user.detalles.nombres) {
-        this.userName = `${user.detalles.nombres} ${user.detalles.apellido_paterno || ''}`.trim();
-      } else {
-        this.userName = user.correo || user.num_usuario || 'Usuario';
-      }
-      console.log('[ADMIN-DOCS] Usuario cargado:', this.userName);
+    const userDataStr = localStorage.getItem('userData');
+    if (!userDataStr) return;
+    
+    try {
+      const user = JSON.parse(userDataStr);
+      this.userName = user.detalles?.nombres 
+        ? `${user.detalles.nombres} ${user.detalles.apellido_paterno || ''}`.trim()
+        : (user.correo || user.num_usuario || 'Usuario');
+    } catch (e) {
+      console.error('Error parsing user data', e);
     }
   }
 
+  // --- Carga de Datos ---
   loadDocumentos(): void {
-    console.log('[ADMIN-DOCS] Cargando documentos...');
     this.isLoading = true;
+    console.log('[ADMIN-DOCS] Cargando datos...');
 
-    // ✅ Ya NO necesitas crear headers manualmente
-    // El interceptor agrega automáticamente el Authorization header
-    
-    // Cargar plantillas (documentos requeridos)
-    console.log('[ADMIN-DOCS] Solicitando plantillas...');
-    this.http.get(`${this.apiUrl}/documentos/plantillas`).subscribe({
-      next: (response: any) => {
-        console.log('[ADMIN-DOCS] Plantillas recibidas:', response);
-        this.documentosRequeridos = Array.isArray(response) ? response : [];
-        console.log('[ADMIN-DOCS] Total plantillas:', this.documentosRequeridos.length);
-      },
-      error: (error) => {
-        console.error('[ADMIN-DOCS] Error cargando plantillas:', error);
-        if (error.status === 401 || error.status === 422) {
-          alert('Token inválido o expirado. Por favor inicia sesión nuevamente.');
-          localStorage.clear();
-          this.router.navigate(['']);
-        } else {
-          alert('Error al cargar documentos requeridos: ' + (error.error?.error || error.message));
-        }
-        this.documentosRequeridos = [];
-      }
-    });
-
-    // Cargar documentos pendientes
-    console.log('[ADMIN-DOCS] Solicitando pendientes...');
-    this.http.get(`${this.apiUrl}/documentos/pendientes`).subscribe({
-      next: (response: any) => {
-        console.log('[ADMIN-DOCS] Pendientes recibidos:', response);
-        this.documentosPendientes = Array.isArray(response) ? response.map((doc: any) => ({
+    forkJoin({
+      plantillas: this.http.get<DocumentoRequerido[]>(`${this.apiUrl}/documentos/plantillas`).pipe(
+        catchError(err => { console.error('Error plantillas', err); return of([]); })
+      ),
+      pendientes: this.http.get<any[]>(`${this.apiUrl}/documentos/pendientes`).pipe(
+        catchError(err => { console.error('Error pendientes', err); return of([]); })
+      ),
+      notificaciones: this.http.get<{count: number}>(`${this.apiUrl}/notificaciones/no-leidas/count`).pipe(
+        catchError(() => of({ count: 0 }))
+      )
+    }).pipe(
+      finalize(() => this.isLoading = false)
+    ).subscribe({
+      next: (results) => {
+        this.documentosRequeridos = results.plantillas;
+        this.documentosPendientes = results.pendientes.map(doc => ({
           ...doc,
           estudiante_nombre: `${doc.nombres} ${doc.apellido_paterno} ${doc.apellido_materno}`,
           estudiante_email: doc.correo || doc.estudiante_email,
           vencido: doc.fecha_vencimiento && new Date(doc.fecha_vencimiento) < new Date()
-        })) : [];
-        console.log('[ADMIN-DOCS] Total pendientes:', this.documentosPendientes.length);
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('[ADMIN-DOCS] Error cargando pendientes:', error);
-        this.documentosPendientes = [];
-        this.isLoading = false;
-      }
-    });
-
-    // Cargar contador de notificaciones
-    this.http.get(`${this.apiUrl}/notificaciones/no-leidas/count`).subscribe({
-      next: (response: any) => {
-        this.notificationCount = response.count || 0;
-      },
-      error: (error) => {
-        console.error('[ADMIN-DOCS] Error cargando notificaciones:', error);
+        }));
+        this.notificationCount = results.notificaciones.count;
       }
     });
   }
 
+  // --- Getters & Filtros ---
   get filteredDocumentos(): DocumentoRequerido[] {
     let filtered = this.documentosRequeridos;
+    const term = this.searchTerm.toLowerCase();
 
-    if (this.searchTerm) {
-      const term = this.searchTerm.toLowerCase();
+    if (term) {
       filtered = filtered.filter(doc =>
         doc.nombre.toLowerCase().includes(term) ||
         (doc.descripcion && doc.descripcion.toLowerCase().includes(term))
@@ -217,20 +233,19 @@ export class AdminDocumentosComponent implements OnInit {
   }
 
   get filteredPendientes(): DocumentoPendiente[] {
-    if (!this.searchTermPendientes) {
-      return this.documentosPendientes;
-    }
+    if (!this.searchTermPendientes) return this.documentosPendientes;
 
     const term = this.searchTermPendientes.toLowerCase();
-    return this.documentosPendientes.filter(pendiente =>
-      pendiente.estudiante_nombre.toLowerCase().includes(term) ||
-      pendiente.estudiante_email.toLowerCase().includes(term) ||
-      pendiente.num_usuario.toLowerCase().includes(term) ||
-      pendiente.plantilla_nombre.toLowerCase().includes(term) ||
-      pendiente.nombre_archivo.toLowerCase().includes(term)
+    return this.documentosPendientes.filter(p =>
+      p.estudiante_nombre.toLowerCase().includes(term) ||
+      p.estudiante_email.toLowerCase().includes(term) ||
+      p.num_usuario.toLowerCase().includes(term) ||
+      p.plantilla_nombre.toLowerCase().includes(term) ||
+      p.nombre_archivo.toLowerCase().includes(term)
     );
   }
 
+  // --- Gestión de Documentos (CRUD) ---
   openNuevoDocumento(): void {
     this.isEditMode = false;
     this.editingDocumento = null;
@@ -259,15 +274,9 @@ export class AdminDocumentosComponent implements OnInit {
     this.resetFormData();
   }
 
+  // ✅ FUNCION RESTAURADA
   resetFormData(): void {
-    this.formData = {
-      nombre: '',
-      descripcion: '',
-      tipo: 'fijo',
-      aplicaA: 'todos',
-      obligatorio: true,
-      dias_vigencia: null
-    };
+    this.formData = this.getInitialFormData();
   }
 
   guardarDocumento(): void {
@@ -276,7 +285,7 @@ export class AdminDocumentosComponent implements OnInit {
       return;
     }
 
-    const dataToSend = {
+    const payload = {
       nombre: this.formData.nombre.trim(),
       descripcion: this.formData.descripcion.trim(),
       tipo: this.formData.tipo,
@@ -285,149 +294,155 @@ export class AdminDocumentosComponent implements OnInit {
       dias_vigencia: this.formData.tipo === 'periodico' ? (this.formData.dias_vigencia || 180) : null
     };
 
-    console.log('[ADMIN-DOCS] Guardando documento:', dataToSend);
+    const request$ = (this.isEditMode && this.editingDocumento)
+      ? this.http.put(`${this.apiUrl}/documentos/plantillas/${this.editingDocumento.id_plantilla}`, payload)
+      : this.http.post(`${this.apiUrl}/documentos/plantillas`, payload);
 
-    if (this.isEditMode && this.editingDocumento) {
-      // Actualizar
-      this.http.put(
-        `${this.apiUrl}/documentos/plantillas/${this.editingDocumento.id_plantilla}`, 
-        dataToSend
-      ).subscribe({
-        next: (response) => {
-          console.log('[ADMIN-DOCS] Actualizado:', response);
-          alert('Documento actualizado exitosamente');
-          this.closeModal();
-          this.loadDocumentos();
-        },
-        error: (error) => {
-          console.error('[ADMIN-DOCS] Error actualizando:', error);
-          alert('Error al actualizar: ' + (error.error?.error || error.message));
-        }
-      });
-    } else {
-      // Crear nuevo
-      this.http.post(
-        `${this.apiUrl}/documentos/plantillas`, 
-        dataToSend
-      ).subscribe({
-        next: (response) => {
-          console.log('[ADMIN-DOCS] Creado:', response);
-          alert('Documento creado exitosamente');
-          this.closeModal();
-          this.loadDocumentos();
-        },
-        error: (error) => {
-          console.error('[ADMIN-DOCS] Error creando:', error);
-          alert('Error al crear: ' + (error.error?.error || error.message));
-        }
-      });
-    }
+    request$.subscribe({
+      next: () => {
+        alert(`Documento ${this.isEditMode ? 'actualizado' : 'creado'} exitosamente`);
+        this.closeModal();
+        this.loadDocumentos();
+      },
+      error: (err) => alert('Error al guardar: ' + (err.error?.error || err.message))
+    });
   }
 
   eliminarDocumento(documento: DocumentoRequerido): void {
-    if (!confirm(`¿Estás seguro de que deseas eliminar "${documento.nombre}"?\n\nEsta acción no se puede deshacer.`)) {
-      return;
-    }
+    if (!confirm(`¿Estás seguro de eliminar "${documento.nombre}"? No se puede deshacer.`)) return;
 
     this.http.delete(`${this.apiUrl}/documentos/plantillas/${documento.id_plantilla}`).subscribe({
       next: () => {
-        alert('Documento eliminado exitosamente');
+        alert('Documento eliminado');
         this.loadDocumentos();
       },
-      error: (error) => {
-        console.error('[ADMIN-DOCS] Error eliminando:', error);
-        alert(error.error?.error || 'Error al eliminar documento');
-      }
+      error: (err) => alert(err.error?.error || 'Error al eliminar')
     });
   }
 
+  // --- Acciones de Documentos Pendientes ---
+  
+  // ✅ FUNCION RESTAURADA: Requerida por el HTML (click)="verDocumento(pendiente)"
   verDocumento(pendiente: DocumentoPendiente): void {
-    console.log('[ADMIN-DOCS] Viendo documento:', pendiente.id_documento);
-    
-    // Usar la misma lógica que descargar pero abrir en nueva pestaña
+    // Reutilizamos la lógica de descarga pero indicando que se abra en nueva pestaña
+    this.descargarDocumento(pendiente, true);
+  }
+
+  // Modificada para soportar el parámetro opcional 'abrir'
+  descargarDocumento(pendiente: DocumentoPendiente, abrir: boolean = false): void {
     this.http.get(`${this.apiUrl}/documentos/descargar/${pendiente.id_documento}`, {
       responseType: 'blob'
     }).subscribe({
       next: (blob) => {
-        // Crear URL del blob y abrir en nueva pestaña
         const url = window.URL.createObjectURL(blob);
-        window.open(url, '_blank');
-        
-        // Limpiar URL después de un tiempo
-        setTimeout(() => {
+        if (abrir) {
+          window.open(url, '_blank');
+          setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+        } else {
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = pendiente.nombre_archivo;
+          a.click();
           window.URL.revokeObjectURL(url);
-        }, 100);
+        }
       },
-      error: (error) => {
-        console.error('[ADMIN-DOCS] Error viendo documento:', error);
-        alert('Error al ver el documento');
-      }
+      error: () => alert('Error al procesar el documento')
     });
   }
 
-  descargarDocumento(pendiente: DocumentoPendiente): void {
-    this.http.get(`${this.apiUrl}/documentos/descargar/${pendiente.id_documento}`, {
-      responseType: 'blob'
-    }).subscribe({
-      next: (blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = pendiente.nombre_archivo;
-        a.click();
-        window.URL.revokeObjectURL(url);
-      },
-      error: (error) => {
-        console.error('[ADMIN-DOCS] Error descargando:', error);
-        alert('Error al descargar el documento');
-      }
-    });
-  }
-
+  // ✅ FUNCION RESTAURADA: Requerida por el HTML
   aprobarDocumento(pendiente: DocumentoPendiente): void {
-    if (!confirm(`¿Estás seguro de aprobar el documento "${pendiente.plantilla_nombre}" de ${pendiente.estudiante_nombre}?`)) {
-      return;
-    }
-
-    this.http.put(`${this.apiUrl}/documentos/validar/${pendiente.id_documento}`, {
-      estado: 'APROBADO',
-      comentario: ''
-    }).subscribe({
-      next: () => {
-        alert('Documento aprobado exitosamente');
-        this.loadDocumentos();
-      },
-      error: (error) => {
-        console.error('[ADMIN-DOCS] Error aprobando:', error);
-        alert(error.error?.error || 'Error al aprobar documento');
-      }
-    });
+    if (!confirm(`¿Estás seguro de aprobar el documento "${pendiente.plantilla_nombre}" de ${pendiente.estudiante_nombre}?`)) return;
+    this.enviarValidacion(pendiente.id_documento, 'APROBADO', '');
   }
 
+  // ✅ FUNCION RESTAURADA: Requerida por el HTML
   rechazarDocumento(pendiente: DocumentoPendiente): void {
     const motivo = prompt(`Ingresa el motivo del rechazo para ${pendiente.estudiante_nombre}:`);
-    
-    if (!motivo) {
-      return;
-    }
+    if (!motivo) return;
+    if (!confirm(`¿Estás seguro de rechazar el documento?`)) return;
+    this.enviarValidacion(pendiente.id_documento, 'RECHAZADO', motivo);
+  }
 
-    if (!confirm(`¿Estás seguro de rechazar el documento "${pendiente.plantilla_nombre}"?\n\nEl estudiante será notificado con el motivo.`)) {
-      return;
-    }
-
-    this.http.put(`${this.apiUrl}/documentos/validar/${pendiente.id_documento}`, {
-      estado: 'RECHAZADO',
-      comentario: motivo
+  // Nueva función interna para evitar repetir código
+  private enviarValidacion(id: number, estado: 'APROBADO' | 'RECHAZADO', comentario: string): void {
+    this.http.put(`${this.apiUrl}/documentos/validar/${id}`, {
+      estado,
+      comentario
     }).subscribe({
       next: () => {
-        alert('Documento rechazado. El estudiante será notificado.');
+        alert(`Documento ${estado === 'APROBADO' ? 'aprobado' : 'rechazado'} exitosamente`);
         this.loadDocumentos();
       },
-      error: (error) => {
-        console.error('[ADMIN-DOCS] Error rechazando:', error);
-        alert(error.error?.error || 'Error al rechazar documento');
-      }
+      error: (err) => alert(err.error?.error || `Error al procesar documento`)
     });
+  }
+
+  // --- Inteligencia Artificial ---
+  analizarConIA(pendiente: DocumentoPendiente): void {
+    if (!confirm(`¿Analizar "${pendiente.plantilla_nombre}" con IA?`)) return;
+
+    this.analizandoConIA = true;
+    this.http.post<ResultadoAnalisisIA>(
+      `${this.apiUrl}/documentos/analizar-con-ia/${pendiente.id_documento}`, {}
+    ).pipe(
+      finalize(() => this.analizandoConIA = false)
+    ).subscribe({
+      next: (res) => {
+        this.resultadoIA = res;
+        this.showModalIA = true;
+      },
+      error: (err) => alert('Error en análisis IA: ' + (err.error?.error || err.message))
+    });
+  }
+
+  aplicarSugerenciaIA(accion: 'APROBAR' | 'RECHAZAR'): void {
+  if (!this.resultadoIA) return;
+  
+  const docId = this.resultadoIA.documento.id;
+  const comentario = accion === 'RECHAZAR' ? this.resultadoIA.analisis_ia.comentario_sugerido : '';
+
+  // CORRECCIÓN: Transformamos la acción (verbo) al estado (participio)
+  const estado = accion === 'APROBAR' ? 'APROBADO' : 'RECHAZADO';
+
+  this.enviarValidacion(docId, estado, comentario);
+  this.cerrarModalIA();
+}
+
+  cerrarModalIA(): void {
+    this.showModalIA = false;
+    this.resultadoIA = null;
+  }
+
+  revisarManualmente(): void {
+    if (this.resultadoIA) {
+      // Usamos la nueva URL directa si existe, o construimos una
+      const url = `${this.apiUrl}/documentos/ver/${this.resultadoIA.documento.id}`;
+      window.open(url, '_blank');
+      this.cerrarModalIA();
+    }
+  }
+
+  // ✅ FUNCION RESTAURADA: Requerida por el HTML [class]="getConfianzaBadgeClass(...)"
+  getConfianzaBadgeClass(confianza: string): string {
+    switch (confianza) {
+      case 'ALTA': return 'badge-alta';
+      case 'MEDIA': return 'badge-media';
+      case 'BAJA': return 'badge-baja';
+      default: return '';
+    }
+  }
+
+  // --- Utilidades ---
+  private getInitialFormData(): FormData {
+    return {
+      nombre: '',
+      descripcion: '',
+      tipo: 'fijo',
+      aplicaA: 'todos',
+      obligatorio: true,
+      dias_vigencia: null
+    };
   }
 
   loadNavigation(): void {
@@ -445,22 +460,12 @@ export class AdminDocumentosComponent implements OnInit {
   }
 
   getIcon(iconName: string): string {
-    const icons: { [key: string]: string } = {
-      'home': 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
-      'file-text': 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8',
-      'search': 'M11 2a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM21 21l-4.35-4.35',
-      'folder': 'M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z',
-      'user': 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
-      'upload': 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12',
-    };
-    return icons[iconName] || icons['file-text'];
+    return ICONS_MAP[iconName] || ICONS_MAP['file-text'];
   }
 
-  logout(): void {
-    console.log('[ADMIN-DOCS] Cerrando sesión...');
-    localStorage.removeItem('token');
-    localStorage.removeItem('userData');
-    this.router.navigate(['']);
+  getConfianzaColor(confianza: string): string {
+    const colors: {[key: string]: string} = { 'ALTA': '#10b981', 'MEDIA': '#f59e0b', 'BAJA': '#ef4444' };
+    return colors[confianza] || '#6b7280';
   }
 
   getTipoLabel(doc: DocumentoRequerido): string {
@@ -472,5 +477,11 @@ export class AdminDocumentosComponent implements OnInit {
     if (dias < 30) return `${dias} días`;
     const meses = Math.floor(dias / 30);
     return `${meses} ${meses === 1 ? 'mes' : 'meses'}`;
+  }
+
+  logout(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userData');
+    this.router.navigate(['']);
   }
 }
