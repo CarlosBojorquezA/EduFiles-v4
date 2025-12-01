@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 export interface Profesor {
   id_profesor: number;
@@ -40,8 +41,8 @@ export interface Mensaje {
   providedIn: 'root'
 })
 export class ProfesoresService {
-  // ⚠️ IMPORTANTE: Este servicio usa el endpoint de PROFESORES pero desde la perspectiva del ESTUDIANTE
-  private apiUrl = 'http://localhost:5000/api/profesores';
+  // Este servicio usa el endpoint de PROFESORES pero desde la perspectiva del ESTUDIANTE
+  private apiUrl = `${environment.apiUrl}/profesores`;
 
   constructor(private http: HttpClient) {}
 
@@ -101,7 +102,7 @@ export class ProfesoresService {
     console.log('[PROFESORES SERVICE - EST] Obteniendo mensajes con profesor:', idProfesor);
     const headers = this.getHeaders();
     
-    // ⚠️ CORRECCIÓN: El estudiante llama al endpoint correcto
+    // El estudiante llama al endpoint correcto
     return this.http.get<Mensaje[]>(`${this.apiUrl}/chat/${idProfesor}/mensajes`, { headers })
       .pipe(
         catchError(this.handleError.bind(this))

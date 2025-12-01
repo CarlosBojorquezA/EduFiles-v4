@@ -1,9 +1,10 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
-interface Notificacion {
+export interface Notificacion {
   id_notificacion: number;
   tipo: string;
   titulo: string;
@@ -14,6 +15,15 @@ interface Notificacion {
   nombre_archivo?: string;
 }
 
+const NOTIFICATION_CONFIG: { [key: string]: { icon: string, color: string, bg: string } } = {
+  'DOCUMENTO_APROBADO': { icon: 'check-circle', color: '#10b981', bg: '#d1fae5' },
+  'DOCUMENTO_RECHAZADO': { icon: 'x-circle', color: '#ef4444', bg: '#fee2e2' },
+  'DOCUMENTO_PENDIENTE': { icon: 'clock', color: '#f59e0b', bg: '#fef3c7' },
+  'MENSAJE_NUEVO': { icon: 'mail', color: '#3b82f6', bg: '#dbeafe' },
+  'ALERTA': { icon: 'alert-triangle', color: '#f59e0b', bg: '#fef3c7' },
+  'default': { icon: 'bell', color: '#6b7280', bg: '#f3f4f6' }
+};
+
 @Component({
   selector: 'app-notifications',
   standalone: true,
@@ -21,14 +31,16 @@ interface Notificacion {
   templateUrl: './notificaciones.html',
   styleUrls: ['./notificaciones.css']
 })
-export class NotificationsComponent implements OnInit {
-  private apiUrl = 'http://localhost:5000/api';
+export class NotificationsComponent implements OnInit, OnDestroy {
+  private apiUrl = environment.apiUrl;
   
   showNotifications = false;
   notifications: Notificacion[] = [];
   unreadCount = 0;
   userRole = '';
   isLoading = false;
+
+  private intervalId: any;
 
   constructor(
     private http: HttpClient,
@@ -39,48 +51,56 @@ export class NotificationsComponent implements OnInit {
     this.loadUserRole();
     this.loadNotifications();
     
-    // Actualizar notificaciones cada 30 segundos
-    setInterval(() => {
+    // Actualizar contador cada 30s
+    this.intervalId = setInterval(() => {
       this.loadUnreadCount();
     }, 30000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+    }
   }
 
   loadUserRole(): void {
     const userData = localStorage.getItem('userData');
     if (userData) {
-      const user = JSON.parse(userData);
-      this.userRole = user.rol || '';
+      try {
+        const user = JSON.parse(userData);
+        this.userRole = (user.rol || '').toUpperCase();
+      } catch (e) {
+        console.error('Error parsing user data');
+      }
     }
   }
 
   loadNotifications(): void {
     this.isLoading = true;
-    
-    this.http.get(`${this.apiUrl}/notificaciones?limit=10`).subscribe({
-      next: (response: any) => {
+    this.http.get<Notificacion[]>(`${this.apiUrl}/notificaciones?limit=10`).subscribe({
+      next: (response) => {
         this.notifications = Array.isArray(response) ? response : [];
         this.unreadCount = this.notifications.filter(n => n.leida === 0).length;
         this.isLoading = false;
       },
-      error: (error) => {
-        console.error('Error cargando notificaciones:', error);
+      error: (err) => {
+        console.error('Error loading notifications:', err);
         this.isLoading = false;
       }
     });
   }
 
   loadUnreadCount(): void {
-    this.http.get(`${this.apiUrl}/notificaciones/no-leidas/count`).subscribe({
-      next: (response: any) => {
-        this.unreadCount = response.count || 0;
+    this.http.get<{count: number}>(`${this.apiUrl}/notificaciones/no-leidas/count`).subscribe({
+      next: (res) => {
+        this.unreadCount = res.count || 0;
       },
-      error: (error) => console.error('Error cargando contador:', error)
+      error: (err) => console.error('Error loading count:', err)
     });
   }
 
   toggleNotifications(): void {
     this.showNotifications = !this.showNotifications;
-    
     if (this.showNotifications) {
       this.loadNotifications();
     }
@@ -88,26 +108,29 @@ export class NotificationsComponent implements OnInit {
 
   markAsRead(notification: Notificacion): void {
     if (notification.leida === 0) {
-      this.http.put(
-        `${this.apiUrl}/notificaciones/${notification.id_notificacion}/marcar-leida`,
-        {}
-      ).subscribe({
-        next: () => {
-          notification.leida = 1;
-          this.unreadCount = Math.max(0, this.unreadCount - 1);
-        },
-        error: (error) => console.error('Error marcando como leída:', error)
+      notification.leida = 1;
+      this.unreadCount = Math.max(0, this.unreadCount - 1);
+
+      this.http.put(`${this.apiUrl}/notificaciones/${notification.id_notificacion}/marcar-leida`, {}).subscribe({
+        error: () => {
+          // Revertir si falla
+          notification.leida = 0;
+          this.unreadCount++;
+        }
       });
     }
   }
 
   markAllAsRead(): void {
+    const previousState = [...this.notifications]; 
+    this.notifications.forEach(n => n.leida = 1);
+    this.unreadCount = 0;
+
     this.http.put(`${this.apiUrl}/notificaciones/marcar-todas-leidas`, {}).subscribe({
-      next: () => {
-        this.notifications.forEach(n => n.leida = 1);
-        this.unreadCount = 0;
-      },
-      error: (error) => console.error('Error:', error)
+      error: () => {
+        this.notifications = previousState;
+        this.unreadCount = this.notifications.filter(n => n.leida === 0).length;
+      }
     });
   }
 
@@ -117,69 +140,45 @@ export class NotificationsComponent implements OnInit {
     if (confirm('¿Eliminar esta notificación?')) {
       this.http.delete(`${this.apiUrl}/notificaciones/${notification.id_notificacion}`).subscribe({
         next: () => {
-          this.notifications = this.notifications.filter(
-            n => n.id_notificacion !== notification.id_notificacion
-          );
+          this.notifications = this.notifications.filter(n => n.id_notificacion !== notification.id_notificacion);
           if (notification.leida === 0) {
             this.unreadCount = Math.max(0, this.unreadCount - 1);
           }
         },
-        error: (error) => console.error('Error eliminando:', error)
+        error: (err) => console.error('Error deleting:', err)
       });
     }
   }
 
   handleNotificationClick(notification: Notificacion): void {
     this.markAsRead(notification);
-    
-    // Navegar según el tipo de notificación
-    if (notification.tipo === 'DOCUMENTO_APROBADO' || 
-        notification.tipo === 'DOCUMENTO_RECHAZADO' ||
-        notification.tipo === 'DOCUMENTO_PENDIENTE') {
-      
-      if (this.userRole === 'ESTUDIANTE') {
-        this.router.navigate(['/estudiante-documentos']);
-      } else if (this.userRole === 'ADMINISTRADOR') {
-        this.router.navigate(['/admin-documentos']);
-      } else if (this.userRole === 'PROFESOR') {
-        this.router.navigate(['/profesor-documentos']);
-      }
-    }
-    
     this.showNotifications = false;
+    
+    // Navegación inteligente basada en rol y tipo
+    const tipo = notification.tipo;
+    
+    if (['DOCUMENTO_APROBADO', 'DOCUMENTO_RECHAZADO', 'DOCUMENTO_PENDIENTE'].includes(tipo)) {
+      switch (this.userRole) {
+        case 'ESTUDIANTE': this.router.navigate(['/est-documentos']); break;
+        case 'ADMINISTRADOR': this.router.navigate(['/admin-documentos']); break;
+      }
+    } else if (tipo === 'MENSAJE_NUEVO') {
+       // Si es mensaje, ir al chat correspondiente
+       if (this.userRole === 'ESTUDIANTE') this.router.navigate(['/est-profesores']);
+       else if (this.userRole === 'PROFESOR') this.router.navigate(['/prof-estudiantes']);
+    }
   }
 
   getNotificationIcon(tipo: string): string {
-    const icons: { [key: string]: string } = {
-      'DOCUMENTO_APROBADO': 'check-circle',
-      'DOCUMENTO_RECHAZADO': 'x-circle',
-      'DOCUMENTO_PENDIENTE': 'clock',
-      'MENSAJE_NUEVO': 'mail',
-      'ALERTA': 'alert-triangle'
-    };
-    return icons[tipo] || 'bell';
+    return (NOTIFICATION_CONFIG[tipo] || NOTIFICATION_CONFIG['default']).icon;
   }
 
   getNotificationColor(tipo: string): string {
-    const colors: { [key: string]: string } = {
-      'DOCUMENTO_APROBADO': '#10b981',
-      'DOCUMENTO_RECHAZADO': '#ef4444',
-      'DOCUMENTO_PENDIENTE': '#f59e0b',
-      'MENSAJE_NUEVO': '#3b82f6',
-      'ALERTA': '#f59e0b'
-    };
-    return colors[tipo] || '#6b7280';
+    return (NOTIFICATION_CONFIG[tipo] || NOTIFICATION_CONFIG['default']).color;
   }
 
   getNotificationBgColor(tipo: string): string {
-    const colors: { [key: string]: string } = {
-      'DOCUMENTO_APROBADO': '#d1fae5',
-      'DOCUMENTO_RECHAZADO': '#fee2e2',
-      'DOCUMENTO_PENDIENTE': '#fef3c7',
-      'MENSAJE_NUEVO': '#dbeafe',
-      'ALERTA': '#fef3c7'
-    };
-    return colors[tipo] || '#f3f4f6';
+    return (NOTIFICATION_CONFIG[tipo] || NOTIFICATION_CONFIG['default']).bg;
   }
 
   getTimeAgo(fecha: string): string {
@@ -188,23 +187,22 @@ export class NotificationsComponent implements OnInit {
     const diffMs = now.getTime() - notifDate.getTime();
     const diffMins = Math.floor(diffMs / 60000);
     
-    if (diffMins < 1) return 'Hace unos segundos';
+    if (diffMins < 1) return 'Hace un momento';
     if (diffMins < 60) return `Hace ${diffMins} min`;
     
     const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+    if (diffHours < 24) return `Hace ${diffHours} h`;
     
     const diffDays = Math.floor(diffHours / 24);
-    return `Hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
+    return `Hace ${diffDays} d`;
   }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    const notificationBtn = target.closest('.notification-btn');
-    const notificationPanel = target.closest('.notifications-panel');
+    const clickedInside = target.closest('.notifications-panel') || target.closest('.notification-btn');
     
-    if (!notificationBtn && !notificationPanel && this.showNotifications) {
+    if (!clickedInside && this.showNotifications) {
       this.showNotifications = false;
     }
   }

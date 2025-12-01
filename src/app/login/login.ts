@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment'; // Asegúrate de tener esto
 
+// --- Interfaces ---
 interface RegistroForm {
   nombres: string;
   apellidoPaterno: string;
@@ -22,169 +24,137 @@ interface RegistroForm {
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule], 
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.html',
   styleUrls: ['./login.css']
 })
 export class LoginComponent {
-  private apiUrl = 'http://localhost:5000/api';
+  // Configuración
+  private apiUrl = environment.apiUrl; // O 'http://localhost:5000/api'
+
+  // Estado UI
   activeTab: 'login' | 'register' | 'forgot' = 'login';
-  
+  isLoading: boolean = false;
   recuperarStep: number = 1;
-  
+
+  // Mensajes
+  showSuccessMessage: boolean = false;
+  successMessage: string = '';
+  showRecoveryError: boolean = false;
+  recoveryErrorMessage: string = '';
+  showRegistroError: boolean = false;
+  registroErrorMessage: string = '';
+
+  // Login Data
   loginNumUsuario: string = '';
   loginPassword: string = '';
-  
+
+  // Registro Data
+  registroForm: RegistroForm = this.getInitialRegistroForm();
+  grados = [
+    { value: '1', label: '1° Semestre' }, { value: '2', label: '2° Semestre' },
+    { value: '3', label: '3° Semestre' }, { value: '4', label: '4° Semestre' },
+    { value: '5', label: '5° Semestre' }, { value: '6', label: '6° Semestre' }
+  ];
+
+  // Recuperación Data
   recoveryEmail: string = '';
   recoveryCode: string = '';
   recoveryNumUsuario: string = '';
   recoveryNewPassword: string = '';
   recoveryConfirmPassword: string = '';
-  showRecoveryError: boolean = false;
-  recoveryErrorMessage: string = '';
-
-  registroForm: RegistroForm = {
-    nombres: '',
-    apellidoPaterno: '',
-    apellidoMaterno: '',
-    curp: '',
-    fecha_nacimiento: '',
-    telefono: '',
-    grado: '',
-    tipo_estudiante: 'NUEVO_INGRESO',
-    password: '',
-    nombresTutor: '',
-    correoTutor: '',
-    telefonoTutor: ''
-  };
-
-  grados = [
-    { value: '1', label: '1° Semestre' },
-    { value: '2', label: '2° Semestre' },
-    { value: '3', label: '3° Semestre' }
-  ];
-
-  showRegistroError: boolean = false;
-  registroErrorMessage: string = '';
-  showSuccessMessage: boolean = false;
-  successMessage: string = '';
-  isLoading: boolean = false;
 
   constructor(
     private router: Router,
     private http: HttpClient
-  ) {
-    console.log('[LOGIN] Componente inicializado');
-  }
+  ) {}
 
+  // --- Tabs & UI ---
   setActiveTab(tab: 'login' | 'register' | 'forgot'): void {
     this.activeTab = tab;
-    this.showRecoveryError = false;
-    this.showRegistroError = false;
-    this.showSuccessMessage = false;
+    this.clearMessages();
     this.recuperarStep = 1;
   }
 
+  private clearMessages(): void {
+    this.showSuccessMessage = false;
+    this.showRecoveryError = false;
+    this.showRegistroError = false;
+    this.successMessage = '';
+    this.recoveryErrorMessage = '';
+    this.registroErrorMessage = '';
+  }
+
+  private showSuccess(msg: string): void {
+    this.showSuccessMessage = true;
+    this.successMessage = msg;
+    // Auto-ocultar después de 5s
+    setTimeout(() => this.showSuccessMessage = false, 5000);
+  }
+
+  private showError(msg: string): void {
+    if (this.activeTab === 'forgot') {
+      this.showRecoveryError = true;
+      this.recoveryErrorMessage = msg;
+    } else {
+      this.showRegistroError = true;
+      this.registroErrorMessage = msg;
+    }
+  }
+
+  // --- LOGIN ---
   onLogin(): void {
     if (!this.loginNumUsuario || !this.loginPassword) {
-      this.showError('Por favor completa todos los campos');
-      return;
+      return this.showError('Por favor completa todos los campos');
     }
-
-    localStorage.clear();
 
     this.isLoading = true;
     this.clearMessages();
-
-    console.log('[LOGIN] Intentando login...');
+    localStorage.clear();
 
     this.http.post(`${this.apiUrl}/auth/login`, {
       num_usuario: this.loginNumUsuario,
       password: this.loginPassword
     }).subscribe({
       next: (response: any) => {
-        console.log('[LOGIN] Login exitoso:', response);
-        
-        if (response.token) {
-          localStorage.setItem('token', response.token);
-          console.log('[LOGIN] Token guardado');
-        }
-        
-        if (response.user) {
-          localStorage.setItem('userData', JSON.stringify(response.user));
-          console.log('[LOGIN] User data guardado');
-        }
-        
-        this.showSuccess('¡Inicio de sesión exitoso!');
+        if (response.token) localStorage.setItem('token', response.token);
+        if (response.user) localStorage.setItem('userData', JSON.stringify(response.user));
+
+        this.showSuccess('¡Bienvenido!');
         
         setTimeout(() => {
-          switch (response.user.rol) {
-            case 'ESTUDIANTE':
-              this.router.navigate(['/est-dashboard']);
-              break;
-            case 'PROFESOR':
-              this.router.navigate(['/prof-dashboard']);
-              break;
-            case 'ADMINISTRADOR':
-              this.router.navigate(['/admin-dashboard']);
-              break;
-            default:
-              this.router.navigate(['/admin-dashboard']);
+          const role = response.user?.rol || '';
+          switch (role) {
+            case 'ESTUDIANTE': this.router.navigate(['/est-dashboard']); break;
+            case 'PROFESOR': this.router.navigate(['/prof-dashboard']); break;
+            case 'ADMINISTRADOR': this.router.navigate(['/admin-dashboard']); break;
+            default: this.router.navigate(['/']); 
           }
-        }, 1000);
+          this.isLoading = false;
+        }, 800);
       },
-      error: (error) => {
-        console.error('[LOGIN] Error:', error);
-        this.showError(error.error?.error || 'Error al iniciar sesión');
-        this.isLoading = false;
-      },
-      complete: () => {
+      error: (err) => {
+        console.error('Login error:', err);
+        this.showError(err.error?.error || 'Credenciales incorrectas');
         this.isLoading = false;
       }
     });
   }
 
+  // --- REGISTRO ---
   onRegister(): void {
     this.clearMessages();
-
-    if (!this.registroForm.nombres || !this.registroForm.apellidoPaterno || 
-        !this.registroForm.apellidoMaterno || !this.registroForm.curp ||
-        !this.registroForm.fecha_nacimiento || !this.registroForm.grado ||
-        !this.registroForm.password) {
-      this.showError('Por favor completa todos los campos del estudiante');
-      return;
-    }
-
-    if (this.registroForm.curp.length !== 18) {
-      this.showError('El CURP debe tener 18 caracteres');
-      return;
-    }
-
-    if (this.registroForm.password.length < 6) {
-      this.showError('La contraseña debe tener al menos 6 caracteres');
-      return;
-    }
-
-    if (!this.registroForm.nombresTutor || !this.registroForm.correoTutor || 
-        !this.registroForm.telefonoTutor) {
-      this.showError('Por favor completa los datos del tutor');
-      return;
-    }
-
-    if (!this.isValidEmail(this.registroForm.correoTutor)) {
-      this.showError('Email del tutor inválido');
-      return;
-    }
+    if (!this.validateRegistro()) return;
 
     this.isLoading = true;
 
-    const registroData = {
+    const payload = {
       nombres: this.registroForm.nombres,
       apellido_paterno: this.registroForm.apellidoPaterno,
       apellido_materno: this.registroForm.apellidoMaterno,
       curp: this.registroForm.curp.toUpperCase(),
       fecha_nacimiento: this.registroForm.fecha_nacimiento,
-      telefono: this.registroForm.telefono || '',
+      telefono: this.registroForm.telefono,
       telefono_tutor: this.registroForm.telefonoTutor,
       nombre_tutor: this.registroForm.nombresTutor,
       correo_tutor: this.registroForm.correoTutor,
@@ -193,158 +163,128 @@ export class LoginComponent {
       password: this.registroForm.password
     };
 
-    this.http.post(`${this.apiUrl}/auth/registro-estudiante`, registroData).subscribe({
-      next: (response: any) => {
-        console.log('[LOGIN] Registro exitoso:', response);
+    this.http.post(`${this.apiUrl}/auth/registro-estudiante`, payload).subscribe({
+      next: (res: any) => {
         this.isLoading = false;
+        this.showSuccess(`Registro exitoso. Tu usuario es: ${res.num_usuario}`);
+        this.registroForm = this.getInitialRegistroForm();
         
-        this.showSuccess(`¡Registro exitoso! Tu número de usuario es: ${response.num_usuario}`);
-        this.resetRegistroForm();
-        
+        // Auto-fill login
         setTimeout(() => {
-          this.loginNumUsuario = response.num_usuario;
+          this.loginNumUsuario = res.num_usuario;
           this.setActiveTab('login');
         }, 3000);
       },
-      error: (error) => {
+      error: (err) => {
         this.isLoading = false;
-        console.error('[LOGIN] Error en registro:', error);
-        this.showError(error.error?.error || 'Error al registrar estudiante');
+        this.showError(err.error?.error || 'Error al registrar');
       }
     });
   }
 
-  resetRegistroForm(): void {
-    this.registroForm = {
-      nombres: '',
-      apellidoPaterno: '',
-      apellidoMaterno: '',
-      curp: '',
-      fecha_nacimiento: '',
-      telefono: '',
-      grado: '',
-      tipo_estudiante: 'NUEVO_INGRESO',
-      password: '',
-      nombresTutor: '',
-      correoTutor: '',
-      telefonoTutor: ''
+  private validateRegistro(): boolean {
+    const f = this.registroForm;
+    if (!f.nombres || !f.apellidoPaterno || !f.curp || !f.grado || !f.password) {
+      this.showError('Completa los campos obligatorios (*)');
+      return false;
+    }
+    if (f.curp.length !== 18) {
+      this.showError('CURP inválida (18 caracteres)');
+      return false;
+    }
+    if (f.password.length < 6) {
+      this.showError('Contraseña muy corta (mínimo 6)');
+      return false;
+    }
+    if (!f.nombresTutor || !f.correoTutor || !f.telefonoTutor) {
+      this.showError('Datos del tutor incompletos');
+      return false;
+    }
+    return true;
+  }
+
+  private getInitialRegistroForm(): RegistroForm {
+    return {
+      nombres: '', apellidoPaterno: '', apellidoMaterno: '', curp: '',
+      fecha_nacimiento: '', telefono: '', grado: '', tipo_estudiante: 'NUEVO_INGRESO',
+      password: '', nombresTutor: '', correoTutor: '', telefonoTutor: ''
     };
   }
 
+  // --- RECUPERACIÓN ---
   onRecoverPassword(): void {
+    if (!this.recoveryEmail) return this.showError('Ingresa tu correo o teléfono');
+    
+    this.isLoading = true;
     this.clearMessages();
 
-    if (!this.recoveryEmail) {
-      this.showRecoveryError = true;
-      this.recoveryErrorMessage = 'Por favor ingresa tu correo o teléfono';
-      return;
-    }
-
-    this.isLoading = true;
-
-    this.http.post(`${this.apiUrl}/auth/solicitar-recuperacion`, {
-      correo_o_telefono: this.recoveryEmail
-    }).subscribe({
-      next: (response: any) => {
-        this.isLoading = false;
-        this.recoveryNumUsuario = response.num_usuario;
-        this.showSuccess(`Código enviado. Tu número de usuario es: ${response.num_usuario}`);
-        
-        if (response.codigo) {
-          this.showSuccess(`Código: ${response.codigo} (Guárdalo)`);
-        }
-        
-        setTimeout(() => {
+    this.http.post(`${this.apiUrl}/auth/solicitar-recuperacion`, { correo_o_telefono: this.recoveryEmail })
+      .subscribe({
+        next: (res: any) => {
+          this.isLoading = false;
+          this.recoveryNumUsuario = res.num_usuario;
+          this.showSuccess(`Código enviado a tu correo/teléfono.`);
           this.recuperarStep = 2;
-          this.clearMessages();
-        }, 3000);
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.showRecoveryError = true;
-        this.recoveryErrorMessage = error.error?.error || 'Error al enviar el código';
-      }
-    });
+        },
+        error: (err) => {
+          this.isLoading = false;
+          this.showError(err.error?.error || 'Usuario no encontrado');
+        }
+      });
   }
 
   onVerifyCode(): void {
-    this.clearMessages();
-
-    if (!this.recoveryCode || this.recoveryCode.length !== 6) {
-      this.showRecoveryError = true;
-      this.recoveryErrorMessage = 'Por favor ingresa el código de 6 dígitos';
-      return;
-    }
-
+    if (!this.recoveryCode || this.recoveryCode.length !== 6) return this.showError('Código inválido');
+    
     this.isLoading = true;
+    this.clearMessages();
 
     this.http.post(`${this.apiUrl}/auth/verificar-codigo`, {
       num_usuario: this.recoveryNumUsuario,
       codigo: this.recoveryCode
     }).subscribe({
-      next: (response: any) => {
+      next: () => {
         this.isLoading = false;
-        this.showSuccess('¡Código verificado correctamente!');
-        
-        setTimeout(() => {
-          this.recuperarStep = 3;
-          this.clearMessages();
-        }, 1500);
+        this.recuperarStep = 3;
       },
-      error: (error) => {
+      error: (err) => {
         this.isLoading = false;
-        this.showRecoveryError = true;
-        this.recoveryErrorMessage = error.error?.error || 'Código inválido o expirado';
+        this.showError(err.error?.error || 'Código incorrecto');
       }
     });
   }
 
   onResetPassword(): void {
-    this.clearMessages();
-
-    if (!this.recoveryNewPassword || this.recoveryNewPassword.length < 6) {
-      this.showRecoveryError = true;
-      this.recoveryErrorMessage = 'La contraseña debe tener al menos 6 caracteres';
-      return;
-    }
-
-    if (this.recoveryNewPassword !== this.recoveryConfirmPassword) {
-      this.showRecoveryError = true;
-      this.recoveryErrorMessage = 'Las contraseñas no coinciden';
-      return;
-    }
+    if (this.recoveryNewPassword.length < 6) return this.showError('Contraseña muy corta');
+    if (this.recoveryNewPassword !== this.recoveryConfirmPassword) return this.showError('No coinciden');
 
     this.isLoading = true;
+    this.clearMessages();
 
     this.http.post(`${this.apiUrl}/auth/restablecer-password`, {
       num_usuario: this.recoveryNumUsuario,
       new_password: this.recoveryNewPassword
     }).subscribe({
-      next: (response: any) => {
+      next: () => {
         this.isLoading = false;
-        this.showSuccess('¡Contraseña actualizada exitosamente!');
-        
+        this.showSuccess('Contraseña restablecida.');
         setTimeout(() => {
-          this.recoveryEmail = '';
-          this.recoveryCode = '';
-          this.recoveryNewPassword = '';
-          this.recoveryConfirmPassword = '';
-          this.recuperarStep = 1;
           this.loginNumUsuario = this.recoveryNumUsuario;
           this.setActiveTab('login');
+          // Limpiar
+          this.recoveryEmail = ''; this.recoveryCode = ''; 
+          this.recoveryNewPassword = ''; this.recoveryConfirmPassword = '';
         }, 2000);
       },
-      error: (error) => {
+      error: (err) => {
         this.isLoading = false;
-        this.showRecoveryError = true;
-        this.recoveryErrorMessage = error.error?.error || 'Error al actualizar la contraseña';
+        this.showError('Error al cambiar contraseña');
       }
     });
   }
 
+  // --- ACCESO RÁPIDO
   onQuickAccess(role: string): void {
-    this.clearMessages();
-    
     const credentials: any = {
       'Estudiante': { num_usuario: '00000005', password: 'contra1326' },
       'Administrador': { num_usuario: '00000001', password: 'contra1326' },
@@ -356,34 +296,5 @@ export class LoginComponent {
       this.loginPassword = credentials[role].password;
       this.onLogin();
     }
-  }
-
-  private isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-
-  private showError(message: string): void {
-    if (this.activeTab === 'forgot') {
-      this.showRecoveryError = true;
-      this.recoveryErrorMessage = message;
-    } else {
-      this.showRegistroError = true;
-      this.registroErrorMessage = message;
-    }
-  }
-
-  private showSuccess(message: string): void {
-    this.showSuccessMessage = true;
-    this.successMessage = message;
-  }
-
-  private clearMessages(): void {
-    this.showRecoveryError = false;
-    this.recoveryErrorMessage = '';
-    this.showRegistroError = false;
-    this.registroErrorMessage = '';
-    this.showSuccessMessage = false;
-    this.successMessage = '';
   }
 }

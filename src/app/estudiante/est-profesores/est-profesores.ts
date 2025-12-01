@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NotificationsComponent } from '../../notificaciones/notificaciones';
-
-// Servicios
 import { ProfesoresService, Profesor } from '../../services/profesores.service';
 import { AuthService } from '../../auth.service';
 

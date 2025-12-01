@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Material {
   id_material: number;
@@ -27,7 +28,7 @@ export interface MaterialStats {
   total_materiales: number;
   total_materias: number;
   nuevos: number;
-  total_profesores: number; // NUEVO
+  total_profesores: number; 
 }
 
 export interface MateriaDisponible {
@@ -39,7 +40,7 @@ export interface MateriaDisponible {
   providedIn: 'root'
 })
 export class MaterialesService {
-  private apiUrl = 'http://localhost:5000/api/materiales';
+  private apiUrl =  `${environment.apiUrl}/materiales`;
 
   constructor(private http: HttpClient) {}
 

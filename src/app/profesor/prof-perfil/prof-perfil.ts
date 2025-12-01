@@ -1,11 +1,11 @@
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { NotificationsComponent } from '../../notificaciones/notificaciones';
 import { AuthService } from '../../auth.service';
 
+// --- Interfaces ---
 interface NavItem {
   icon: string;
   label: string;
@@ -13,50 +13,65 @@ interface NavItem {
   badge?: number;
 }
 
+interface UserProfile {
+  userName: string; 
+  nombres: string;
+  apellido_paterno: string;
+  apellido_materno: string;
+  email: string;
+  phone: string;
+  officeHours: string;
+  departamento: string;
+  puesto: string;
+}
+
+// --- Constantes
+const ICONS_MAP: { [key: string]: string } = {
+  'home': 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
+  'material': 'M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25',
+  'users': 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+  'user': 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'
+};
+
 @Component({
   selector: 'app-prof-perfil',
   standalone: true,
-  imports: [CommonModule, FormsModule, NotificationsComponent],
+  imports: [CommonModule, FormsModule, RouterModule, NotificationsComponent],
   templateUrl: './prof-perfil.html',
   styleUrls: ['./prof-perfil.css']
 })
 export class ProfPerfilComponent implements OnInit {
-  activeTab: 'contact' | 'security' = 'contact';
-  isEditingContact: boolean = false;
-  showChangePasswordModal: boolean = false;
-  showVerificationModal: boolean = false;
-  currentRoute: string = '/prof-perfil';
-
+  // Datos Usuario
   userRole: string = 'Profesor';
   userName: string = '';
   userAccountNumber: string = '';
   userMateria: string = '';
   notificationCount: number = 0;
+  currentRoute: string = '/prof-perfil';
 
-  userProfile: any = {
-    userName: '',
-    nombres: '',
-    apellido_paterno: '',
-    apellido_materno: '',
-    avatar: 'PR',
-    email: '',
-    phone: '',
-    officeHours: '',
-    departamento: '',
-    puesto: ''
+  // Tabs
+  activeTab: 'contact' | 'security' = 'contact';
+
+  // Perfil (Inicializado)
+  userProfile: UserProfile = {
+    userName: '', nombres: '', apellido_paterno: '', apellido_materno: '',
+    email: '', phone: '', officeHours: '', departamento: '', puesto: ''
   };
 
-  editedprofile: any = { ...this.userProfile };
-  originalProfile: any = null;
-
-  // Configuración de seguridad
+  // Edición
+  isEditingContact: boolean = false;
+  editedprofile: UserProfile = { ...this.userProfile };
+  
+  // Seguridad
   securityConfig = {
     passwordLastUpdated: 'No registrado',
-    twoFactorEnabled: false,
     activeSessions: 1
   };
 
-  // Cambio de contraseña
+  // Formularios
+  showChangePasswordModal: boolean = false;
+  showVerificationModal: boolean = false;
+  
   passwordForm = {
     currentPassword: '',
     newPassword: '',
@@ -72,35 +87,38 @@ export class ProfPerfilComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    if (!this.checkAuth()) return;
     this.loadUserProfile();
     this.loadNavigation();
     this.currentRoute = this.router.url;
   }
 
+  private checkAuth(): boolean {
+    if (!localStorage.getItem('token')) {
+      this.router.navigate(['']);
+      return false;
+    }
+    return true;
+  }
+
   loadUserProfile(): void {
     this.authService.getPerfil().subscribe({
       next: (data) => {
-        console.log('[PROF-PERFIL] Datos recibidos:', data);
-        
         this.userRole = 'Profesor';
         const detalles = data.detalles || {};
         
-        // Construir nombre completo
         const nombreCompleto = `${detalles.nombres} ${detalles.apellido_paterno} ${detalles.apellido_materno || ''}`.trim();
+        
         this.userName = nombreCompleto;
         this.userAccountNumber = data.num_usuario || '';
         this.userMateria = detalles.departamento || 'Profesor';
-        
-        // Generar avatar (iniciales)
-        const iniciales = `${detalles.nombres?.charAt(0) || ''}${detalles.apellido_paterno?.charAt(0) || ''}`.toUpperCase();
 
-        // Mapear datos del backend
+        // Mapeo de datos
         this.userProfile = {
           userName: nombreCompleto,
           nombres: detalles.nombres,
           apellido_paterno: detalles.apellido_paterno,
           apellido_materno: detalles.apellido_materno || '',
-          avatar: iniciales || 'PR',
           email: data.correo,
           phone: detalles.telefono || '',
           officeHours: detalles.horario_oficina || 'No registrado',
@@ -111,7 +129,7 @@ export class ProfPerfilComponent implements OnInit {
         this.editedprofile = { ...this.userProfile };
       },
       error: (err) => {
-        console.error('[PROF-PERFIL] Error cargando perfil:', err);
+        console.error('[PROF-PERFIL] Error:', err);
         if (err.status === 401) {
           this.router.navigate(['']);
         }
@@ -132,23 +150,18 @@ export class ProfPerfilComponent implements OnInit {
     this.activeTab = tab;
   }
 
+  // --- Edición de Contacto
   startEditingContact(): void {
     this.isEditingContact = true;
     this.editedprofile = { ...this.userProfile };
-    this.originalProfile = { ...this.userProfile };
   }
 
   cancelEditingContact(): void {
     this.isEditingContact = false;
-    if (this.originalProfile) {
-      this.editedprofile = { ...this.originalProfile };
-      this.userProfile = { ...this.originalProfile };
-    }
-    this.originalProfile = null;
+    this.editedprofile = { ...this.userProfile };
   }
 
   saveContactChanges(): void {
-    // Separar el nombre completo
     const nombreCompleto = this.editedprofile.userName.trim();
     const partes = nombreCompleto.split(' ');
     
@@ -180,88 +193,70 @@ export class ProfPerfilComponent implements OnInit {
 
     this.authService.actualizarPerfil(payload).subscribe({
       next: () => {
-        // Actualizar datos locales
         this.userProfile = { ...this.editedprofile };
         this.userProfile.nombres = nuevosNombres;
         this.userProfile.apellido_paterno = nuevoPaterno;
         this.userProfile.apellido_materno = nuevoMaterno;
         this.userName = this.editedprofile.userName;
         
-        // Actualizar localStorage
-        const currentUser = JSON.parse(localStorage.getItem('userData') || '{}');
-        if (currentUser && currentUser.detalles) {
-          currentUser.detalles.nombres = nuevosNombres;
-          currentUser.detalles.apellido_paterno = nuevoPaterno;
-          currentUser.detalles.apellido_materno = nuevoMaterno;
-          currentUser.detalles.telefono = this.editedprofile.phone;
-          currentUser.detalles.horario_oficina = this.editedprofile.officeHours;
-          currentUser.correo = this.editedprofile.email;
-          localStorage.setItem('userData', JSON.stringify(currentUser));
-        }
+        this.updateLocalStorage(payload);
 
         alert('Perfil actualizado exitosamente');
         this.isEditingContact = false;
-        this.originalProfile = null;
       },
       error: (err) => {
-        console.error('[PROF-PERFIL] Error al actualizar:', err);
+        console.error('[PROF-PERFIL] Error update:', err);
         alert('Error al guardar los cambios');
       }
     });
   }
 
+  private updateLocalStorage(data: any): void {
+    try {
+      const currentUser = JSON.parse(localStorage.getItem('userData') || '{}');
+      if (currentUser && currentUser.detalles) {
+        currentUser.detalles.nombres = data.nombres;
+        currentUser.detalles.apellido_paterno = data.apellido_paterno;
+        currentUser.detalles.apellido_materno = data.apellido_materno;
+        currentUser.detalles.telefono = data.telefono;
+        currentUser.detalles.horario_oficina = data.horario_oficina;
+        currentUser.correo = data.email;
+        localStorage.setItem('userData', JSON.stringify(currentUser));
+      }
+    } catch (e) {
+      console.error('Error updating localStorage', e);
+    }
+  }
+
+  // --- Contraseña 
   openChangePasswordModal(): void {
     this.showChangePasswordModal = true;
-    this.passwordForm = {
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    };
+    this.passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
   }
 
   closeChangePasswordModal(): void {
     this.showChangePasswordModal = false;
-    this.passwordForm = {
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    };
   }
 
   changePassword(): void {
-    if (!this.passwordForm.currentPassword || !this.passwordForm.newPassword || !this.passwordForm.confirmPassword) {
-      alert('Por favor completa todos los campos');
-      return;
-    }
+    const { currentPassword, newPassword, confirmPassword } = this.passwordForm;
 
-    if (this.passwordForm.newPassword !== this.passwordForm.confirmPassword) {
-      alert('Las contraseñas nuevas no coinciden');
-      return;
-    }
-
-    if (this.passwordForm.newPassword.length < 6) {
-      alert('La contraseña debe tener al menos 6 caracteres');
-      return;
-    }
+    if (!currentPassword || !newPassword || !confirmPassword) return alert('Completa todos los campos');
+    if (newPassword !== confirmPassword) return alert('Las contraseñas no coinciden');
+    if (newPassword.length < 6) return alert('La contraseña debe tener al menos 6 caracteres');
 
     const btn = document.querySelector('.btn-modal-primary') as HTMLButtonElement;
-    if (btn) btn.innerText = 'Enviando código...';
-    if (btn) btn.disabled = true;
+    if (btn) { btn.innerText = 'Enviando...'; btn.disabled = true; }
 
     this.authService.solicitarCodigoCambio().subscribe({
-      next: (res) => {
-        console.log('[PROF-PERFIL] Código enviado:', res);
+      next: () => {
         this.showChangePasswordModal = false;
         this.showVerificationModal = true;
-        
-        if (btn) btn.innerText = 'Cambiar Contraseña';
-        if (btn) btn.disabled = false;
+        if (btn) { btn.innerText = 'Cambiar Contraseña'; btn.disabled = false; }
       },
       error: (err) => {
-        console.error('[PROF-PERFIL] Error:', err);
-        alert('Error al enviar el código: ' + (err.error?.error || 'Error de servidor'));
-        if (btn) btn.innerText = 'Cambiar Contraseña';
-        if (btn) btn.disabled = false;
+        alert('Error: ' + (err.error?.error || 'Error servidor'));
+        if (btn) { btn.innerText = 'Cambiar Contraseña'; btn.disabled = false; }
       }
     });
   }
@@ -272,38 +267,23 @@ export class ProfPerfilComponent implements OnInit {
   }
 
   verifyAndChangePassword(): void {
-    if (!this.verificationCode) {
-      alert('Por favor introduce el código de verificación');
-      return;
-    }
+    if (!this.verificationCode) return alert('Ingresa el código');
 
     this.authService.confirmarCambioPassword(
       this.verificationCode,
       this.passwordForm.currentPassword,
       this.passwordForm.newPassword
     ).subscribe({
-      next: (res) => {
+      next: () => {
         alert('¡Contraseña cambiada exitosamente!');
         this.closeVerificationModal();
         this.closeChangePasswordModal();
-        
-        this.passwordForm = {
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: ''
-        };
+        this.passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
         this.verificationCode = '';
         this.securityConfig.passwordLastUpdated = 'hace unos segundos';
       },
-      error: (err) => {
-        console.error('[PROF-PERFIL] Error:', err);
-        alert(err.error?.error || 'Código incorrecto o expirado');
-      }
+      error: (err) => alert(err.error?.error || 'Código incorrecto')
     });
-  }
-
-  configure2FA(): void {
-    console.log('Configurar autenticación de dos factores');
   }
 
   viewActiveSessions(): void {
@@ -316,13 +296,7 @@ export class ProfPerfilComponent implements OnInit {
   }
 
   getIcon(iconName: string): string {
-    const icons: { [key: string]: string } = {
-      'home': 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
-      'material': 'M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25',
-      'users': 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
-      'user': 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'
-    };
-    return icons[iconName] || icons['user'];
+    return ICONS_MAP[iconName] || ICONS_MAP['user'];
   }
 
   logout(): void {

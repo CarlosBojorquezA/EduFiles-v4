@@ -1,6 +1,5 @@
 <div class="login-container">
   <div class="login-card">
-    <!-- Logo -->
     <div class="logo">
       <div class="logo-circle">
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -13,412 +12,276 @@
       </div>
     </div>
 
-    <!-- Title -->
     <h1 class="title">Sistema de Documentos</h1>
     <p class="subtitle">Ingresa a tu cuenta</p>
 
-    <!-- Tabs -->
     <div class="tabs">
-      <button 
-        class="tab" 
-        [class.active]="activeTab === 'login'"
-        (click)="setActiveTab('login')">
-        Iniciar Sesión
-      </button>
-      <button 
-        class="tab" 
-        [class.active]="activeTab === 'register'"
-        (click)="setActiveTab('register')">
-        Registro
-      </button>
-      <button 
-        class="tab" 
-        [class.active]="activeTab === 'forgot'"
-        (click)="setActiveTab('forgot')">
-        Recuperar
-      </button>
+      <button class="tab" [class.active]="activeTab === 'login'" (click)="setActiveTab('login')">Iniciar Sesión</button>
+      <button class="tab" [class.active]="activeTab === 'register'" (click)="setActiveTab('register')">Registro</button>
+      <button class="tab" [class.active]="activeTab === 'forgot'" (click)="setActiveTab('forgot')">Recuperar</button>
     </div>
 
-    <!-- Success Message -->
-    <div *ngIf="showSuccessMessage" class="success-box">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="20 6 9 17 4 12"></polyline>
-      </svg>
-      <span>{{ successMessage }}</span>
-    </div>
-
-    <!-- ========== LOGIN TAB ========== -->
-    <div *ngIf="activeTab === 'login'" class="tab-content">
-      <form class="login-form" (ngSubmit)="onLogin()">
-        <div class="form-group">
-          <label for="loginNumUsuario">Número de Usuario</label>
-          <input 
-            type="text" 
-            id="loginNumUsuario" 
-            [(ngModel)]="loginNumUsuario"
-            name="loginNumUsuario"
-            placeholder="12345678"
-            class="form-input"
-            [disabled]="isLoading">
-        </div>
-
-        <div class="form-group">
-          <label for="loginPassword">Contraseña</label>
-          <input 
-            type="password" 
-            id="loginPassword" 
-            [(ngModel)]="loginPassword"
-            name="loginPassword"
-            placeholder="••••••••"
-            class="form-input"
-            [disabled]="isLoading">
-        </div>
-
-        <button type="submit" class="btn-primary" [disabled]="isLoading">
-          <svg *ngIf="!isLoading" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-            <polyline points="10 17 15 12 10 7"></polyline>
-            <line x1="15" y1="12" x2="3" y2="12"></line>
-          </svg>
-          <span *ngIf="!isLoading">Iniciar Sesión</span>
-          <span *ngIf="isLoading">Cargando...</span>
-        </button>
-      </form>
-    </div>
-
-    <!-- ========== REGISTER TAB ========== -->
-    <div *ngIf="activeTab === 'register'" class="tab-content">
-      <form class="register-form" (ngSubmit)="onRegister()">
-        <!-- Datos del Estudiante -->
-        <div class="form-section">
-          <h3 class="section-title">Datos del Estudiante</h3>
-          
-          <div class="form-group">
-            <label for="nombres">Nombre(s) *</label>
-            <input 
-              type="text" 
-              id="nombres" 
-              [(ngModel)]="registroForm.nombres"
-              name="nombres"
-              placeholder="María Elena"
-              class="form-input"
-              [disabled]="isLoading"
-              required>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="apellidoPaterno">Apellido Paterno *</label>
-              <input 
-                type="text" 
-                id="apellidoPaterno" 
-                [(ngModel)]="registroForm.apellidoPaterno"
-                name="apellidoPaterno"
-                placeholder="García"
-                class="form-input"
-                [disabled]="isLoading"
-                required>
-            </div>
-
-            <div class="form-group">
-              <label for="apellidoMaterno">Apellido Materno *</label>
-              <input 
-                type="text" 
-                id="apellidoMaterno" 
-                [(ngModel)]="registroForm.apellidoMaterno"
-                name="apellidoMaterno"
-                placeholder="López"
-                class="form-input"
-                [disabled]="isLoading"
-                required>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="curp">CURP *</label>
-            <input 
-              type="text" 
-              id="curp" 
-              [(ngModel)]="registroForm.curp"
-              name="curp"
-              placeholder="GAML001234MDFRRR09"
-              class="form-input"
-              maxlength="18"
-              [disabled]="isLoading"
-              required>
-            <p class="form-hint">18 caracteres</p>
-          </div>
-
-          <div class="form-group">
-            <label for="fecha_nacimiento">Fecha de Nacimiento *</label>
-            <input 
-              type="date" 
-              id="fecha_nacimiento" 
-              [(ngModel)]="registroForm.fecha_nacimiento"
-              name="fecha_nacimiento"
-              class="form-input"
-              [disabled]="isLoading"
-              required>
-          </div>
-
-          <div class="form-group">
-            <label for="telefono">Teléfono (Opcional)</label>
-            <input 
-              type="tel" 
-              id="telefono" 
-              [(ngModel)]="registroForm.telefono"
-              name="telefono"
-              placeholder="6681234567"
-              class="form-input"
-              [disabled]="isLoading">
-          </div>
-
-          <div class="form-group">
-            <label for="grado">Grado *</label>
-            <select 
-              id="grado" 
-              [(ngModel)]="registroForm.grado"
-              name="grado"
-              class="form-select"
-              [disabled]="isLoading"
-              required>
-              <option value="">Selecciona un grado</option>
-              <option *ngFor="let grado of grados" [value]="grado.value">
-                {{ grado.label }}
-              </option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="radio-label">Tipo de Estudiante *</label>
-            <div class="radio-group">
-              <label class="radio-option">
-                <input 
-                  type="radio" 
-                  name="tipoEstudiante" 
-                  value="NUEVO_INGRESO"
-                  [(ngModel)]="registroForm.tipo_estudiante"
-                  [disabled]="isLoading">
-                <span>Nuevo Ingreso</span>
-              </label>
-              <label class="radio-option">
-                <input 
-                  type="radio" 
-                  name="tipoEstudiante" 
-                  value="REINGRESO"
-                  [(ngModel)]="registroForm.tipo_estudiante"
-                  [disabled]="isLoading">
-                <span>Reingreso</span>
-              </label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="password">Contraseña *</label>
-            <input 
-              type="password" 
-              id="password" 
-              [(ngModel)]="registroForm.password"
-              name="password"
-              placeholder="Mínimo 6 caracteres"
-              class="form-input"
-              minlength="6"
-              [disabled]="isLoading"
-              required>
-          </div>
-        </div>
-
-        <!-- Datos del Tutor -->
-        <div class="form-section">
-          <h3 class="section-title">Datos del Tutor</h3>
-          
-          <div class="form-group">
-            <label for="nombresTutor">Nombre(s) del Tutor *</label>
-            <input 
-              type="text" 
-              id="nombresTutor" 
-              [(ngModel)]="registroForm.nombresTutor"
-              name="nombresTutor"
-              placeholder="Juan Carlos García"
-              class="form-input"
-              [disabled]="isLoading"
-              required>
-          </div>
-
-          <div class="form-group">
-            <label for="correoTutor">Correo del Tutor *</label>
-            <input 
-              type="email" 
-              id="correoTutor" 
-              [(ngModel)]="registroForm.correoTutor"
-              name="correoTutor"
-              placeholder="tutor@email.com"
-              class="form-input"
-              [disabled]="isLoading"
-              required>
-          </div>
-
-          <div class="form-group">
-            <label for="telefonoTutor">Teléfono del Tutor *</label>
-            <input 
-              type="tel" 
-              id="telefonoTutor" 
-              [(ngModel)]="registroForm.telefonoTutor"
-              name="telefonoTutor"
-              placeholder="6681234567"
-              class="form-input"
-              [disabled]="isLoading"
-              required>
-          </div>
-        </div>
-
-        <div *ngIf="showRegistroError" class="error-box">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-          <span>{{ registroErrorMessage }}</span>
-        </div>
-
-        <button type="submit" class="btn-primary" [disabled]="isLoading">
-          <svg *ngIf="!isLoading" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="8.5" cy="7" r="4"></circle>
-            <polyline points="17 11 19 13 23 9"></polyline>
-          </svg>
-          <span *ngIf="!isLoading">Registrarse</span>
-          <span *ngIf="isLoading">Registrando...</span>
-        </button>
-      </form>
-    </div>
-
-    <!-- ========== FORGOT PASSWORD TAB ========== -->
-    <div *ngIf="activeTab === 'forgot'" class="tab-content">
-      
-      <!-- Paso 1: Solicitar código -->
-      <div *ngIf="recuperarStep === 1">
-        <div class="info-box">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="16" x2="12" y2="12"></line>
-            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-          </svg>
-          <span>Ingresa tu correo electrónico o número de teléfono para recuperar tu contraseña.</span>
-        </div>
-
-        <form class="recovery-form" (ngSubmit)="onRecoverPassword()">
-          <div class="form-group">
-            <label for="recoveryEmail">Correo Electrónico o Teléfono</label>
-            <input 
-              type="text" 
-              id="recoveryEmail" 
-              [(ngModel)]="recoveryEmail"
-              name="recoveryEmail"
-              placeholder="correo@ejemplo.com o 6681234567"
-              class="form-input"
-              [disabled]="isLoading">
-            <p class="form-hint">Te enviaremos un código de verificación</p>
-          </div>
-
-          <button type="submit" class="btn-primary" [disabled]="isLoading">
-            <span *ngIf="!isLoading">Enviar Código</span>
-            <span *ngIf="isLoading">Enviando...</span>
-          </button>
-        </form>
-      </div>
-
-      <!-- Paso 2: Verificar código -->
-      <div *ngIf="recuperarStep === 2">
-        <div class="info-box">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="16" x2="12" y2="12"></line>
-            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-          </svg>
-          <span>Ingresa el código de 6 dígitos que recibiste</span>
-        </div>
-
-        <form class="recovery-form" (ngSubmit)="onVerifyCode()">
-          <div class="form-group">
-            <label for="recoveryCode">Código de Verificación</label>
-            <input 
-              type="text" 
-              id="recoveryCode" 
-              [(ngModel)]="recoveryCode"
-              name="recoveryCode"
-              placeholder="123456"
-              maxlength="6"
-              class="form-input"
-              style="text-align: center; font-size: 20px; letter-spacing: 4px;"
-              [disabled]="isLoading">
-          </div>
-
-          <button type="submit" class="btn-primary" [disabled]="isLoading">
-            <span *ngIf="!isLoading">Verificar Código</span>
-            <span *ngIf="isLoading">Verificando...</span>
-          </button>
-        </form>
-      </div>
-
-      <!-- Paso 3: Nueva contraseña -->
-      <div *ngIf="recuperarStep === 3">
-        <div class="info-box" style="background-color: #e6fffa; border-color: #38b2ac;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #2c7a7b;">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-          <span style="color: #2c7a7b;">✓ Código verificado. Ingresa tu nueva contraseña</span>
-        </div>
-
-        <form class="recovery-form" (ngSubmit)="onResetPassword()">
-          <div class="form-group">
-            <label for="recoveryNewPassword">Nueva Contraseña</label>
-            <input 
-              type="password" 
-              id="recoveryNewPassword" 
-              [(ngModel)]="recoveryNewPassword"
-              name="recoveryNewPassword"
-              placeholder="Mínimo 6 caracteres"
-              minlength="6"
-              class="form-input"
-              [disabled]="isLoading">
-          </div>
-
-          <div class="form-group">
-            <label for="recoveryConfirmPassword">Confirmar Contraseña</label>
-            <input 
-              type="password" 
-              id="recoveryConfirmPassword" 
-              [(ngModel)]="recoveryConfirmPassword"
-              name="recoveryConfirmPassword"
-              placeholder="Repite tu contraseña"
-              class="form-input"
-              [disabled]="isLoading">
-          </div>
-
-          <button type="submit" class="btn-primary" [disabled]="isLoading">
-            <span *ngIf="!isLoading">Restablecer Contraseña</span>
-            <span *ngIf="isLoading">Actualizando...</span>
-          </button>
-        </form>
-      </div>
-
-      <div *ngIf="showRecoveryError" class="error-box">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    @if (showSuccessMessage) {
+      <div class="success-box">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
-        <span>{{ recoveryErrorMessage }}</span>
+        <span>{{ successMessage }}</span>
       </div>
-    </div>
+    }
 
-    <!-- Quick Access -->
-    <div *ngIf="activeTab !== 'register'" class="quick-access">
-      <p class="quick-access-label">Acceso rápido:</p>
-      <button class="btn-secondary" (click)="onQuickAccess('Estudiante')" [disabled]="isLoading">Estudiante</button>
-      <button class="btn-secondary" (click)="onQuickAccess('Administrador')" [disabled]="isLoading">Administrador</button>
-      <button class="btn-secondary" (click)="onQuickAccess('Profesor')" [disabled]="isLoading">Profesor</button>
-    </div>
+    @if (activeTab === 'login') {
+      <div class="tab-content">
+        <form class="login-form" (ngSubmit)="onLogin()">
+          <div class="form-group">
+            <label for="loginNumUsuario">Número de Usuario</label>
+            <input 
+              type="text" 
+              id="loginNumUsuario" 
+              [(ngModel)]="loginNumUsuario"
+              name="loginNumUsuario"
+              placeholder="12345678"
+              class="form-input"
+              [disabled]="isLoading">
+          </div>
+
+          <div class="form-group">
+            <label for="loginPassword">Contraseña</label>
+            <input 
+              type="password" 
+              id="loginPassword" 
+              [(ngModel)]="loginPassword"
+              name="loginPassword"
+              placeholder="••••••••"
+              class="form-input"
+              [disabled]="isLoading">
+          </div>
+
+          <button type="submit" class="btn-primary" [disabled]="isLoading">
+            @if (!isLoading) {
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                <polyline points="10 17 15 12 10 7"></polyline>
+                <line x1="15" y1="12" x2="3" y2="12"></line>
+              </svg>
+              <span>Iniciar Sesión</span>
+            } @else {
+              <span>Cargando...</span>
+            }
+          </button>
+        </form>
+      </div>
+    }
+
+    @if (activeTab === 'register') {
+      <div class="tab-content">
+        <form class="register-form" (ngSubmit)="onRegister()">
+          <div class="form-section">
+            <h3 class="section-title">Datos del Estudiante</h3>
+            
+            <div class="form-group">
+              <label for="nombres">Nombre(s) *</label>
+              <input type="text" id="nombres" [(ngModel)]="registroForm.nombres" name="nombres" placeholder="María Elena" class="form-input" [disabled]="isLoading" required>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="apellidoPaterno">Apellido Paterno *</label>
+                <input type="text" id="apellidoPaterno" [(ngModel)]="registroForm.apellidoPaterno" name="apellidoPaterno" placeholder="García" class="form-input" [disabled]="isLoading" required>
+              </div>
+              <div class="form-group">
+                <label for="apellidoMaterno">Apellido Materno *</label>
+                <input type="text" id="apellidoMaterno" [(ngModel)]="registroForm.apellidoMaterno" name="apellidoMaterno" placeholder="López" class="form-input" [disabled]="isLoading" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="curp">CURP *</label>
+              <input type="text" id="curp" [(ngModel)]="registroForm.curp" name="curp" placeholder="GAML001234MDFRRR09" class="form-input" maxlength="18" [disabled]="isLoading" required>
+              <p class="form-hint">18 caracteres</p>
+            </div>
+
+            <div class="form-group">
+              <label for="fecha_nacimiento">Fecha de Nacimiento *</label>
+              <input type="date" id="fecha_nacimiento" [(ngModel)]="registroForm.fecha_nacimiento" name="fecha_nacimiento" class="form-input" [disabled]="isLoading" required>
+            </div>
+
+            <div class="form-group">
+              <label for="telefono">Teléfono (Opcional)</label>
+              <input type="tel" id="telefono" [(ngModel)]="registroForm.telefono" name="telefono" placeholder="6681234567" class="form-input" [disabled]="isLoading">
+            </div>
+
+            <div class="form-group">
+              <label for="grado">Grado *</label>
+              <select id="grado" [(ngModel)]="registroForm.grado" name="grado" class="form-select" [disabled]="isLoading" required>
+                <option value="">Selecciona un grado</option>
+                @for (grado of grados; track grado.value) {
+                  <option [value]="grado.value">{{ grado.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="radio-label">Tipo de Estudiante *</label>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" name="tipoEstudiante" value="NUEVO_INGRESO" [(ngModel)]="registroForm.tipo_estudiante" [disabled]="isLoading">
+                  <span>Nuevo Ingreso</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" name="tipoEstudiante" value="REINGRESO" [(ngModel)]="registroForm.tipo_estudiante" [disabled]="isLoading">
+                  <span>Reingreso</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="password">Contraseña *</label>
+              <input type="password" id="password" [(ngModel)]="registroForm.password" name="password" placeholder="Mínimo 6 caracteres" class="form-input" minlength="6" [disabled]="isLoading" required>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3 class="section-title">Datos del Tutor</h3>
+            <div class="form-group">
+              <label for="nombresTutor">Nombre(s) del Tutor *</label>
+              <input type="text" id="nombresTutor" [(ngModel)]="registroForm.nombresTutor" name="nombresTutor" placeholder="Juan Carlos García" class="form-input" [disabled]="isLoading" required>
+            </div>
+            <div class="form-group">
+              <label for="correoTutor">Correo del Tutor *</label>
+              <input type="email" id="correoTutor" [(ngModel)]="registroForm.correoTutor" name="correoTutor" placeholder="tutor@email.com" class="form-input" [disabled]="isLoading" required>
+            </div>
+            <div class="form-group">
+              <label for="telefonoTutor">Teléfono del Tutor *</label>
+              <input type="tel" id="telefonoTutor" [(ngModel)]="registroForm.telefonoTutor" name="telefonoTutor" placeholder="6681234567" class="form-input" [disabled]="isLoading" required>
+            </div>
+          </div>
+
+          @if (showRegistroError) {
+            <div class="error-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>{{ registroErrorMessage }}</span>
+            </div>
+          }
+
+          <button type="submit" class="btn-primary" [disabled]="isLoading">
+            @if (!isLoading) {
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <polyline points="17 11 19 13 23 9"></polyline>
+              </svg>
+              <span>Registrarse</span>
+            } @else {
+              <span>Registrando...</span>
+            }
+          </button>
+        </form>
+      </div>
+    }
+
+    @if (activeTab === 'forgot') {
+      <div class="tab-content">
+        @if (recuperarStep === 1) {
+          <div>
+            <div class="info-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <span>Ingresa tu correo electrónico o número de teléfono para recuperar tu contraseña.</span>
+            </div>
+
+            <form class="recovery-form" (ngSubmit)="onRecoverPassword()">
+              <div class="form-group">
+                <label for="recoveryEmail">Correo Electrónico o Teléfono</label>
+                <input type="text" id="recoveryEmail" [(ngModel)]="recoveryEmail" name="recoveryEmail" placeholder="correo@ejemplo.com o 6681234567" class="form-input" [disabled]="isLoading">
+                <p class="form-hint">Te enviaremos un código de verificación</p>
+              </div>
+
+              <button type="submit" class="btn-primary" [disabled]="isLoading">
+                <span>{{ isLoading ? 'Enviando...' : 'Enviar Código' }}</span>
+              </button>
+            </form>
+          </div>
+        }
+
+        @if (recuperarStep === 2) {
+          <div>
+            <div class="info-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <span>Ingresa el código de 6 dígitos que recibiste</span>
+            </div>
+
+            <form class="recovery-form" (ngSubmit)="onVerifyCode()">
+              <div class="form-group">
+                <label for="recoveryCode">Código de Verificación</label>
+                <input type="text" id="recoveryCode" [(ngModel)]="recoveryCode" name="recoveryCode" placeholder="123456" maxlength="6" class="form-input" style="text-align: center; font-size: 20px; letter-spacing: 4px;" [disabled]="isLoading">
+              </div>
+
+              <button type="submit" class="btn-primary" [disabled]="isLoading">
+                <span>{{ isLoading ? 'Verificando...' : 'Verificar Código' }}</span>
+              </button>
+            </form>
+          </div>
+        }
+
+        @if (recuperarStep === 3) {
+          <div>
+            <div class="info-box" style="background-color: #e6fffa; border-color: #38b2ac;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #2c7a7b;">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span style="color: #2c7a7b;">✓ Código verificado. Ingresa tu nueva contraseña</span>
+            </div>
+
+            <form class="recovery-form" (ngSubmit)="onResetPassword()">
+              <div class="form-group">
+                <label for="recoveryNewPassword">Nueva Contraseña</label>
+                <input type="password" id="recoveryNewPassword" [(ngModel)]="recoveryNewPassword" name="recoveryNewPassword" placeholder="Mínimo 6 caracteres" minlength="6" class="form-input" [disabled]="isLoading">
+              </div>
+
+              <div class="form-group">
+                <label for="recoveryConfirmPassword">Confirmar Contraseña</label>
+                <input type="password" id="recoveryConfirmPassword" [(ngModel)]="recoveryConfirmPassword" name="recoveryConfirmPassword" placeholder="Repite tu contraseña" class="form-input" [disabled]="isLoading">
+              </div>
+
+              <button type="submit" class="btn-primary" [disabled]="isLoading">
+                <span>{{ isLoading ? 'Actualizando...' : 'Restablecer Contraseña' }}</span>
+              </button>
+            </form>
+          </div>
+        }
+
+        @if (showRecoveryError) {
+          <div class="error-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span>{{ recoveryErrorMessage }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    @if (activeTab !== 'register') {
+      <div class="quick-access">
+        <p class="quick-access-label">Acceso rápido:</p>
+        <button class="btn-secondary" (click)="onQuickAccess('Estudiante')" [disabled]="isLoading">Estudiante</button>
+        <button class="btn-secondary" (click)="onQuickAccess('Administrador')" [disabled]="isLoading">Administrador</button>
+        <button class="btn-secondary" (click)="onQuickAccess('Profesor')" [disabled]="isLoading">Profesor</button>
+      </div>
+    }
   </div>
 </div>
