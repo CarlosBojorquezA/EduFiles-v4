@@ -1,5 +1,4 @@
 <div class="chat-container">
-  <!-- Header -->
   <header class="header">
     <div class="header-content">
       <button class="back-btn" (click)="backToList()">
@@ -9,19 +8,21 @@
         </svg>
       </button>
       
-      <div class="user-info" *ngIf="profesor">
-        <div class="avatar">
-          <span>{{ profesor.iniciales }}</span>
+      @if (profesor) {
+        <div class="user-info">
+          <div class="avatar">
+            <span>{{ profesor.iniciales }}</span>
+          </div>
+          <div class="user-details">
+            <h3>{{ profesor.nombre_completo }}</h3>
+            <p>
+              {{ profesor.materia || profesor.materias }}
+              <span class="status-dot online"></span>
+              <span>En línea</span>
+            </p>
+          </div>
         </div>
-        <div class="user-details">
-          <h3>{{ profesor.nombre_completo }}</h3>
-          <p>
-            {{ profesor.materia || profesor.materias }}
-            <span class="status-dot online"></span>
-            <span>En línea</span>
-          </p>
-        </div>
-      </div>
+      }
       
       <div class="header-right">
         <app-notifications></app-notifications>
@@ -36,88 +37,93 @@
     </div>
   </header>
 
-  <!-- Loading State -->
-  <div *ngIf="isLoading" style="text-align: center; padding: 60px 20px;">
-    <div style="width: 40px; height: 40px; margin: 0 auto 16px; border: 3px solid #e5e7eb; border-top-color: #1a1a1a; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
-    <p style="color: #666;">Cargando chat...</p>
-  </div>
+  @if (isLoading) {
+    <div style="text-align: center; padding: 60px 20px;">
+      <div style="width: 40px; height: 40px; margin: 0 auto 16px; border: 3px solid #e5e7eb; border-top-color: #1a1a1a; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+      <p style="color: #666;">Cargando chat...</p>
+    </div>
+  } @else {
 
-  <!-- Page indicator -->
-  <div class="page-indicator" *ngIf="!isLoading">
-    {{ currentPage }}/{{ totalPages }}
-  </div>
-
-  <!-- Messages Container -->
-  <div class="messages-container" #messagesContainer *ngIf="!isLoading">
-    <div class="messages-wrapper">
-      
-      <!-- Empty State -->
-      <div *ngIf="mensajes.length === 0" class="empty-chat">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        </svg>
-        <h3>Inicia una conversación</h3>
-        <p>Envía un mensaje para comenzar a chatear</p>
-      </div>
-
-      <!-- Messages -->
-      <div 
-        *ngFor="let mensaje of mensajes" 
-        class="message-group"
-        [class.sent]="mensaje.tipo === 'enviado'"
-        [class.received]="mensaje.tipo === 'recibido'">
+    <div class="messages-container" #messagesContainer>
+      <div class="messages-wrapper">
         
-        <div class="message-bubble">
-          <div class="message-header" *ngIf="mensaje.tipo === 'recibido' && profesor">
-            {{ profesor.apellido_paterno || profesor.nombre_completo }}
-          </div>
-          <p class="message-content">{{ mensaje.mensaje }}</p>
-          <span class="message-time">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M12 6v6l4 2"/>
+        @if (groupedMessages.length === 0) {
+          <div class="empty-chat">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
             </svg>
-            {{ formatTime(mensaje.fecha_envio) }}
-          </span>
-        </div>
+            <h3>Inicia una conversación</h3>
+            <p>Envía un mensaje para comenzar a chatear</p>
+          </div>
+        } @else {
+          @for (group of groupedMessages; track group.date) {
+            
+            <div class="date-divider">
+              <span>{{ group.date }}</span>
+            </div>
+
+            @for (mensaje of group.messages; track mensaje.id_mensaje) {
+              <div 
+                class="message-group"
+                [class.sent]="mensaje.tipo === 'enviado'"
+                [class.received]="mensaje.tipo === 'recibido'">
+                
+                <div class="message-bubble">
+                  <p class="message-content">{{ mensaje.mensaje }}</p>
+                  <span class="message-time">
+                    {{ formatTime(mensaje.fecha_envio) }}
+                    @if (mensaje.tipo === 'enviado') {
+                      <span class="read-check" [style.color]="mensaje.leido ? '#34b7f1' : '#999'">
+                        ✓✓
+                      </span>
+                    }
+                  </span>
+                </div>
+              </div>
+            }
+          }
+        }
       </div>
     </div>
-  </div>
 
-  <!-- Message Input -->
-  <div class="message-input-container" *ngIf="!isLoading">
-    <input 
-      type="text" 
-      class="message-input"
-      placeholder="Escribe un mensaje..."
-      [(ngModel)]="newMessage"
-      (keyup.enter)="sendMessage()"
-      [disabled]="isSending"
-    />
-    <button 
-      class="send-button" 
-      (click)="sendMessage()"
-      [disabled]="!newMessage.trim() || isSending">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
-      </svg>
-    </button>
-  </div>
-
-  <!-- Bottom Navigation -->
-  <nav class="bottom-nav">
-    <button 
-      *ngFor="let item of navigationItems" 
-      class="nav-item"
-      [class.active]="item.route === currentRoute"
-      (click)="navigateTo(item.route)">
-      <div class="nav-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path [attr.d]="getIcon(item.icon)"></path>
-        </svg>
-        <span class="nav-badge" *ngIf="item.badge && item.badge > 0">{{ item.badge }}</span>
+    <div class="message-input-container">
+      <div class="message-input-wrapper">
+        <input 
+          type="text" 
+          class="message-input"
+          placeholder="Escribe un mensaje..."
+          [(ngModel)]="newMessage"
+          (keyup.enter)="sendMessage()"
+          [disabled]="isSending"
+        />
+        <button 
+          class="send-button" 
+          (click)="sendMessage()"
+          [disabled]="!newMessage.trim() || isSending">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+          </svg>
+        </button>
       </div>
-      <span class="nav-label">{{ item.label }}</span>
-    </button>
+    </div>
+  }
+
+  <nav class="bottom-nav">
+    @for (item of navigationItems; track item.route) {
+      <button 
+        class="nav-item"
+        [class.active]="item.route === currentRoute"
+        (click)="navigateTo(item.route)">
+        <div class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path [attr.d]="getIcon(item.icon)"></path>
+          </svg>
+          @if (item.badge && item.badge > 0) {
+            <span class="nav-badge">{{ item.badge }}</span>
+          }
+        </div>
+        <span class="nav-label">{{ item.label }}</span>
+      </button>
+    }
   </nav>
 </div>

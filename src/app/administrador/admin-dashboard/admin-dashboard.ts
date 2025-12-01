@@ -121,7 +121,6 @@ export class AdminDashboardComponent implements OnInit {
 
     try {
       const user = JSON.parse(userDataStr);
-      // Uso de Optional Chaining (?.) para simplificar la lógica
       const nombre = user.detalles?.nombres;
       const apellido = user.detalles?.apellido_paterno || '';
       

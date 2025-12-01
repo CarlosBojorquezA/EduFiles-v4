@@ -437,6 +437,10 @@
   transform: scale(1.1);
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Bottom Navigation */
 .bottom-nav {
   position: fixed;

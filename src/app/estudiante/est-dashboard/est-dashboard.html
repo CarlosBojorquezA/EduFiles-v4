@@ -1,5 +1,4 @@
 <div class="dashboard-container">
-  <!-- Header -->
   <header class="header">
     <div class="header-left">
       <div class="user-info">
@@ -25,29 +24,28 @@
     </div>
   </header>
 
-  <!-- Main Content -->
   <main class="main-content">
     <h1 class="page-title">Inicio</h1>
 
-    <!-- Loading State -->
-    <div *ngIf="isLoading" style="text-align: center; padding: 40px 0; color: #666;">
-      <div style="width: 40px; height: 40px; margin: 0 auto 16px; border: 3px solid #e5e7eb; border-top-color: #1a1a1a; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
-      <p>Cargando información...</p>
-    </div>
-
-    <!-- Content (hidden while loading) -->
-    <div *ngIf="!isLoading">
-      <!-- Alerts Section -->
-      <div class="alerts-section" *ngIf="alerts.length > 0">
-        <div class="alert-card" *ngFor="let alert of alerts" [class.error]="alert.type === 'error'" [class.warning]="alert.type === 'warning'">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path [attr.d]="getIconPath(alert.icon)"></path>
-          </svg>
-          <span>{{ alert.message }}</span>
-        </div>
+    @if (isLoading) {
+      <div style="text-align: center; padding: 40px 0; color: #666;">
+        <div style="width: 40px; height: 40px; margin: 0 auto 16px; border: 3px solid #e5e7eb; border-top-color: #1a1a1a; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+        <p>Cargando información...</p>
       </div>
+    } @else {
+      @if (alerts.length > 0) {
+        <div class="alerts-section">
+          @for (alert of alerts; track $index) {
+            <div class="alert-card" [class.error]="alert.type === 'error'" [class.warning]="alert.type === 'warning'">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path [attr.d]="getIconPath(alert.icon)"></path>
+              </svg>
+              <span>{{ alert.message }}</span>
+            </div>
+          }
+        </div>
+      }
 
-      <!-- Progress Section -->
       <div class="progress-section">
         <div class="progress-header">
           <h2>Progreso de Documentos</h2>
@@ -59,67 +57,73 @@
         <p class="progress-text">{{ documentsApproved }} de {{ documentsTotal }} documentos aprobados ({{ progressPercentage }}%)</p>
       </div>
 
-      <!-- Documents List -->
-      <div class="documents-section" *ngIf="documents.length > 0">
-        <div class="document-card" *ngFor="let document of documents" (click)="viewDocumentDetails(document)">
-          <div class="document-header">
-            <div class="document-icon" [style.color]="document.iconColor">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path *ngIf="document.status === 'approved'" [attr.d]="getIconPath('check-circle')"></path>
-                <path *ngIf="document.status === 'rejected'" [attr.d]="getIconPath('x-circle')"></path>
-                <path *ngIf="document.status === 'pending'" [attr.d]="getIconPath('alert-circle')"></path>
-              </svg>
+      @if (documents.length > 0) {
+        <div class="documents-section">
+          @for (document of documents; track document.id_documento || $index) {
+            <div class="document-card" (click)="viewDocumentDetails(document)">
+              <div class="document-header">
+                <div class="document-icon" [style.color]="document.iconColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    @if (document.status === 'approved') {
+                      <path [attr.d]="getIconPath('check-circle')"></path>
+                    } @else if (document.status === 'rejected') {
+                      <path [attr.d]="getIconPath('x-circle')"></path>
+                    } @else if (document.status === 'pending') {
+                      <path [attr.d]="getIconPath('alert-circle')"></path>
+                    }
+                  </svg>
+                </div>
+                <div class="document-info">
+                  <h3>{{ document.name }}</h3>
+                  <p class="document-dates">
+                    @if (document.dueDate) {
+                      <span>Vence: {{ document.dueDate }}</span>
+                    }
+                    @if (document.uploadDate) {
+                      <span>Subido: {{ document.uploadDate }}</span>
+                    }
+                  </p>
+                  <p class="document-comment">{{ document.comment }}</p>
+                </div>
+                <span class="status-badge" 
+                  [class.approved]="document.status === 'approved'"
+                  [class.rejected]="document.status === 'rejected'"
+                  [class.pending]="document.status === 'pending'">
+                  {{ document.statusLabel }}
+                </span>
+              </div>
             </div>
-            <div class="document-info">
-              <h3>{{ document.name }}</h3>
-              <p class="document-dates">
-                <span *ngIf="document.dueDate">Vence: {{ document.dueDate }}</span>
-                <span *ngIf="document.uploadDate">Subido: {{ document.uploadDate }}</span>
-              </p>
-              <p class="document-comment">{{ document.comment }}</p>
-            </div>
-            <span class="status-badge" 
-              [class.approved]="document.status === 'approved'"
-              [class.rejected]="document.status === 'rejected'"
-              [class.pending]="document.status === 'pending'">
-              {{ document.statusLabel }}
-            </span>
-          </div>
+          }
         </div>
-      </div>
-
-      <!-- Empty State -->
-      <div *ngIf="documents.length === 0" style="text-align: center; padding: 60px 20px; background-color: white; border-radius: 12px; margin-top: 20px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: #d1d5db; margin: 0 auto 16px;">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-        </svg>
-        <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #1a1a1a;">No hay documentos</h3>
-        <p style="margin: 0; font-size: 14px; color: #666;">Aún no tienes documentos en el sistema</p>
-      </div>
-    </div>
+      } @else {
+        <div style="text-align: center; padding: 60px 20px; background-color: white; border-radius: 12px; margin-top: 20px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: #d1d5db; margin: 0 auto 16px;">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #1a1a1a;">No hay documentos</h3>
+          <p style="margin: 0; font-size: 14px; color: #666;">Aún no tienes documentos en el sistema</p>
+        </div>
+      }
+    }
   </main>
 
-  <!-- Bottom Navigation -->
   <nav class="bottom-nav">
-    <button 
-      *ngFor="let item of navigationItems" 
-      class="nav-item"
-      [class.active]="item.route === currentRoute"
-      (click)="navigateTo(item.route)">
-      <div class="nav-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path [attr.d]="getIcon(item.icon)"></path>
-        </svg>
-        <span class="nav-badge" *ngIf="item.badge && item.badge > 0">{{ item.badge }}</span>
-      </div>
-      <span class="nav-label">{{ item.label }}</span>
-    </button>
+    @for (item of navigationItems; track item.route) {
+      <button 
+        class="nav-item"
+        [class.active]="item.route === currentRoute"
+        (click)="navigateTo(item.route)">
+        <div class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path [attr.d]="getIcon(item.icon)"></path>
+          </svg>
+          @if (item.badge && item.badge > 0) {
+            <span class="nav-badge">{{ item.badge }}</span>
+          }
+        </div>
+        <span class="nav-label">{{ item.label }}</span>
+      </button>
+    }
   </nav>
 </div>
-
-<style>
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-</style>

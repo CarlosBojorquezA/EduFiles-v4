@@ -245,7 +245,7 @@ export class AdminGestionComponent implements OnInit {
     ).subscribe(data => this.students = data);
   }
 
-  // --- Lógica de Profesores (Reutilizable) ---
+  // --- Lógica de Profesores ---
   private getProfessorsObservable() {
     let params = new HttpParams();
     if (this.searchQueryProf) params = params.set('search', this.searchQueryProf);

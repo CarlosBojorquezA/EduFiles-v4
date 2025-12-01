@@ -143,7 +143,6 @@ export class AdminDocumentosComponent implements OnInit {
     this.loadUserData();
     this.loadNavigation();
     
-    // Si viene desde dashboard con tab específico
     const urlParams = new URLSearchParams(window.location.search);
     const tab = urlParams.get('tab');
     if (tab === 'pendientes' || tab === 'requeridos') {
@@ -274,7 +273,6 @@ export class AdminDocumentosComponent implements OnInit {
     this.resetFormData();
   }
 
-  // ✅ FUNCION RESTAURADA
   resetFormData(): void {
     this.formData = this.getInitialFormData();
   }
@@ -321,14 +319,10 @@ export class AdminDocumentosComponent implements OnInit {
   }
 
   // --- Acciones de Documentos Pendientes ---
-  
-  // ✅ FUNCION RESTAURADA: Requerida por el HTML (click)="verDocumento(pendiente)"
-  verDocumento(pendiente: DocumentoPendiente): void {
-    // Reutilizamos la lógica de descarga pero indicando que se abra en nueva pestaña
+    verDocumento(pendiente: DocumentoPendiente): void {
     this.descargarDocumento(pendiente, true);
   }
 
-  // Modificada para soportar el parámetro opcional 'abrir'
   descargarDocumento(pendiente: DocumentoPendiente, abrir: boolean = false): void {
     this.http.get(`${this.apiUrl}/documentos/descargar/${pendiente.id_documento}`, {
       responseType: 'blob'
@@ -350,13 +344,11 @@ export class AdminDocumentosComponent implements OnInit {
     });
   }
 
-  // ✅ FUNCION RESTAURADA: Requerida por el HTML
   aprobarDocumento(pendiente: DocumentoPendiente): void {
     if (!confirm(`¿Estás seguro de aprobar el documento "${pendiente.plantilla_nombre}" de ${pendiente.estudiante_nombre}?`)) return;
     this.enviarValidacion(pendiente.id_documento, 'APROBADO', '');
   }
 
-  // ✅ FUNCION RESTAURADA: Requerida por el HTML
   rechazarDocumento(pendiente: DocumentoPendiente): void {
     const motivo = prompt(`Ingresa el motivo del rechazo para ${pendiente.estudiante_nombre}:`);
     if (!motivo) return;
@@ -364,7 +356,6 @@ export class AdminDocumentosComponent implements OnInit {
     this.enviarValidacion(pendiente.id_documento, 'RECHAZADO', motivo);
   }
 
-  // Nueva función interna para evitar repetir código
   private enviarValidacion(id: number, estado: 'APROBADO' | 'RECHAZADO', comentario: string): void {
     this.http.put(`${this.apiUrl}/documentos/validar/${id}`, {
       estado,
@@ -401,8 +392,6 @@ export class AdminDocumentosComponent implements OnInit {
   
   const docId = this.resultadoIA.documento.id;
   const comentario = accion === 'RECHAZAR' ? this.resultadoIA.analisis_ia.comentario_sugerido : '';
-
-  // CORRECCIÓN: Transformamos la acción (verbo) al estado (participio)
   const estado = accion === 'APROBAR' ? 'APROBADO' : 'RECHAZADO';
 
   this.enviarValidacion(docId, estado, comentario);
@@ -416,14 +405,12 @@ export class AdminDocumentosComponent implements OnInit {
 
   revisarManualmente(): void {
     if (this.resultadoIA) {
-      // Usamos la nueva URL directa si existe, o construimos una
       const url = `${this.apiUrl}/documentos/ver/${this.resultadoIA.documento.id}`;
       window.open(url, '_blank');
       this.cerrarModalIA();
     }
   }
 
-  // ✅ FUNCION RESTAURADA: Requerida por el HTML [class]="getConfianzaBadgeClass(...)"
   getConfianzaBadgeClass(confianza: string): string {
     switch (confianza) {
       case 'ALTA': return 'badge-alta';

@@ -173,7 +173,6 @@ export class AdminPerfilComponent implements OnInit {
   }
 
   saveContactChanges(): void {
-    // 1. Lógica para separar nombre completo en partes
     const nombreCompleto = this.userProfile.fullName.trim();
     const partes = nombreCompleto.split(' ').filter(p => p.trim().length > 0); // Eliminar espacios dobles
     
@@ -187,7 +186,6 @@ export class AdminPerfilComponent implements OnInit {
       nuevosNombres = partes[0];
       nuevoPaterno = partes[1];
     } else {
-      // Asumimos estructura: [Nombre1] [Nombre2?] ... [Apellido1] [Apellido2]
       nuevoMaterno = partes.pop() || '';
       nuevoPaterno = partes.pop() || '';
       nuevosNombres = partes.join(' ');
@@ -320,7 +318,6 @@ export class AdminPerfilComponent implements OnInit {
     alert('Esta funcionalidad estará disponible próximamente.');
   }
 
-  // --- Utilidades Visuales ---
   getIcon(iconName: string): string {
     return ICONS_MAP[iconName] || ICONS_MAP['file-text'];
   }
