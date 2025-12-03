@@ -32,6 +32,13 @@ export interface Student {
   documentos_aprobados: number;
   documentos_subidos_lista?: any[];
   documentos_faltantes_lista?: any[];
+  fecha_nacimiento: string;
+  estado?: string;      
+  municipio?: string;
+  ciudad?: string;  
+  calle?: string;  
+  codigo_postal?: number;
+  observaciones: string;
 }
 
 export interface Professor {
@@ -107,6 +114,10 @@ export class AdminGestionComponent implements OnInit {
   showProfessorInfoModal: boolean = false;
   showEditProfessorModal: boolean = false;
   showBajaModal: boolean = false;
+
+  showModal: boolean = false;       
+  isEditing: boolean = false;      
+  selectedUsuario: any = null;
   
   // Selección
   selectedStudent: Student | null = null;
@@ -191,7 +202,6 @@ export class AdminGestionComponent implements OnInit {
     }
   }
 
-  // --- Carga de Datos Optimizada (ForkJoin) ---
   loadDashboardData(): void {
     this.isLoading = true;
 
@@ -314,10 +324,9 @@ export class AdminGestionComponent implements OnInit {
   }
 
   openEditStudent(student: any): void {
-    // Clonamos el objeto para editar sin afectar la vista de lista inmediatamente
     this.selectedStudent = JSON.parse(JSON.stringify(student)); 
-    this.showStudentInfoModal = false; // Cerramos info
-    this.showEditStudentModal = true;  // Abrimos edit
+    this.showStudentInfoModal = false; 
+    this.showEditStudentModal = true;  
   }
 
   closeEditStudent(): void {
@@ -328,14 +337,49 @@ export class AdminGestionComponent implements OnInit {
   saveStudentChanges(): void {
     if (!this.selectedStudent) return;
 
-    this.http.put(`${this.apiUrl}/admin/estudiantes/${this.selectedStudent.id_estudiante}`, this.selectedStudent)
+    // 1. Preparar el objeto limpio (Payload)
+    // Solo mandamos lo que el backend espera recibir en el PUT
+    const payload = {
+      nombres: this.selectedStudent.nombres,
+      apellido_paterno: this.selectedStudent.apellido_paterno,
+      apellido_materno: this.selectedStudent.apellido_materno || '',
+      curp: this.selectedStudent.curp,
+      // Formatear fecha a YYYY-MM-DD si existe
+      fecha_nacimiento: this.formatDate(this.selectedStudent.fecha_nacimiento),
+      telefono: this.selectedStudent.telefono || '',
+      correo: this.selectedStudent.correo,
+      
+      // Datos del Tutor
+      nombre_tutor: this.selectedStudent.nombre_tutor,
+      correo_tutor: this.selectedStudent.correo_tutor,
+      telefono_tutor: this.selectedStudent.telefono_tutor,
+      
+      // Datos Académicos
+      semestre: this.selectedStudent.semestre,
+      grupo_id: this.selectedStudent.grupo_id,
+      tipo_estudiante: this.selectedStudent.tipo_estudiante,
+      activo: this.selectedStudent.activo,
+      observaciones: this.selectedStudent.observaciones || '', // Asegúrate de agregar este campo a la interfaz si falta
+
+      // Dirección (Nuevos campos que querías agregar)
+      estado: this.selectedStudent.estado || '',
+      municipio: this.selectedStudent.municipio || '',
+      ciudad: this.selectedStudent.ciudad || '',
+      calle: this.selectedStudent.calle || '',
+      codigo_postal: this.selectedStudent.codigo_postal || 0
+    };
+
+    this.http.put(`${this.apiUrl}/admin/estudiantes/${this.selectedStudent.id_estudiante}`, payload)
       .subscribe({
         next: () => {
           alert('Estudiante actualizado exitosamente');
           this.closeEditStudent();
           this.loadStudents();
         },
-        error: (err) => alert('Error al actualizar: ' + (err.error?.error || err.message))
+        error: (err) => {
+          console.error('Error update student:', err);
+          alert('Error al actualizar: ' + (err.error?.error || err.message));
+        }
       });
   }
 
@@ -370,15 +414,50 @@ export class AdminGestionComponent implements OnInit {
   saveProfessorChanges(): void {
     if (!this.selectedProfessor) return;
 
-    this.http.put(`${this.apiUrl}/admin/profesores/${this.selectedProfessor.id_profesor}`, this.selectedProfessor)
+    const payload = {
+      nombres: this.selectedProfessor.nombres,
+      apellido_paterno: this.selectedProfessor.apellido_paterno,
+      apellido_materno: this.selectedProfessor.apellido_materno || '',
+      correo: this.selectedProfessor.correo,
+      telefono: this.selectedProfessor.telefono || '',
+      
+      // Datos Profesionales
+      departamento: this.selectedProfessor.departamento,
+      licenciatura: this.selectedProfessor.licenciatura || '',
+      activo: this.selectedProfessor.activo,
+      
+      // Campos adicionales que podrías necesitar agregar a la interfaz si no existen
+      // observaciones: this.selectedProfessor.observaciones || ''
+    };
+
+    this.http.put(`${this.apiUrl}/admin/profesores/${this.selectedProfessor.id_profesor}`, payload)
       .subscribe({
         next: () => {
           alert('Profesor actualizado exitosamente');
           this.closeEditProfessor();
           this.loadProfessors();
         },
-        error: () => alert('Error al actualizar profesor')
+        error: (err) => {
+          console.error('Error update professor:', err);
+          alert('Error al actualizar profesor: ' + (err.error?.error || err.message));
+        }
       });
+  }
+
+  // Función auxiliar para formatear fechas (Ponla al final de tu clase)
+  private formatDate(dateString: string): string {
+    if (!dateString) return '';
+    // Si ya viene como YYYY-MM-DD, la dejamos así
+    if (dateString.includes('T')) {
+      return dateString.split('T')[0];
+    }
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString; // Si no es válida, devolver original
+      return date.toISOString().split('T')[0];
+    } catch (e) {
+      return dateString;
+    }
   }
 
   // Baja de Usuarios
@@ -448,7 +527,7 @@ export class AdminGestionComponent implements OnInit {
   private getInitialStudentForm() {
     return {
       nombres: '', apellidoPaterno: '', apellidoMaterno: '',
-      fechaNacimiento: '', curp: '', telefono: '', semestre: '',
+      fechaNacimiento: '', curp: '', telefono: '', correo: '', semestre: '',
       grupoId: null as number | null, tipoEstudiante: 'NUEVO_INGRESO',
       nombreTutor: '', correoTutor: '', telefonoTutor: '',
       estado: '', municipio: '', ciudad: '', codigoPostal: null as number | null,

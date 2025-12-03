@@ -291,6 +291,95 @@
   margin-top: 1px;
 }
 
+/* Estilo para el input del código de verificación */
+.code-input {
+  text-align: center;
+  font-size: 24px;
+  letter-spacing: 8px;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+}
+
+/* Mejora visual para los mensajes */
+.success-box,
+.error-box {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estilo para inputs deshabilitados */
+.form-input:disabled,
+.form-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #f3f4f6;
+}
+
+/* Mejora para el form-hint */
+.form-hint {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* Mejora para los botones en estado loading */
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Espaciado mejorado para secciones */
+.form-section + .form-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Mejora para labels requeridos */
+.form-group label::after {
+  content: '';
+}
+
+/* Indicador visual para campos requeridos */
+input:required:invalid {
+  border-color: #e5e7eb;
+}
+
+input:required:valid {
+  border-color: #10b981;
+}
+
+/* Estilos para validación en tiempo real */
+.form-input:focus:invalid {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-input:focus:valid {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Mejora responsive para el código */
+@media (max-width: 480px) {
+  .code-input {
+    font-size: 20px;
+    letter-spacing: 6px;
+  }
+}
+
 /* Quick Access */
 .quick-access {
   margin-top: 24px;

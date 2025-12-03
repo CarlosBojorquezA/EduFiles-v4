@@ -327,7 +327,7 @@
         } @else {
           <div class="professors-list">
             @for (professor of filteredProfessors; track professor.num_usuario) {
-              <div class="professor-card">
+                <div class="professor-card" (click)="openProfessorInfo(professor)">
                 <div class="professor-header">
                   <div class="professor-info">
                     <div class="user-avatar" style="display: inline-block; margin-right: 12px;">
@@ -345,6 +345,7 @@
                     {{ professor.activo === 1 ? 'Activo' : 'Inactivo' }}
                   </span>
                 </div>
+
                 <div class="professor-details">
                   <p class="professor-email">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -362,21 +363,13 @@
                     </p>
                   }
                   @if (professor.materias_asignadas && professor.materias_asignadas.length > 0) {
-                    <p class="professor-subjects">
-                      <strong>Materias:</strong> {{ professor.materias_asignadas.join(', ') }}
-                    </p>
-                  }
-                  @if (professor.grupos_asignados && professor.grupos_asignados.length > 0) {
-                    <p class="professor-groups">
-                      <strong>Grupos:</strong> {{ professor.grupos_asignados.length }} grupos asignados
-                    </p>
+                     <p class="professor-subjects">
+                       <strong>Materias:</strong> {{ professor.materias_asignadas.join(', ') }}
+                     </p>
                   }
                 </div>
-                <div class="professor-actions">
-                  <button class="btn-secondary" (click)="openProfessorInfo(professor)">Ver Detalles</button>
-                  <button class="btn-primary" (click)="openEditProfessor(professor)">Editar</button>
+
                 </div>
-              </div>
             } @empty {
               <div style="text-align: center; padding: 40px; color: #666;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin: 0 auto 16px; opacity: 0.3;">
@@ -443,7 +436,7 @@
               <div class="form-row">
                 <div class="form-group">
                   <label>Fecha de Nacimiento *</label>
-                  <input type="text" [(ngModel)]="newStudent.fechaNacimiento" placeholder="dd/mm/aaaa" class="form-input">
+                  <input type="text" [(ngModel)]="newStudent.fechaNacimiento" placeholder="aaaa/mm/dd" class="form-input">
                 </div>
               </div>
               <div class="form-row">
@@ -456,7 +449,11 @@
 
             <div class="form-section">
               <h4>Datos de Contacto</h4>
-              <div class="form-row">
+              <div class="form-row two-cols">
+                <div class="form-group">
+                  <label>Correo</label>
+                  <input type="tel" [(ngModel)]="newStudent.correo" placeholder="estudiante@ejemplo.com" class="form-input">
+                </div>
                 <div class="form-group">
                   <label>Teléfono</label>
                   <input type="tel" [(ngModel)]="newStudent.telefono" placeholder="+52 555 123 4567" class="form-input">
@@ -520,9 +517,10 @@
                   <label>Grupo</label>
                   <select [(ngModel)]="newStudent.grupoId" class="form-input">
                     <option [ngValue]="null">Sin Grupo</option>
-                    <option [ngValue]="1">Grupo A</option>
-                    <option [ngValue]="2">Grupo B</option>
-                    <option [ngValue]="3">Grupo C</option>
+                    <option [ngValue]="1">Grupo 1</option>
+                    <option [ngValue]="2">Grupo 2</option>
+                    <option [ngValue]="3">Grupo 3</option>
+                    <option [ngValue]="4">Grupo 4</option>
                   </select>
                 </div>
               </div>
@@ -951,7 +949,7 @@
 
               @if (selectedStudent.documentos_faltantes_lista && selectedStudent.documentos_faltantes_lista.length > 0) {
                 <div class="info-section alert-section">
-                  <h4>⚠️ Documentos Faltantes ({{ selectedStudent.documentos_faltantes_lista.length }})</h4>
+                  <h4> Documentos Faltantes ({{ selectedStudent.documentos_faltantes_lista.length }})</h4>
                   <div class="missing-documents-list">
                     @for (doc of selectedStudent.documentos_faltantes_lista; track $index) {
                       <div class="missing-doc-item">
@@ -1060,9 +1058,10 @@
                 <label>Grupo</label>
                 <select [(ngModel)]="selectedStudent.grupo_id" class="form-control">
                   <option [ngValue]="null">Sin Grupo</option>
-                  <option [ngValue]="1">Grupo A</option>
-                  <option [ngValue]="2">Grupo B</option>
-                  <option [ngValue]="3">Grupo C</option>
+                  <option [ngValue]="1">Grupo 1</option>
+                  <option [ngValue]="2">Grupo 2</option>
+                  <option [ngValue]="3">Grupo 3</option>
+                  <option [ngValue]="4">Grupo 4</option>
                 </select>
               </div>
             </div>

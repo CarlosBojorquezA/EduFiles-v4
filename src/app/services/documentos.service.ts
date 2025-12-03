@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 export interface Plantilla {
   id_plantilla: number;
@@ -30,14 +31,14 @@ export interface DocumentoDetalle {
   es_fijo: number;
   requiere_actualizacion: number;
   dias_vigencia: number | null;
-  tipo_registro?: 'SUBIDO' | 'FALTANTE'; // Para distinguir origen
+  tipo_registro?: 'SUBIDO' | 'FALTANTE'; 
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class DocumentosService {
-  private apiUrl = 'http://localhost:5000/api/documentos';
+  private apiUrl =  `${environment.apiUrl}/documentos`;
 
   constructor(private http: HttpClient) {}
 
@@ -176,5 +177,15 @@ export class DocumentosService {
   getHistorialDocumento(idDocumento: number): Observable<any[]> {
     const headers = this.getHeaders();
     return this.http.get<any[]>(`${this.apiUrl}/historial/${idDocumento}`, { headers });
+  }
+
+  analizarDocumentoConIA(idDocumento: number): Observable<any> {
+    const headers = this.getHeaders(); 
+
+    return this.http.post(
+      `${this.apiUrl}/analizar-con-ia/${idDocumento}`,
+      {}, 
+      { headers } 
+    );
   }
 }

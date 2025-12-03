@@ -55,6 +55,12 @@ interface AnalisisIA {
   razones: string[];
   comentario_sugerido: string;
   timestamp: string;
+  evidencia_tecnica: {
+    texto_extraido: string;
+    confianza_ocr: number;
+    tipo_detectado?: string;
+    nombre_encontrado?: boolean;
+  };
 }
 
 interface ResultadoAnalisisIA {
@@ -130,6 +136,14 @@ export class AdminDocumentosComponent implements OnInit {
   // Forms
   formData: FormData = this.getInitialFormData();
   navigationItems: NavItem[] = [];
+
+  // Propiedades para OCR
+  showModalOCR: boolean = false;
+  resultadoOCR: any = null;
+  analizandoOCR: boolean = false;
+  documentoOCR: DocumentoPendiente | null = null;
+
+   Object = Object;
 
   constructor(
     private router: Router,
@@ -430,6 +444,83 @@ export class AdminDocumentosComponent implements OnInit {
       obligatorio: true,
       dias_vigencia: null
     };
+  }
+
+  // Nuevos metodos para la pre-revision de documentos con OCR
+   preValidarConOCR(pendiente: DocumentoPendiente): void {
+    if (!pendiente.id_documento) return;
+    
+    if (!confirm(`¿Analizar "${pendiente.plantilla_nombre}" con OCR (extracción de texto)?`)) return;
+
+    this.analizandoOCR = true;
+    this.documentoOCR = pendiente;
+
+    this.http.post<any>(
+      `${this.apiUrl}/documentos/pre-validar-ocr/${pendiente.id_documento}`, 
+      {}
+    ).pipe(
+      finalize(() => this.analizandoOCR = false)
+    ).subscribe({
+      next: (res) => {
+        console.log('[OCR] Resultado:', res);
+        this.resultadoOCR = res;
+        this.showModalOCR = true;
+      },
+      error: (err) => {
+        console.error('[OCR] Error:', err);
+        alert('Error en análisis OCR: ' + (err.error?.error || err.message));
+      }
+    });
+  }
+
+  cerrarModalOCR(): void {
+    this.showModalOCR = false;
+    this.resultadoOCR = null;
+    this.documentoOCR = null;
+  }
+
+  aplicarSugerenciaOCR(accion: 'APROBAR' | 'RECHAZAR'): void {
+    if (!this.resultadoOCR || !this.documentoOCR) return;
+    
+    const docId = this.resultadoOCR.documento.id;
+    
+    // Generar comentario basado en OCR
+    let comentario = '';
+    if (accion === 'RECHAZAR') {
+      const alertas = this.resultadoOCR.sugerencia_automatica.alertas
+        .filter((a: any) => a.tipo === 'error')
+        .map((a: any) => a.mensaje);
+      comentario = alertas.join('. ');
+    }
+
+    this.enviarValidacion(docId, accion === 'APROBAR' ? 'APROBADO' : 'RECHAZADO', comentario);
+    this.cerrarModalOCR();
+  }
+
+  copiarTextoOCR(): void {
+    if (!this.resultadoOCR?.ocr?.texto_completo) return;
+    
+    navigator.clipboard.writeText(this.resultadoOCR.ocr.texto_completo)
+      .then(() => alert('Texto copiado al portapapeles'))
+      .catch(() => alert('Error al copiar'));
+  }
+
+  getColorSugerencia(sugerencia: string): string {
+    const colores: {[key: string]: string} = {
+      'APROBAR': '#10b981',
+      'RECHAZAR': '#ef4444',
+      'REVISAR': '#f59e0b'
+    };
+    return colores[sugerencia] || '#6b7280';
+  }
+
+  getIconoSugerencia(sugerencia: string): string {
+    const iconos: {[key: string]: string} = {
+      'APROBAR': '✅',
+      'RECHAZAR': '❌',
+      'REVISAR': '⚠️'
+    };
+    return iconos[sugerencia] || '📄';
   }
 
   loadNavigation(): void {
