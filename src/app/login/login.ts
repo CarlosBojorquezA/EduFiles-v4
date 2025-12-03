@@ -362,7 +362,6 @@ export class LoginComponent {
   }
 
   // ==================== ACCESO RÁPIDO ====================
-
   onQuickAccess(role: string): void {
     const credentials: any = {
       'Estudiante': { num_usuario: '00000005', password: 'contra1326' },
@@ -375,5 +374,5 @@ export class LoginComponent {
       this.loginPassword = credentials[role].password;
       this.onLogin();
     }
-  }
+  } 
 }

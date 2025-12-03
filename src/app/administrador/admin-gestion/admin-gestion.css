@@ -1127,6 +1127,11 @@ label {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+.btn-modal-primary-profesor{
+  background-color: #1a1a1a;
+  color: white;
+}
+
 .btn-modal-secondary {
   background-color: white;
   color: #1a1a1a;

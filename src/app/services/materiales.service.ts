@@ -28,7 +28,9 @@ export interface MaterialStats {
   total_materiales: number;
   total_materias: number;
   nuevos: number;
-  total_profesores: number; 
+  total_profesores: number;
+  total_descargas: number; 
+  espacio_usado: number;
 }
 
 export interface MateriaDisponible {
@@ -41,6 +43,7 @@ export interface MateriaDisponible {
 })
 export class MaterialesService {
   private apiUrl =  `${environment.apiUrl}/materiales`;
+  private apiProfUrl = `${environment.apiUrl}/prof-materiales`;
 
   constructor(private http: HttpClient) {}
 
@@ -92,24 +95,24 @@ export class MaterialesService {
   // Subir material (profesor)
   subirMaterial(formData: FormData): Observable<any> {
     const headers = this.getHeaders();
-    return this.http.post(`${this.apiUrl}/subir`, formData, { headers });
+    return this.http.post(`${this.apiProfUrl}/subir`, formData, { headers });
   }
 
   // Obtener materiales del profesor
   getMisMaterialesProfesor(): Observable<Material[]> {
     const headers = this.getHeaders();
-    return this.http.get<Material[]>(`${this.apiUrl}/mis-materiales-profesor`, { headers });
+    return this.http.get<Material[]>(`${this.apiProfUrl}/mis-materiales`, { headers });
   }
 
   // Eliminar material
   eliminarMaterial(idMaterial: number): Observable<any> {
     const headers = this.getHeaders();
-    return this.http.delete(`${this.apiUrl}/eliminar/${idMaterial}`, { headers });
+    return this.http.delete(`${this.apiProfUrl}/eliminar/${idMaterial}`, { headers });
   }
 
   // Actualizar material
   actualizarMaterial(idMaterial: number, data: any): Observable<any> {
     const headers = this.getHeaders();
-    return this.http.put(`${this.apiUrl}/actualizar/${idMaterial}`, data, { headers });
+    return this.http.put(`${this.apiProfUrl}/actualizar/${idMaterial}`, data, { headers });
   }
 }

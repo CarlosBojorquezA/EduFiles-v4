@@ -55,6 +55,7 @@ export interface Professor {
   activo: number;
   materias_asignadas?: string[];
   grupos_asignados?: any[];
+  observaciones: string;
 }
 
 interface NavItem {
@@ -336,15 +337,11 @@ export class AdminGestionComponent implements OnInit {
 
   saveStudentChanges(): void {
     if (!this.selectedStudent) return;
-
-    // 1. Preparar el objeto limpio (Payload)
-    // Solo mandamos lo que el backend espera recibir en el PUT
     const payload = {
       nombres: this.selectedStudent.nombres,
       apellido_paterno: this.selectedStudent.apellido_paterno,
       apellido_materno: this.selectedStudent.apellido_materno || '',
       curp: this.selectedStudent.curp,
-      // Formatear fecha a YYYY-MM-DD si existe
       fecha_nacimiento: this.formatDate(this.selectedStudent.fecha_nacimiento),
       telefono: this.selectedStudent.telefono || '',
       correo: this.selectedStudent.correo,
@@ -359,9 +356,9 @@ export class AdminGestionComponent implements OnInit {
       grupo_id: this.selectedStudent.grupo_id,
       tipo_estudiante: this.selectedStudent.tipo_estudiante,
       activo: this.selectedStudent.activo,
-      observaciones: this.selectedStudent.observaciones || '', // Asegúrate de agregar este campo a la interfaz si falta
+      observaciones: this.selectedStudent.observaciones || '',
 
-      // Dirección (Nuevos campos que querías agregar)
+      // Dirección 
       estado: this.selectedStudent.estado || '',
       municipio: this.selectedStudent.municipio || '',
       ciudad: this.selectedStudent.ciudad || '',
@@ -401,9 +398,9 @@ export class AdminGestionComponent implements OnInit {
   }
 
   openEditProfessor(professor: Professor): void {
-    this.selectedProfessor = { ...professor };
+    this.selectedProfessor = { ...professor }; 
     this.showEditProfessorModal = true;
-    this.closeProfessorInfo();
+    this.showProfessorInfoModal = false;
   }
 
   closeEditProfessor(): void {
@@ -425,9 +422,7 @@ export class AdminGestionComponent implements OnInit {
       departamento: this.selectedProfessor.departamento,
       licenciatura: this.selectedProfessor.licenciatura || '',
       activo: this.selectedProfessor.activo,
-      
-      // Campos adicionales que podrías necesitar agregar a la interfaz si no existen
-      // observaciones: this.selectedProfessor.observaciones || ''
+      observaciones: this.selectedProfessor.observaciones || ''
     };
 
     this.http.put(`${this.apiUrl}/admin/profesores/${this.selectedProfessor.id_profesor}`, payload)
@@ -444,16 +439,14 @@ export class AdminGestionComponent implements OnInit {
       });
   }
 
-  // Función auxiliar para formatear fechas (Ponla al final de tu clase)
   private formatDate(dateString: string): string {
     if (!dateString) return '';
-    // Si ya viene como YYYY-MM-DD, la dejamos así
     if (dateString.includes('T')) {
       return dateString.split('T')[0];
     }
     try {
       const date = new Date(dateString);
-      if (isNaN(date.getTime())) return dateString; // Si no es válida, devolver original
+      if (isNaN(date.getTime())) return dateString; 
       return date.toISOString().split('T')[0];
     } catch (e) {
       return dateString;
