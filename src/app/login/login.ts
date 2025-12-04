@@ -374,5 +374,5 @@ export class LoginComponent {
       this.loginPassword = credentials[role].password;
       this.onLogin();
     }
-  } 
+  }
 }

@@ -113,23 +113,17 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   loadUserData(): void {
-    const userDataStr = localStorage.getItem('userData');
-    if (!userDataStr) {
-      console.warn('[DASHBOARD] No hay userData en localStorage');
-      return;
-    }
-
-    try {
-      const user = JSON.parse(userDataStr);
-      const nombre = user.detalles?.nombres;
-      const apellido = user.detalles?.apellido_paterno || '';
-      
-      this.userName = nombre ? `${nombre} ${apellido}`.trim() : (user.correo || user.num_usuario || 'Usuario');
-      this.userRole = (user.rol || 'ADMINISTRADOR').toLowerCase();
-      
-      console.log('[DASHBOARD] Usuario:', this.userName, '| Rol:', this.userRole);
-    } catch (e) {
-      console.error('[DASHBOARD] Error parsing userData:', e);
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        this.userName = user.detalles?.nombres 
+          ? `${user.detalles.nombres} ${user.detalles.apellido_paterno} ${user.detalles.apellido_materno || ''}`.trim() 
+          : (user.correo || 'Usuario');
+        this.userRole = (user.rol || 'ADMINISTRADOR').toLowerCase();
+      } catch (e) {
+        console.error('Error parsing user data', e);
+      }
     }
   }
 

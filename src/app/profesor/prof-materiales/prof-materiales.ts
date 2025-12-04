@@ -202,7 +202,9 @@ export class ProfMaterialesComponent implements OnInit {
       next: (stats) => {
         this.totalMaterials = stats.total_materiales || 0;
         this.totalDownloads = stats.total_descargas || 0;
-        this.totalespacio= stats.espacio_usado || 0;
+
+        const bytes = stats.espacio_usado || 0;
+        this.totalespacio = parseFloat((bytes / (1024 * 1024)).toFixed(2));
       },
       error: (error) => console.error('Error cargando stats:', error)
     });

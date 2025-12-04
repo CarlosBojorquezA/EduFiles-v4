@@ -194,7 +194,7 @@ export class AdminGestionComponent implements OnInit {
       try {
         const user = JSON.parse(userData);
         this.userName = user.detalles?.nombres 
-          ? `${user.detalles.nombres} ${user.detalles.apellido_paterno || ''}`.trim() 
+          ? `${user.detalles.nombres} ${user.detalles.apellido_paterno} ${user.detalles.apellido_materno || ''}`.trim() 
           : (user.correo || 'Usuario');
         this.userRole = (user.rol || 'ADMINISTRADOR').toLowerCase();
       } catch (e) {

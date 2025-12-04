@@ -216,32 +216,49 @@
 
   @if (showChangePasswordModal) {
     <div class="modal-overlay" (click)="closeChangePasswordModal()">
-      <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h2>Cambiar Contraseña</h2>
-          <button class="modal-close" (click)="closeChangePasswordModal()">✕</button>
+          <button class="close-btn" (click)="closeChangePasswordModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
         <div class="modal-body">
-          <p class="modal-description">Actualiza tu contraseña de acceso</p>
+          <p class="modal-subtitle">Actualiza tu contraseña de acceso al sistema</p>
 
           <div class="form-group">
             <label>Contraseña Actual</label>
-            <input type="password" class="form-input" placeholder="••••••••" [(ngModel)]="passwordForm.currentPassword">
+            <input 
+              type="password" 
+              [(ngModel)]="passwordForm.currentPassword" 
+              placeholder="••••••••"
+              class="form-input">
           </div>
 
           <div class="form-group">
             <label>Nueva Contraseña</label>
-            <input type="password" class="form-input" placeholder="••••••••" [(ngModel)]="passwordForm.newPassword">
+            <input 
+              type="password" 
+              [(ngModel)]="passwordForm.newPassword" 
+              placeholder="••••••••"
+              class="form-input">
           </div>
 
           <div class="form-group">
-            <label>Confirmar Nueva</label>
-            <input type="password" class="form-input" placeholder="••••••••" [(ngModel)]="passwordForm.confirmPassword">
+            <label>Confirmar Nueva Contraseña</label>
+            <input 
+              type="password" 
+              [(ngModel)]="passwordForm.confirmPassword" 
+              placeholder="••••••••"
+              class="form-input">
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn-modal-cancel" (click)="closeChangePasswordModal()">Cancelar</button>
           <button class="btn-modal-primary" (click)="changePassword()">Cambiar Contraseña</button>
+          <button class="btn-modal-cancel" (click)="closeChangePasswordModal()">Cancelar</button>
         </div>
       </div>
     </div>
@@ -249,29 +266,41 @@
 
   @if (showVerificationModal) {
     <div class="modal-overlay" (click)="closeVerificationModal()">
-      <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h2>Verificación de Correo</h2>
-          <button class="modal-close" (click)="closeVerificationModal()">✕</button>
+          <button class="close-btn" (click)="closeVerificationModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
         <div class="modal-body">
           <div class="verification-icon">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-              <polyline points="22,6 12,13 2,6"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
             </svg>
           </div>
-          <p class="modal-subtitle centered">Enviamos un código a:</p>
+          <p class="modal-subtitle centered">Hemos enviado un código de verificación a tu correo:</p>
           <p class="email-highlight">{{ userProfile.email }}</p>
 
           <div class="form-group">
             <label>Código de Verificación</label>
-            <input type="text" class="form-input code-input" placeholder="6 dígitos" maxlength="6" [(ngModel)]="verificationCode">
+            <input 
+              type="text" 
+              [(ngModel)]="verificationCode" 
+              placeholder="Ingresa el código de 6 dígitos"
+              maxlength="6"
+              class="form-input code-input">
           </div>
+
+          <p class="help-text">Si no recibes el código en unos minutos, revisa tu carpeta de spam.</p>
         </div>
         <div class="modal-footer">
+          <button class="btn-modal-primary" (click)="verifyAndChangePassword()">Verificar y Cambiar</button>
           <button class="btn-modal-cancel" (click)="closeVerificationModal()">Cancelar</button>
-          <button class="btn-modal-primary" (click)="verifyAndChangePassword()">Verificar</button>
         </div>
       </div>
     </div>
