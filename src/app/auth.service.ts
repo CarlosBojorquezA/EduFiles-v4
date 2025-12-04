@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { environment } from '../../src/environments/environment.development';
+import { environment } from '../../src/environments/environment'; // Asegúrate que apunte al environment correcto
 
 interface RegistroData {
   nombres: string;
@@ -45,7 +45,6 @@ export class AuthService {
       tap((response: any) => {
         console.log('[AUTH SERVICE] Respuesta del login:', response);
         
-        // CRÍTICO: Guardar token y usuario
         if (response.token) {
           localStorage.setItem('token', response.token);
           console.log('[AUTH SERVICE] Token guardado:', response.token.substring(0, 20) + '...');
@@ -66,56 +65,64 @@ export class AuthService {
 
   // ========== REGISTRO ==========
   registrarEstudiante(data: RegistroData): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/registro-estudiante`, data);
+    // AGREGADO /api
+    return this.http.post(`${this.apiUrl}/api/auth/registro-estudiante`, data);
   }
 
   // ========== RECUPERACIÓN DE CONTRASEÑA ==========
   solicitarRecuperacion(correo_o_telefono: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/solicitar-recuperacion`, { 
+    // AGREGADO /api
+    return this.http.post(`${this.apiUrl}/api/auth/solicitar-recuperacion`, { 
       correo_o_telefono 
     });
   }
 
   verificarCodigo(num_usuario: string, codigo: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/verificar-codigo`, { 
+    // AGREGADO /api
+    return this.http.post(`${this.apiUrl}/api/auth/verificar-codigo`, { 
       num_usuario, 
       codigo 
     });
   }
 
   restablecerPassword(num_usuario: string, new_password: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/restablecer-password`, { 
+    // AGREGADO /api
+    return this.http.post(`${this.apiUrl}/api/auth/restablecer-password`, { 
       num_usuario, 
       new_password 
     });
   }
 
-  // ========== CAMBIAR CONTRASEÑA ==========
+  // ========== CAMBIAR CONTRASEÑA  ==========
   solicitarCodigoCambio(): Observable<any> {
-  return this.http.post(`${this.apiUrl}/auth/solicitar-codigo-cambio`, {}, {
-    headers: this.getAuthHeaders()
-  });
-}
+    // AGREGADO /api
+    return this.http.post(`${this.apiUrl}/api/auth/solicitar-codigo-cambio`, {}, {
+      headers: this.getAuthHeaders()
+    });
+  }
 
-// Confirmar el cambio con el código (Paso 2)
-confirmarCambioPassword(codigo: string, currentPass: string, newPass: string): Observable<any> {
-  return this.http.post(`${this.apiUrl}/auth/confirmar-cambio-password`, {
-    codigo: codigo,
-    current_password: currentPass,
-    new_password: newPass
-  }, {
-    headers: this.getAuthHeaders()
-  });
-}
+  confirmarCambioPassword(codigo: string, currentPass: string, newPass: string): Observable<any> {
+    // AGREGADO /api
+    return this.http.post(`${this.apiUrl}/api/auth/confirmar-cambio-password`, {
+      codigo: codigo,
+      current_password: currentPass,
+      new_password: newPass
+    }, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
   // ========== PERFIL ==========
   getPerfil(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/auth/perfil`, { 
+    // AGREGADO /api
+    return this.http.get(`${this.apiUrl}/api/auth/perfil`, { 
       headers: this.getAuthHeaders() 
     });
   }
 
   actualizarPerfil(data: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/auth/actualizar-perfil`, data, { 
+    // AGREGADO /api
+    return this.http.put(`${this.apiUrl}/api/auth/actualizar-perfil`, data, { 
       headers: this.getAuthHeaders() 
     });
   }
@@ -130,19 +137,11 @@ confirmarCambioPassword(codigo: string, currentPass: string, newPass: string): O
 
   isLoggedIn(): boolean {
     const token = this.getToken();
-    const hasToken = !!token;
-    console.log('[AUTH SERVICE] isLoggedIn:', hasToken);
-    return hasToken;
+    return !!token;
   }
 
   getToken(): string | null {
-    const token = localStorage.getItem('token');
-    if (token) {
-      console.log('[AUTH SERVICE] Token encontrado:', token.substring(0, 20) + '...');
-    } else {
-      console.log('[AUTH SERVICE] No hay token en localStorage');
-    }
-    return token;
+    return localStorage.getItem('token');
   }
 
   getCurrentUser(): any {
@@ -181,8 +180,9 @@ confirmarCambioPassword(codigo: string, currentPass: string, newPass: string): O
     return this.getUserRole() === 'ADMINISTRADOR';
   }
 
-  // ========== HEALTH CHECK ==========
+  // ========== HEALTH CHECK (CORREGIDO) ==========
   healthCheck(): Observable<any> {
-    return this.http.get(`${this.apiUrl.replace('/api', '')}/health`);
+    // Tu ruta en Python es @app.route('/api/health'), así que la URL debe ser completa
+    return this.http.get(`${this.apiUrl}/api/health`);
   }
 }
