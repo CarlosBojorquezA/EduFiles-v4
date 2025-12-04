@@ -37,7 +37,9 @@ export class AuthService {
 
   // ========== LOGIN ==========
   login(num_usuario: string, password: string): Observable<any> {
-    console.log('[AUTH SERVICE] Iniciando login...');
+
+    // Agrega este log con un numero de version
+    console.log('>>> INTENTANDO LOGIN - VERSIÓN CON API FIXED <<<');
     return this.http.post(`${this.apiUrl}/api/auth/login`, { 
       num_usuario, 
       password 
