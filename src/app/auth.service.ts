@@ -38,7 +38,7 @@ export class AuthService {
   // ========== LOGIN ==========
   login(num_usuario: string, password: string): Observable<any> {
     console.log('[AUTH SERVICE] Iniciando login...');
-    return this.http.post(`${this.apiUrl}/auth/login`, { 
+    return this.http.post(`${this.apiUrl}/api/auth/login`, { 
       num_usuario, 
       password 
     }).pipe(
