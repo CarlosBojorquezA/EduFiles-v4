@@ -37,12 +37,9 @@ export class AuthService {
 
   // ========== LOGIN ==========
   login(num_usuario: string, password: string): Observable<any> {
-
-    // Agrega este log con un numero de version
     console.log('>>> INTENTANDO LOGIN - VERSIÓN CON API FIXED <<<');
-    const urlDirecta = 'https://apiedufiles-production.up.railway.app/api/auth/login';
-
-    return this.http.post(urlDirecta, { 
+    
+    return this.http.post(`${this.apiUrl}/api/auth/login`, { 
       num_usuario, 
       password 
     }).pipe(

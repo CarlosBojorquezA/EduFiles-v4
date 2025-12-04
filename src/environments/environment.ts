@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://apiedufiles-production.up.railway.app'
+  apiUrl: 'apiedufiles-production.up.railway.app'
 };
