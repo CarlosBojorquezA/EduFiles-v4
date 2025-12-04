@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { environment } from '../../src/environments/environment'; // Asegúrate que apunte al environment correcto
+import { environment } from '../../src/environments/environment'; 
 
 interface RegistroData {
   nombres: string;
@@ -40,7 +40,9 @@ export class AuthService {
 
     // Agrega este log con un numero de version
     console.log('>>> INTENTANDO LOGIN - VERSIÓN CON API FIXED <<<');
-    return this.http.post(`${this.apiUrl}/api/auth/login`, { 
+    const urlDirecta = 'https://apiedufiles-production.up.railway.app/api/auth/login';
+
+    return this.http.post(urlDirecta, { 
       num_usuario, 
       password 
     }).pipe(
