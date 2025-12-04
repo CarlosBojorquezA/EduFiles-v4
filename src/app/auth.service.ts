@@ -39,7 +39,7 @@ export class AuthService {
   login(num_usuario: string, password: string): Observable<any> {
     console.log('>>> INTENTANDO LOGIN - VERSIÓN CON API FIXED <<<');
     
-    return this.http.post(`${this.apiUrl}/api/auth/login`, { 
+    return this.http.post(`${this.apiUrl}/auth/login`, { 
       num_usuario, 
       password 
     }).pipe(
@@ -67,20 +67,20 @@ export class AuthService {
   // ========== REGISTRO ==========
   registrarEstudiante(data: RegistroData): Observable<any> {
     // AGREGADO /api
-    return this.http.post(`${this.apiUrl}/api/auth/registro-estudiante`, data);
+    return this.http.post(`${this.apiUrl}/auth/registro-estudiante`, data);
   }
 
   // ========== RECUPERACIÓN DE CONTRASEÑA ==========
   solicitarRecuperacion(correo_o_telefono: string): Observable<any> {
     // AGREGADO /api
-    return this.http.post(`${this.apiUrl}/api/auth/solicitar-recuperacion`, { 
+    return this.http.post(`${this.apiUrl}/auth/solicitar-recuperacion`, { 
       correo_o_telefono 
     });
   }
 
   verificarCodigo(num_usuario: string, codigo: string): Observable<any> {
     // AGREGADO /api
-    return this.http.post(`${this.apiUrl}/api/auth/verificar-codigo`, { 
+    return this.http.post(`${this.apiUrl}/auth/verificar-codigo`, { 
       num_usuario, 
       codigo 
     });
@@ -88,7 +88,7 @@ export class AuthService {
 
   restablecerPassword(num_usuario: string, new_password: string): Observable<any> {
     // AGREGADO /api
-    return this.http.post(`${this.apiUrl}/api/auth/restablecer-password`, { 
+    return this.http.post(`${this.apiUrl}/auth/restablecer-password`, { 
       num_usuario, 
       new_password 
     });
@@ -97,14 +97,14 @@ export class AuthService {
   // ========== CAMBIAR CONTRASEÑA  ==========
   solicitarCodigoCambio(): Observable<any> {
     // AGREGADO /api
-    return this.http.post(`${this.apiUrl}/api/auth/solicitar-codigo-cambio`, {}, {
+    return this.http.post(`${this.apiUrl}/auth/solicitar-codigo-cambio`, {}, {
       headers: this.getAuthHeaders()
     });
   }
 
   confirmarCambioPassword(codigo: string, currentPass: string, newPass: string): Observable<any> {
     // AGREGADO /api
-    return this.http.post(`${this.apiUrl}/api/auth/confirmar-cambio-password`, {
+    return this.http.post(`${this.apiUrl}/auth/confirmar-cambio-password`, {
       codigo: codigo,
       current_password: currentPass,
       new_password: newPass
@@ -116,14 +116,14 @@ export class AuthService {
   // ========== PERFIL ==========
   getPerfil(): Observable<any> {
     // AGREGADO /api
-    return this.http.get(`${this.apiUrl}/api/auth/perfil`, { 
+    return this.http.get(`${this.apiUrl}/auth/perfil`, { 
       headers: this.getAuthHeaders() 
     });
   }
 
   actualizarPerfil(data: any): Observable<any> {
     // AGREGADO /api
-    return this.http.put(`${this.apiUrl}/api/auth/actualizar-perfil`, data, { 
+    return this.http.put(`${this.apiUrl}/auth/actualizar-perfil`, data, { 
       headers: this.getAuthHeaders() 
     });
   }
@@ -181,9 +181,8 @@ export class AuthService {
     return this.getUserRole() === 'ADMINISTRADOR';
   }
 
-  // ========== HEALTH CHECK (CORREGIDO) ==========
+  // ========== HEALTH CHECK  ==========
   healthCheck(): Observable<any> {
-    // Tu ruta en Python es @app.route('/api/health'), así que la URL debe ser completa
     return this.http.get(`${this.apiUrl}/api/health`);
   }
 }
