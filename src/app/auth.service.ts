@@ -36,9 +36,7 @@ export class AuthService {
   }
 
   // ========== LOGIN ==========
-  login(num_usuario: string, password: string): Observable<any> {
-    console.log('>>> INTENTANDO LOGIN - VERSIÓN CON API FIXED <<<');
-    
+  login(num_usuario: string, password: string): Observable<any> {    
     return this.http.post(`${this.apiUrl}/auth/login`, { 
       num_usuario, 
       password 
@@ -66,20 +64,17 @@ export class AuthService {
 
   // ========== REGISTRO ==========
   registrarEstudiante(data: RegistroData): Observable<any> {
-    // AGREGADO /api
     return this.http.post(`${this.apiUrl}/auth/registro-estudiante`, data);
   }
 
   // ========== RECUPERACIÓN DE CONTRASEÑA ==========
   solicitarRecuperacion(correo_o_telefono: string): Observable<any> {
-    // AGREGADO /api
     return this.http.post(`${this.apiUrl}/auth/solicitar-recuperacion`, { 
       correo_o_telefono 
     });
   }
 
   verificarCodigo(num_usuario: string, codigo: string): Observable<any> {
-    // AGREGADO /api
     return this.http.post(`${this.apiUrl}/auth/verificar-codigo`, { 
       num_usuario, 
       codigo 
@@ -87,7 +82,6 @@ export class AuthService {
   }
 
   restablecerPassword(num_usuario: string, new_password: string): Observable<any> {
-    // AGREGADO /api
     return this.http.post(`${this.apiUrl}/auth/restablecer-password`, { 
       num_usuario, 
       new_password 
@@ -96,14 +90,12 @@ export class AuthService {
 
   // ========== CAMBIAR CONTRASEÑA  ==========
   solicitarCodigoCambio(): Observable<any> {
-    // AGREGADO /api
     return this.http.post(`${this.apiUrl}/auth/solicitar-codigo-cambio`, {}, {
       headers: this.getAuthHeaders()
     });
   }
 
   confirmarCambioPassword(codigo: string, currentPass: string, newPass: string): Observable<any> {
-    // AGREGADO /api
     return this.http.post(`${this.apiUrl}/auth/confirmar-cambio-password`, {
       codigo: codigo,
       current_password: currentPass,
@@ -115,14 +107,12 @@ export class AuthService {
 
   // ========== PERFIL ==========
   getPerfil(): Observable<any> {
-    // AGREGADO /api
     return this.http.get(`${this.apiUrl}/auth/perfil`, { 
       headers: this.getAuthHeaders() 
     });
   }
 
   actualizarPerfil(data: any): Observable<any> {
-    // AGREGADO /api
     return this.http.put(`${this.apiUrl}/auth/actualizar-perfil`, data, { 
       headers: this.getAuthHeaders() 
     });

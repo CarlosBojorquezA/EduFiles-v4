@@ -12,6 +12,7 @@ interface RegistroForm {
   email: string;
   telefono: string;
   semestre: string;
+  grupo_id: number | null;
   tipo_estudiante: 'NUEVO_INGRESO' | 'REINGRESO';
   password: string;
   confirm_password: string;
@@ -58,6 +59,13 @@ export class LoginComponent {
     { value: '8', label: '8° Semestre' }
   ];
 
+  grupos = [
+    { id: 1, label: 'Grupo 01' },
+    { id: 2, label: 'Grupo 02' },
+    { id: 3, label: 'Grupo 03' },
+    { id: 4, label: 'Grupo 04' }
+  ];
+
   // Recuperación Data
   recoveryNumUsuario: string = '';
   recoveryEmail: string = '';
@@ -70,6 +78,22 @@ export class LoginComponent {
     private http: HttpClient
   ) {}
 
+  // Se ejecuta cuando cambia el radio button de Tipo de Estudiante
+  onTipoEstudianteChange(): void {
+    if (this.registroForm.tipo_estudiante === 'NUEVO_INGRESO') {
+      // Asignación automática para Nuevo Ingreso
+      this.registroForm.semestre = '1';
+      
+      // Asignar un grupo aleatorio entre el 1 y el 4 
+      const randomIndex = Math.floor(Math.random() * this.grupos.length);
+      this.registroForm.grupo_id = this.grupos[randomIndex].id;
+      
+    } else {
+      this.registroForm.semestre = '';
+      this.registroForm.grupo_id = null;
+    }
+  }
+
   // ==================== TABS & UI ====================
 
   setActiveTab(tab: 'login' | 'register' | 'forgot'): void {
@@ -77,13 +101,18 @@ export class LoginComponent {
     this.clearMessages();
     this.recuperarStep = 1;
     
-    // Limpiar campos al cambiar de tab
     if (tab === 'forgot') {
       this.recoveryNumUsuario = '';
       this.recoveryEmail = '';
       this.recoveryCode = '';
       this.recoveryNewPassword = '';
       this.recoveryConfirmPassword = '';
+    }
+    
+    // Si vamos a registro, inicializamos el formulario (que por defecto es Nuevo Ingreso)
+    if (tab === 'register') {
+      this.registroForm = this.getInitialRegistroForm();
+      this.onTipoEstudianteChange(); // Para pre-asignar semestre 1 y grupo
     }
   }
 
@@ -163,6 +192,7 @@ export class LoginComponent {
       apellido_materno: this.registroForm.apellido_materno,
       email: this.registroForm.email,
       telefono: this.registroForm.telefono,
+      grupo_id: this.registroForm.grupo_id,
       semestre: this.registroForm.semestre,
       tipo_estudiante: this.registroForm.tipo_estudiante,
       password: this.registroForm.password,
@@ -258,13 +288,15 @@ export class LoginComponent {
   }
 
   private getInitialRegistroForm(): RegistroForm {
-    return {
+    // Por defecto inicia como Nuevo Ingreso
+    const form: RegistroForm = {
       nombres: '',
       apellido_paterno: '',
       apellido_materno: '',
       email: '',
       telefono: '',
-      semestre: '',
+      semestre: '1', // Default 1
+      grupo_id: null, // Se asignará en el constructor o al iniciar tab
       tipo_estudiante: 'NUEVO_INGRESO',
       password: '',
       confirm_password: '',
@@ -272,6 +304,7 @@ export class LoginComponent {
       email_tutor: '',
       telefono_tutor: ''
     };
+    return form;
   }
 
   // ==================== RECUPERACIÓN ====================
@@ -361,7 +394,7 @@ export class LoginComponent {
     });
   }
 
-  // ==================== ACCESO RÁPIDO ====================
+  // ==================== ACCESO RÁPIDO (solo para desarrollo en su momento ) ====================
   onQuickAccess(role: string): void {
     const credentials: any = {
       'Estudiante': { num_usuario: '00000005', password: 'contra1326' },
